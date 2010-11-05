@@ -1,0 +1,10 @@
+The goal of this project is to rely on declarative W3C standards (namely,
+SMIL/Timing and SMIL/Timesheets) to synchronize HTML content.
+
+References:
+  http://www.w3.org/TR/SMIL3/smil-timing.html
+  http://www.w3.org/TR/timesheets/
+
+Demos:
+  http://labs.kompozer.net/timesheets/
+
