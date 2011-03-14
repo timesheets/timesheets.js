@@ -1,0 +1,111 @@
+/* each slide is 640x480px */
+#slideshow header,
+#slideshow footer,
+#slideshow div {
+/*#slideshow > * {*/
+  width: 560px;
+  height: 440px;
+  padding: 20px 40px;
+  /*overflow-x: hidden;*/
+  background-color: white;
+  border: 1px solid #aaa;
+  border-radius         : 15px;
+  -o-border-radius      : 15px;
+  -moz-border-radius    : 15px;
+  -webkit-border-radius : 15px;
+  box-shadow         : 0px 1px 10px #888;
+  -o-box-shadow      : 0px 1px 10px #888;
+  -moz-box-shadow    : 0px 1px 10px #888;
+  -webkit-box-shadow : 0px 1px 10px #888;
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 18px;
+  /*margin-bottom: 20px;*/
+  margin: 10px auto;
+}
+#slideshow div small,
+#slideshow li li {
+  font-size: 14px;
+}
+#slideshow header,
+#slideshow footer {
+  background-image: url(images/background-big.png);
+  background-position: bottom left;
+  background-repeat: no-repeat;
+  text-align: center;
+}
+#slideshow div {
+  background-image: url(images/background-filtered.png);
+  background-position: bottom right;
+  background-repeat: no-repeat;
+}
+#slideshow header p,
+#slideshow footer p {
+  color: brown;
+  font-size: 14px;
+}
+#slideshow h1 {
+  font-size: 300%;
+  font-weight: normal;
+  margin: 100px auto 0 auto;
+}
+#slideshow h1+p {
+  margin-top: 0;
+  font-size: 18px;
+  color: black;
+}
+#slideshow h2 {
+  width: 60%;
+  margin-left: 40%;
+  margin-bottom: 60px;
+  /*margin: auto 40% 60px auto;*/
+  text-align: right;
+  line-height: 150%;
+  font-weight: normal;
+  color: black;
+  border-bottom: 2px solid brown;
+}
+#slideshow img {
+  max-height: 300px;
+  max-width: 50%;
+  border-radius         : 10px;
+  -o-border-radius      : 10px;
+  -moz-border-radius    : 10px;
+  -webkit-border-radius : 10px;
+  box-shadow         : 0px 1px 10px #888;
+  -o-box-shadow      : 0px 1px 10px #888;
+  -moz-box-shadow    : 0px 1px 10px #888;
+  -webkit-box-shadow : 0px 1px 10px #888;
+  display: block;
+}
+#slideshow img {
+  float: left;
+  margin: -20px 30px 0 10px;
+}
+#slideshow .right img {
+  float: right;
+  /*margin: -20px 10px 0 30px;*/
+  margin-left: 30px;
+}
+#slideshow .right ul,
+#slideshow .right p {
+  text-align: right;
+}
+#slideshow ul {
+  margin-left: 0;
+  padding: 0;
+}
+#slideshow li {
+  list-style-type: none;
+  margin: 15px 0 0 0;
+  padding: 0;
+}
+#slideshow li li {
+  margin-top: 5px;
+}
+#slideshow li ul {
+  margin-left: 25px;
+}
+#slideshow .right li ul {
+  margin-left: 0;
+  margin-right: 25px;
+}

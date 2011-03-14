@@ -1,0 +1,14 @@
+@import url(style.css);
+.smil-controlBar {
+	background-color: #522;
+}
+.smil-controlBar button, .smil-timeSegments a {
+  background-color: #944;
+  color: white !important;
+}
+.smil-controlBar button:hover, .smil-timeSegments a:hover {
+  background-color: #b66;
+}
+.smil-controlBar button {
+  border-color: #722;
+}
