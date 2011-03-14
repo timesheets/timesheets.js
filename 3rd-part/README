@@ -1,0 +1,9 @@
+These files are required to make the demos work with Internet Explorer 6/7/8,
+see: http://localhost/~kaze/timesheets/about/oldie.html
+
+ * http://mediaelementjs.com/
+ * http://sizzlejs.com/
+ * http://code.google.com/p/html5shiv/
+
+All these files are available under MIT license.
+
