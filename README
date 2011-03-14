@@ -1,7 +1,8 @@
-The goal of this project is to rely on declarative W3C standards (namely,
-SMIL/Timing and SMIL/Timesheets) to synchronize HTML content.
+HTML Timing is a cross-browser, JavaScript implementation of SMIL-Timing and
+SMIL-Timesheets. The goal of this project is to rely on declarative W3C
+standards to synchronize HTML content.
 
-References:
+W3C References:
   http://www.w3.org/TR/SMIL3/smil-timing.html
   http://www.w3.org/TR/timesheets/
 

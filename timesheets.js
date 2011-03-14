@@ -20,11 +20,18 @@
  */
 
 /*
- * author        : Fabien Cazenave (:kaze)
- * contact       : fabien.cazenave@inria.fr, kaze@kompozer.net
- * license       : MIT
- * version       : 0.4pre
- * last modified : 2010-11-07
+ * author      : Fabien Cazenave (:kaze)
+ * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
+ * license     : MIT
+ * version     : 0.4pre
+ * last change : 2011-03-12
+ *
+ * TODO:
+ *  • redesign EVENTS to make it compatible with jQuery
+ *  • factorize the onbegin/onend code
+ *       in smilTimeItem and smilTimeContainer_generic
+ *  • support multiple event-values (semicolon-separated)
+ *  • fix the repeat/repeatDur stuff
  */
 
 /*****************************************************************************\
@@ -43,7 +50,9 @@
 |    EVENTS.unbind(node, type, callback)                                      |
 |             equivalent to 'node.removeEventListener(type, callback, false)' |
 |    EVENTS.trigger(node, type)                                               |
-|             equivalent to 'dispatchEvent(type)' / 'node.fireEvent(type)'    |
+|             equivalent to 'node.dispatchEvent()'                            |
+|    EVENTS.preventDefault(event)                                             |
+|             equivalent to 'event.preventDefault()'                          |
 |                                                                             |
 |  Specific events:                                                           |
 |    EVENTS.onHashChange(callback)                                            |
@@ -67,37 +76,53 @@ window.EVENTS = {
 // addEventListener should work fine everywhere except with IE<9
 if (window.addEventListener) { // modern browsers
   EVENTS.bind = function(node, type, callback) {
+    if (!node) return;
     node.addEventListener(type, callback, false);
   };
   EVENTS.unbind = function(node, type, callback) {
+    if (!node) return;
     node.removeEventListener(type, callback, false);
   };
   EVENTS.trigger = function(node, type) {
+    if (!node) return;
     //console.log(node.innerHTML + " : " + type);
     if (!EVENTS.eventList)
       EVENTS.eventList = new Array();
     var evtObject = EVENTS.eventList[type];
     if (!evtObject) {
       evtObject = document.createEvent("Event");
-      evtObject.initEvent(type, true, false);
+      evtObject.initEvent(type, false, false);
       EVENTS.eventList[type] = evtObject;
     }
     node.dispatchEvent(evtObject);
+  };
+  EVENTS.preventDefault = function(e) {
+    e.preventDefault();
   };
 }
 else if (window.attachEvent) { // Internet Explorer 6/7/8
   // This also fixes the 'this' reference issue in all callbacks
   // -- both for standard and custom events.
   // http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
+  // However, this solution isn't perfect. We probably should think of a jQuery
+  // dependancy for OLDIE.
   EVENTS.bind = function(node, type, callback) {
+    if (!node) return;
     var ref = type + callback;
     type = "on" + type;
-    if (type in node) try { // standard DOM event?
-      node["e"+ref] = callback;
-      node[ref] = function() { node["e"+ref](window.event); };
-      node.attachEvent(type, node[ref]);
+    if (type in node) { // standard DOM event?
+      if (!node["e"+ref]) {
+      //try {
+        node["e"+ref] = callback;
+        node[ref] = function() { // try {
+          node["e"+ref](window.event);
+        }; // catch(e) {} };
+        node.attachEvent(type, node[ref]);
+        //return;
+      //} catch(e) {}
+      }
       return;
-    } catch(e) {}
+    }
     // custom event
     if (!node.eventList)
       node.eventList = new Array();
@@ -106,12 +131,15 @@ else if (window.attachEvent) { // Internet Explorer 6/7/8
     node.eventList[type].push(callback);
   };
   EVENTS.unbind = function(node, type, callback) {
+    if (!node) return;
     var ref = type + callback;
     type = "on" + type;
     if (type in node) try { // standard DOM event?
       node.detachEvent(type, node[ref]);
-      node[ref] = null;
-      node["e"+ref] = null;
+      //node[ref] = null;
+      //node["e"+ref] = null;
+      delete(node[ref]);
+      delete(node["e"+ref]);
       return;
     } catch(e) {}
     // custom event
@@ -127,6 +155,7 @@ else if (window.attachEvent) { // Internet Explorer 6/7/8
     }
   };
   EVENTS.trigger = function(node, type) {
+    if (!node) return;
     type = "on" + type;
     if (type in node) try { // standard DOM event?
       node.fireEvent(type);
@@ -143,6 +172,9 @@ else if (window.attachEvent) { // Internet Explorer 6/7/8
     var cbLength = callbacks.length;
     for (var i = 0; i < cbLength; i++)
       callbacks[i].call(node, evtObject);
+  };
+  EVENTS.preventDefault = function(e) {
+    e.returnValue = false;
   };
 }
 
@@ -180,6 +212,10 @@ EVENTS.onDOMReady = function(callback) {
     EVENTS.bind(window, "load", callback);
   }
 };
+// 'MediaContentLoaded' is fired when all media elements have been parsed
+EVENTS.onMediaReady = function(callback) {
+  EVENTS.bind(window, "MediaContentLoaded", callback);
+};
 // 'SMILContentLoaded' is fired when all time containers have been parsed
 EVENTS.onSMILReady = function(callback) {
   EVENTS.bind(window, "SMILContentLoaded", callback);
@@ -189,7 +225,6 @@ EVENTS.onSMILReady = function(callback) {
 /*****************************************************************************\
 |                                                                             |
 |  SMIL/Timing and SMIL/Timesheet implementation                              |
-|    not exposed -- the JavaScript API is a work in progress                  |
 |                                                                             |
 |*****************************************************************************|
 |                                                                             |
@@ -217,6 +252,15 @@ EVENTS.onSMILReady = function(callback) {
 |                                 always inherits smilTimeItem                |
 |                                 inherits smilTimeContainer_* when necessary |
 |-----------------------------------------------------------------------------|
+|                                                                             |
+|  Public API:                                                                |
+|                                                                             |
+|    document.createTimeContainer(domNode, parentNode, targetNode, timerate)  |
+|    document.getTimeNodesByTarget(node)                                      |
+|    document.getTimeContainersByTarget(node)                                 |
+|    document.getTimeContainersByTagName(tagName)                             |
+|                                                                             |
+|-----------------------------------------------------------------------------|
 |  })();                                                                      |
 |                                                                             |
 \*****************************************************************************/
@@ -236,14 +280,23 @@ function consoleLog(message) {                // consoleLog
   if (DEBUG && (typeof(console) == "object")) // consoleLog
     console.log(message);                     // consoleLog
 }                                             // consoleLog
+function consoleWarn(message) {
+  if (typeof(console) == "object")
+    console.warn(message);
+}
 // predefined CSS selectors to parse time containers and external timesheets
 var CSSQUERY = {
   timeContainer: "*[data-timecontainer], *[timeContainer], par, seq, excl",
   extTimesheets: "link[rel=timesheet]",
   parTimeNodes: "" // TODO
-}
+};
 // default timeContainer refresh rate = 40ms (25fps)
 var TIMERATE = 40;
+if (window.mejs) // http://mediaelementjs.com/
+  mejs.MediaElementDefaults.timerRate = TIMERATE;
+
+// array to store all time containers
+var TIMECONTAINERS = [];
 
 // ===========================================================================
 // Detect Internet Explorer 6/7/8
@@ -253,6 +306,7 @@ var TIMERATE = 40;
 var OLDIE = (window.addEventListener) ? false : true;
 if (OLDIE) {
   // define 'Date.now()', 'indexOf()' and CSS selectors for IE<9
+  // XXX use document.ELEMENT_NODE instead of Node.ELEMENT_NODE
   /* if (!Node) var Node = {
     ELEMENT_NODE                 :  1,
     ATTRIBUTE_NODE               :  2,
@@ -268,16 +322,20 @@ if (OLDIE) {
     NOTATION_NODE                : 12
   }; */
   if (!Array.indexOf) Array.prototype.indexOf = function(obj) {
-    for (var i = 0; i < this.length; i++)
-      if (this[i] == obj)
+    for (var i = 0; i < this.length; i++) {
+      if (this[i] == obj) {
         return i;
+      }
+    }
     return -1;
   };
   if (!Date.now) Date.now = function() {
     var timestamp = new Date();
     return timestamp.getTime();
   };
-  // querySelectorAll() / querySelector()
+}
+// querySelectorAll() / querySelector() aren't supported by IE6 / IE7
+if (!document.querySelectorAll) {
   // detect Sizzle, jQuery, Dojo, Prototype, Mootools, ExtJS, YUI...
   if (window.Sizzle) {      // http://sizzlejs.com/
     document.querySelectorAll = function(cssQuery) {
@@ -309,105 +367,110 @@ if (OLDIE) {
       return YAHOO.util.Selector.query(cssQuery);
     };
   }
-  else if (!document.querySelectorAll) { // IE6 / IE7
+  else document.querySelectorAll = function(cssQuery) {
     // Crap. We'll just test anchors, tag names and predefined queries then.
     // XXX this will never work for 'select' attributes (timesheets)
-    document.querySelectorAll = function(cssQuery) {
-      var results = new Array();
-      // anchor?
-      if (/^#[^\s]+$/.test(cssQuery)) {
-        var target = document.getElementById(cssQuery.substring(1));
-        if (target)
-          results.push(target);
-      }
-      // tag name?
-      else if (/^[a-z]+$/i.test(cssQuery)) {
-        results = document.getElementsByTagName(cssQuery);
-      }
-      // external timesheets?
-      else if (cssQuery == CSSQUERY.extTimesheets) {
-        var links = document.getElementsByTagName("link");
-        for (var i = 0; i < links.length; i++)
-          if (links[i].rel.toLowerCase() == "timesheet")
-            results.push(links[i]);
-      }
-      // time containers?
-      else if (cssQuery == CSSQUERY.timeContainer) {
-        var tmp = document.getElementsByTagName("*");
-        var re = /^(par|seq|excl)$/i;
-        for (var i = 0; i < tmp.length; i++) {
-          if (re.test(tmp[i].nodeName)
-                || tmp[i].getAttribute("data-timecontainer")
-                || tmp[i].getAttribute("timeContainer"))
-            results.push(tmp[i]);
+    var results = new Array();
+    var i;
+    // anchor?
+    if (/^#[^\s]+$/.test(cssQuery)) {
+      var target = document.getElementById(cssQuery.substring(1));
+      if (target)
+        results.push(target);
+    }
+    // tag name?
+    else if (/^[a-z]+$/i.test(cssQuery)) {
+      results = document.getElementsByTagName(cssQuery);
+    }
+    // external timesheets?
+    else if (cssQuery == CSSQUERY.extTimesheets) {
+      var links = document.getElementsByTagName("link");
+      for (i = 0; i < links.length; i++) {
+        if (links[i].rel.toLowerCase() == "timesheet") {
+          results.push(links[i]);
         }
       }
-      return results;
-    };
-  }
-  document.querySelector = function(cssQuery) { // see mediaSync
-    var results = document.querySelectorAll(cssQuery);
-    if (results && results.length)
-      return results[0];
-    else
-      return null;
+    }
+    // time containers?
+    else if (cssQuery == CSSQUERY.timeContainer) {
+      var tmp = document.getElementsByTagName("*");
+      var re = /^(par|seq|excl)$/i;
+      for (i = 0; i < tmp.length; i++) {
+        if (re.test(tmp[i].nodeName)
+            || tmp[i].getAttribute("data-timecontainer")
+            || tmp[i].getAttribute("timeContainer")) {
+          results.push(tmp[i]);
+        }
+      }
+    }
+    return results;
   };
 }
+if (!document.querySelector) document.querySelector = function(cssQuery) {
+  // required by the 'mediaSync' attributes
+  var results = document.querySelectorAll(cssQuery);
+  if (results && results.length)
+    return results[0];
+  else
+    return null;
+};
 
 // ===========================================================================
 // Activate a time node if a hash is found in the URL
 // ===========================================================================
 function checkHash() {
-  var container       = null;
-  var targetElement   = null;
-  var targetContainer = null;
-  var time = NaN;
-  var hash = document.location.hash;
+  var targetElement = null; // target DOM node
+  var targetTiming  = null; // target time node
+  var container     = null; // ???
+  var i, tmp;
 
-  // get the URI target and its time container, if any
+  // get the URI target element
+  var hash = document.location.hash;
   if (hash.length) {
     consoleLog("new hash: " + hash);
     var targetID = hash.substr(1).replace(/\&.*$/, "");
-    consoleLog("targetID: " + targetID);
-    targetElement = document.getElementById(targetID);
     // the hash may contain a leading char (e.g. "_") to prevent scrolling
-    if (!targetElement)
-      targetElement = document.getElementById(targetID.substr(1));
-    if (targetElement && targetElement.parentNode)
-      container = targetElement.parentNode.timing;
-    // the hash might contain a temporal MediaFragment information
-    if (targetElement.timing && targetElement.timing.timeContainer) {
-      targetContainer = targetElement.timing;
-      var tmp = hash.split("&");
-      for (var i = 0; i < tmp.length; i++) {
-        if (/^t=.*/i.test(tmp[i])) { // drop end time (if any)
-          time = targetContainer.parseTime(tmp[i].substr(2).replace(/,.*$/, ""));
-          break;
-        }
+    targetElement = document.getElementById(targetID)
+                 || document.getElementById(targetID.substr(1));
+  }
+  if (!targetElement) return;
+  consoleLog(targetElement);
+
+  // get the target time node (if any)
+  tmp = document.getTimeNodesByTarget(targetElement);
+  if (tmp.length) {
+    targetTiming = tmp[0];
+    container = tmp[0].parentNode;
+  }
+
+  // the hash might contain some temporal MediaFragment information
+  var time = NaN;
+  if (targetTiming && targetTiming.timeContainer) {
+    tmp = hash.split("&");
+    for (i = 0; i < tmp.length; i++) {
+      if (/^t=.*/i.test(tmp[i])) { // drop end time (if any)
+        time = targetTiming.parseTime(tmp[i].substr(2).replace(/,.*$/, ""));
+        break;
       }
     }
   }
 
-  // wrong ID, exit
-  if (!targetElement)
-    return;
-
-  // activate the time container on the target element
+  // activate the time container on the target element:
   // http://www.w3.org/TR/SMIL3/smil-timing.html#Timing-HyperlinkImplicationsOnSeqExcl
   // we're extending this to all time containers, including <par>
   // -- but we still haven't checked wether '.selectIndex()' works properly with <par>
   var containers = new Array();
   var indexes    = new Array();
+  var timeNodes  = new Array();
   var element = targetElement;
   while (container) {
-    var index = container.timeNodes.indexOf(element);
     for (var index = 0; index < container.timeNodes.length; index++) {
-      //if (container.timeNodes[index].targets.indexOf(element) >= 0) {
       if (container.timeNodes[index].target == element) {
         consoleLog("target found: " + element.nodeName + "#" + element.id);
         if (!container.timeNodes[index].isActive()) {
           containers.push(container);
           indexes.push(index);
+          timeNodes.push(container.timeNodes[index]);
         }
         break;
       }
@@ -416,27 +479,32 @@ function checkHash() {
     element   = container.getNode();
     container = container.parentNode;
   }
-  for (var i = containers.length - 1; i >= 0; i--)
+  for (i = containers.length - 1; i >= 0; i--) {
+    consoleLog(containers[i].nodeName + " - index=" + indexes[i]);
     containers[i].selectIndex(indexes[i]);
-
-  // set the target container to a specific time if requested
-  if (targetContainer && !isNaN(time)) {
-    targetContainer.setTime(time);
-    consoleLog(targetContainer.getNode().nodeName + " time: " + time);
+    //containers[i].selectItem(timeNodes[i]);
+    //containers[i].show();
+    //timeNodes[i].show();
   }
-  
+
+  // set the target time container to a specific time if requested (MediaFragment)
+  if (targetTiming && !isNaN(time)) {
+    targetTiming.setCurrentTime(time);
+    consoleLog(targetElement.nodeName + " time: " + time);
+  }
+
   // ensure the target element is visible
   //targetElement.focus(); // not working if targetElement has no tabIndex
   if (targetElement["scrollIntoViewIfNeeded"] != undefined)
     targetElement.scrollIntoViewIfNeeded(); // WebKit browsers only
-  else {
+  else try {
     //targetElement.scrollIntoView();
     var tabIndex = targetElement.tabIndex;
     targetElement.tabIndex = 0;
     targetElement.focus();
     targetElement.blur();
     targetElement.tabIndex = tabIndex;
-  }
+  } catch(e) {}
 }
 EVENTS.onSMILReady(function() {
   consoleLog("SMIL data parsed, starting 'hashchange' event listener.");
@@ -445,7 +513,99 @@ EVENTS.onSMILReady(function() {
 });
 
 // ===========================================================================
-// Find all time Containers in the current document
+// Find all <audio|video> elements in the current document
+// ===========================================================================
+function parseMediaElement(node) {
+  // use MediaElement.js when available: http://mediaelementjs.com/
+  if (window.MediaElement) {
+    var m = new MediaElement(node, {
+      success: function(mediaAPI, element) {
+        // note: element == node here
+        consoleLog("MediaElement with " + mediaAPI.pluginType + " player");
+        if ((/^(flash|silverlight)$/i).test(mediaAPI.pluginType)) {
+          // we're using a Flash/Silverlight <object|embed> fallback
+          // now find the related <object|embed> element -- by default, it
+          // should be the previous sibling of the <audio|video> element.
+          var pluginElement = element.previousSibling;
+          // XXX this is precisely what I dislike about MediaElement.js:
+          //  * there's no proper way to get the <object> node ref
+          //  * the <object> node can be included in a <div> container
+          //  * the <object> node is not a child of the <audio|video> element
+          //    IE: pluginElement = <object id="me_[flash|Silverlight]_##" ... </object>
+          // other: pluginElement = <div class="me-plugin"><object ... </object></div>
+          if (element.firstChild &&
+              (/^(object|embed)$/i).test(element.firstChild.nodeName)) {
+            // Good news! We're using mediaelement4oldie.js:
+            // the <object> fallback is a child of the <audio|video> element
+            pluginElement = element.firstChild;
+            consoleLog("  (childNode)");
+          } else if (pluginElement && (
+              (/^me_flash/).test(pluginElement.id)       || // IE<9 + Flash
+              (/^me_silverlight/).test(pluginElement.id) || // IE<9 + Silverlight
+              (pluginElement.className == "me-plugin")
+          )) {
+            // Bad news: MediaElement.js has inserted the <object|embed>
+            // fallback outside of the <audio|video> element.
+            // XXX ugly hack to avoid a "display: none" on the <object> container
+            pluginElement.setAttribute("timeAction", "none");
+            consoleLog("  (previousSibling)");
+          }
+          // store a pointer to the <object|embed> element, just in case
+          element.pluginElement = pluginElement;
+          element.mediaAPI      = mediaAPI;
+        }
+        EVENTS.trigger(document, "MediaElementLoaded");
+      },
+      error: function() {
+        //throw("MediaElement error");
+        alert("MediaElement error");
+      }
+    });
+  }
+  else { // native HTML5 media element
+    //node.pause(); // disable autoplay
+    node.setCurrentTime = function(time) {
+      node.currentTime = time;
+    };
+    // TODO: add other MediaElement setters
+    EVENTS.trigger(document, "MediaElementLoaded");
+  }
+}
+function parseAllMediaElements() {
+  var allAudioElements = document.getElementsByTagName("audio");
+  var allVideoElements = document.getElementsByTagName("video");
+  var meLength = allAudioElements.length + allVideoElements.length;
+  if (meLength === 0) {
+    // early way out: no <audio|video> element in the current document
+    EVENTS.trigger(window, "MediaContentLoaded");
+    return;
+  }
+  else if (OLDIE && !window.MediaElement) {
+    // http://mediaelementjs.com/ required
+    //EVENTS.trigger(window, "MediaContentLoaded");
+    throw "MediaElement.js is required on IE<9";
+  }
+
+  // callback to count all parsed media elements
+  var meParsed = 0;
+  function CountMediaElements() {
+    meParsed++;
+    if (meParsed >= meLength) {
+      EVENTS.unbind(document, "MediaElementLoaded", CountMediaElements);
+      EVENTS.trigger(window, "MediaContentLoaded");
+    }
+  }
+  EVENTS.bind(document, "MediaElementLoaded", CountMediaElements);
+
+  // initialize all media elements
+  for (var i = 0; i < allAudioElements.length; i++)
+    parseMediaElement(allAudioElements[i]);
+  for (i = 0; i < allVideoElements.length; i++)
+    parseMediaElement(allVideoElements[i]);
+}
+
+// ===========================================================================
+// Find all time containers in the current document
 // ===========================================================================
 function parseTimeContainerNode(node) {
   if (!node) return;
@@ -454,7 +614,7 @@ function parseTimeContainerNode(node) {
   if (!node.timing) {
     consoleLog("Main time container found: " + node.nodeName);
     consoleLog(node);
-    // the "time" property isn't set: this node hasn't been parsed yet.
+    // the "timing" property isn't set: this node hasn't been parsed yet.
     var smilPlayer = new smilTimeElement(node);
     smilPlayer.show();
   } else
@@ -462,11 +622,15 @@ function parseTimeContainerNode(node) {
 }
 function parseTimesheetNode(timesheetNode) {
   var containers = timesheetNode.childNodes;
-  for (var i = 0; i < containers.length; i++)
-    if (containers[i].nodeType == 1) // Node.ELEMENT_NODE
+  for (var i = 0; i < containers.length; i++) {
+    if (containers[i].nodeType == 1) { // Node.ELEMENT_NODE
       parseTimeContainerNode(containers[i]);
+    }
+  }
 }
 function parseAllTimeContainers() {
+  TIMECONTAINERS = new Array();
+
   // Inline Time Containers (HTML namespace)
   var allTimeContainers = document.querySelectorAll(CSSQUERY.timeContainer);
   for (var i = 0; i < allTimeContainers.length; i++)
@@ -477,7 +641,8 @@ function parseAllTimeContainers() {
   var tsLength = timesheets.length;
   var tsParsed = 0;
   function CountTimesheets() {
-    if (++tsParsed > tsLength) {
+    tsParsed++;
+    if (tsParsed > tsLength) {
       EVENTS.unbind(document, "SMILTimesheetLoaded", CountTimesheets);
       EVENTS.trigger(window, "SMILContentLoaded");
     }
@@ -485,13 +650,14 @@ function parseAllTimeContainers() {
   EVENTS.bind(document, "SMILTimesheetLoaded", CountTimesheets);
 
   // External Timesheets: parsing
-  for (i = 0; i < tsLength; i++) { 
+  var xhr;
+  for (i = 0; i < tsLength; i++) {
     // IE6 doesn't support XMLHttpRequest natively
     // IE6/7/8 don't support overrideMimeType with native XMLHttpRequest
     // IE6/7/8/9 don't allow loading any local file with native XMLHttpRequest
     // so we use ActiveX for XHR on IE, period.
     if (window.ActiveXObject) {
-      var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+      xhr = new ActiveXObject("Microsoft.XMLHTTP");
       xhr.open("GET", timesheets[i].href, true);
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -508,11 +674,11 @@ function parseAllTimeContainers() {
     }
     else if (window.XMLHttpRequest) {
       // note that Chrome won't allow loading any local timesheet with XHR
-      var xhr = new XMLHttpRequest();
+      xhr = new XMLHttpRequest();
+      xhr.overrideMimeType("text/xml");
       xhr.open("GET", timesheets[i].href, true);
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-          xhr.overrideMimeType("text/xml");
           var tsNodes = xhr.responseXML.getElementsByTagName("timesheet");
           if (tsNodes && tsNodes.length)
             parseTimesheetNode(tsNodes[0]);
@@ -566,9 +732,14 @@ function parseAllTimeContainers() {
   // for our counter, all internal timing data is considered as one timesheet
   EVENTS.trigger(document, "SMILTimesheetLoaded");
 }
+
+// ===========================================================================
+// Startup: get all media elements first, then all time containers
+// ===========================================================================
 EVENTS.onDOMReady(function() {
   consoleLog("SMIL/HTML Timing: startup");
-  parseAllTimeContainers();
+  EVENTS.onMediaReady(parseAllTimeContainers);
+  parseAllMediaElements();
 });
 
 
@@ -631,7 +802,7 @@ function smilInternalTimer(timerate) {
     timeStart = Date.now();
     timerID = setInterval(function() { self.onTimeUpdate(); }, timerate);
     paused = false;
-    consoleLog("started: " + timerID);
+    //consoleLog("started: " + timerID);
   };
   this.Pause = function() {
     if (paused) return;
@@ -640,7 +811,7 @@ function smilInternalTimer(timerate) {
     timePause = 1000 * self.getTime();
     paused = true;
     self.onTimeUpdate();
-    consoleLog("paused: " + timerID);
+    //consoleLog("paused: " + timerID);
   };
   this.Stop = function() {
     if (!timerID) return;
@@ -649,43 +820,132 @@ function smilInternalTimer(timerate) {
     timePause = 0;
     paused = true;
     self.onTimeUpdate();
-    consoleLog("stopped: " + timerID);
+    //consoleLog("stopped: " + timerID);
   };
 }
 
-function smilExternalTimer(mediaPlayerNode) {
+function _smilExternalTimer(mediaPlayerNode) {
   var self = this;
   this.onTimeUpdate = null;
 
+  // autoplay? (HTML5 boolean attribute)
+  //var autoplay = mediaPlayerNode.getAttribute("autoplay");
+  //this.autoplay = (autoplay != null) && (autoplay.toLowerCase() != "false");
+  //consoleLog("autoplay: " + this.autoplay);
+  // XXX with MediaElement.js v.2.0.0pre, 'autoplay' is handled as a string attribute.
+  //     To handle 'autoplay' as a boolean attribute, here's a quick fix (replace line #559):
+  //autoplay = (typeof autoplay == 'undefined' || autoplay === null || autoplay === 'false') ? '' : autoplay;
+  //autoplay = (autoplay != null) && (autoplay.toLowerCase() != "false"); // kaze
+
+  // use MediaElement.js when available: http://mediaelementjs.com/
+  var mediaPlayerAPI = mediaPlayerNode;
+  if (mediaPlayerNode.mediaAPI) {
+    // XXX looks like MediaElement.js makes this useless. Sweet!
+    //     ...but IE6 somehow needs it. Ugh.
+    mediaPlayerAPI = mediaPlayerNode.mediaAPI;
+    consoleLog("MediaElement interface found.");
+  }
+
   // read-only properties: isPaused(), getTime()
-  this.isPaused = function() { return mediaPlayerNode.paused; };
-  this.getTime  = function() { return mediaPlayerNode.currentTime; };
+  this.isPaused = function() { return mediaPlayerAPI.paused; };
+  this.getTime  = function() { return mediaPlayerAPI.currentTime; };
   this.setTime  = function(time) {
     try {
-      mediaPlayerNode.currentTime = time;
+      mediaPlayerAPI.setCurrentTime(time);
+      consoleLog("setting media time to " + time);
     } catch(e) {
+      // XXX this is highly suspected to cause a bug with Firefox 4
+      //if (OLDIE) return;
+      consoleLog(e);
       consoleLog("seeking to time=" + time + "...");
-      consoleLog("  readyState = " + mediaPlayerNode.readyState);
+      consoleLog("  readyState = " + mediaPlayerAPI.readyState);
       function setThisTime() {
-        mediaPlayerNode.currentTime = time;
-        mediaPlayerNode.removeEventListener("canplay", setThisTime, true);
-        consoleLog("  readyState = " + mediaPlayerNode.readyState);
+        mediaPlayerAPI.setCurrentTime(time);
+        mediaPlayerAPI.removeEventListener("canplay", setThisTime, false);
+        //mediaPlayerAPI.removeEventListener("seeked", setThisTime, false);
+        consoleLog("  readyState = " + mediaPlayerAPI.readyState);
       }
-      mediaPlayerNode.addEventListener("canplay", setThisTime, true);
+      mediaPlayerAPI.addEventListener("canplay", setThisTime, false);
+      //mediaPlayerAPI.addEventListener("seeked", setThisTime, false);
     }
   };
 
   // public methods: Play(), Pause(), Stop()
+  // TODO: implement the HTML5 MediaElement API instead
   this.Play  = function() {
-    if (!OLDIE)
-      mediaPlayerNode.addEventListener("timeupdate", self.onTimeUpdate, true);
-    // TODO: handle <object> fallbacks for OLDIE
+    consoleLog("starting continuous timeContainer");
+    mediaPlayerAPI.addEventListener("timeupdate", self.onTimeUpdate, false);
   };
   this.Pause = function() {
-    mediaPlayerNode.pause(); // XXX useless? confusing?
+    mediaPlayerAPI.pause(); // XXX useless? confusing?
   };
   this.Stop  = function() {
-    mediaPlayerNode.removeEventListener("timeupdate", self.onTimeUpdate, true);
+    if (mediaPlayerAPI.removeEventListener) // !OLDIE
+      mediaPlayerAPI.removeEventListener("timeupdate", self.onTimeUpdate, false);
+    //mediaPlayerNode.currentTime = 0;
+  };
+}
+function smilExternalTimer(mediaPlayerNode) {
+  var self = this;
+  var currentTime = NaN;
+  this.onTimeUpdate = null;
+
+  // use MediaElement.js when available: http://mediaelementjs.com/
+  var mediaPlayerAPI = mediaPlayerNode;
+  if (mediaPlayerNode.mediaAPI) {
+    // XXX looks like MediaElement.js makes this useless. Sweet!
+    //     ...but IE6 somehow needs it. Ugh.
+    mediaPlayerAPI = mediaPlayerNode.mediaAPI;
+    consoleLog("MediaElement interface found.");
+  }
+
+  // read-only properties: isPaused(), getTime()
+  this.isPaused = function() { return mediaPlayerAPI.paused; };
+  this.getTime  = function() {
+    return isNaN(currentTime) ? mediaPlayerAPI.currentTime : currentTime;
+  };
+  this.setTime  = function(time) {
+    consoleLog("setting media time to " + time);
+    if (mediaPlayerAPI.seeking) {
+      consoleWarn("seeking");
+      function setThisTime() {
+        mediaPlayerAPI.setCurrentTime(time);
+        mediaPlayerAPI.removeEventListener("seeked", setThisTime, false);
+        consoleLog("  readyState = " + mediaPlayerAPI.readyState);
+      }
+      mediaPlayerAPI.removeEventListener("seeked", setThisTime, false);
+      mediaPlayerAPI.addEventListener("seeked", setThisTime, false);
+    }
+    else try {
+      mediaPlayerAPI.setCurrentTime(time);
+    } catch(e) {
+      //if (OLDIE) return;
+      consoleWarn(e);
+      consoleLog("seeking to time=" + time + "...");
+      consoleLog("  readyState = " + mediaPlayerAPI.readyState);
+      function setThisTimeErr() {
+        mediaPlayerAPI.setCurrentTime(time);
+        mediaPlayerAPI.removeEventListener("canplay", setThisTimeErr, false);
+        consoleLog("  readyState = " + mediaPlayerAPI.readyState);
+      }
+      mediaPlayerAPI.addEventListener("canplay", setThisTimeErr, false);
+    }
+  };
+
+  // public methods: Play(), Pause(), Stop()
+  // TODO: implement the HTML5 MediaElement API instead
+  this.Play  = function() {
+    consoleLog("starting continuous timeContainer");
+    mediaPlayerAPI.addEventListener("timeupdate", self.onTimeUpdate, false);
+  };
+  this.Pause = function() {
+    mediaPlayerAPI.pause(); // XXX useless? confusing?
+  };
+  this.Stop  = function() {
+    if (mediaPlayerAPI.removeEventListener) // !OLDIE
+      mediaPlayerAPI.removeEventListener("timeupdate", self.onTimeUpdate, false);
+    //consoleLog("pause!");
+    //mediaPlayerAPI.pause();
     //mediaPlayerNode.currentTime = 0;
   };
 }
@@ -741,15 +1001,16 @@ smilTimeItem.prototype.parseTime = function(timeStr) {
                          // note that isNaN("string") returns true
 };
 smilTimeItem.prototype.parseEvent = function(eventStr, callback) { // XXX to be removed
-  if (!eventStr || !eventStr.length) return;
+  if (!eventStr || !eventStr.length) return null;
   // TODO: look for "+" in eventStr and handle the time offset
   var tmp = eventStr.split(".");
+  var target, evt;
   if (tmp.length >= 2) {
-    var target = document.getElementById(tmp[0]);
-    var evt    = tmp[1];
+    target = document.getElementById(tmp[0]);
+    evt    = tmp[1];
   } else {
-    var target = this.getNode();
-    var evt    = eventStr;
+    target = this.getNode();
+    evt    = eventStr;
   }
   if (target)
     //EVENTS.bind(target, evt, function() { callback(); });
@@ -762,18 +1023,22 @@ smilTimeItem.prototype.parseEvents = function(eventStr, callback) {
     return events;
 
   // TODO: look for "+" in eventStr and handle the time offset
-  var tmp = eventStr.split(".");
-  if (tmp.length >= 2) {
-    var target = document.getElementById(tmp[0]);
-    var evt    = tmp[1];
-  } else {
-    var target = this.getNode();
-    var evt    = eventStr;
+  var eventStrArray = eventStr.split(/;\s*/);
+  for (var i = 0; i < eventStrArray.length; i++) {
+    var tmp = eventStrArray[i].split(".");
+    var target, evt;
+    if (tmp.length >= 2) {
+      target = document.getElementById(tmp[0]);
+      evt    = tmp[1];
+    } else {
+      target = this.target;
+      evt    = eventStr;
+    }
+    events.push({
+      target : target,
+      event  : evt
+    });
   }
-  events.push({
-    target: target,
-    event:  evt
-  });
   return events;
 };
 smilTimeItem.prototype.parseAttribute = function(attrName, dValue) {
@@ -830,18 +1095,30 @@ smilTimeItem.prototype.newTargetHandler = function(timeAction, target) {
     target.setAttribute("smil", state);
   };
   var setTargetState_display    = function(state) {
-    target.style.display = (state == "active") ? "block" : "none";
+    target.setAttribute("smil", state);
+    //target.style.display = (state == "active") ? "block" : "none";
+    if (!target._smildisplay) { // not initialized yet
+      if (window.getComputedStyle)
+        target._smildisplay = getComputedStyle(target, null).display;
+      else // OLDIE
+        target._smildisplay = target.currentStyle.display;
+      consoleLog(target.style.display);
+    }
+    target.style.display = (state == "active") ? target._smildisplay : "none";
   };
   var setTargetState_visibility = function(state) {
+    target.setAttribute("smil", state);
     target.style.visibility = (state == "active") ? "visible" : "hidden";
   };
   var setTargetState_style      = function(state) {
+    target.setAttribute("smil", state);
     var active = (state == "active");
     if (!target._smilstyle) // not initialized yet
       target._smilstyle = target.style.cssText;
     target.style.cssText = active ? target._smilstyle : "";
   };
   var setTargetState_class      = function(state) {
+    target.setAttribute("smil", state);
     var active = (state == "active");
     if (!target._smilclass_active)  { // not initialized yet
       var activeCN = target.className + (target.className.length ? " " : "")
@@ -864,9 +1141,18 @@ smilTimeItem.prototype.newTargetHandler = function(timeAction, target) {
     case "style":
       return setTargetState_style;
       break;
+    case "intrinsic":
+      if (OLDIE) // (!window.XMLHttpRequest)
+        // IE6 doesn't support attribute selectors in CSS
+        // IE7/8 do support them but the responsiveness is terrible
+        // so we default to timeAction="display" for these old browsers
+        return setTargetState_display;
+      else
+        return setTargetState_intrinsic;
     default:
       if (/^class:/.test(timeAction))
         return setTargetState_class;
+      /* enable this to set timeAction="intrinsic" as the default behaviour
       else if (OLDIE) // (!window.XMLHttpRequest)
         // IE6 doesn't support attribute selectors in CSS
         // IE7/8 do support them but the responsiveness is terrible
@@ -874,8 +1160,12 @@ smilTimeItem.prototype.newTargetHandler = function(timeAction, target) {
         return setTargetState_visibility;
       else
         return setTargetState_intrinsic;
+      */
+      else // timeAction="display" is a less confusing default behaviour
+        return setTargetState_display;
       break;
   }
+  return null; // to make jslint happy
 };
 
 // Event handlers
@@ -918,11 +1208,8 @@ function smilTimeItem(domNode, parentNode, targetNode) {
 
   this.getNode = function() { return domNode; };
   this.target  = targetNode || domNode;
-  // XXX bunch of crap for OLDIE -- FIXME!
-  //if (!this.target)
-    //alert(domNode.nodeName);
   if (/^(par|seq|excl)$/i.test(this.target.nodeName))
-    this.target = null;
+    this.target = null; // dirty hack for OLDIE
 
   // http://www.w3.org/TR/SMIL3/smil-timing.html#Timing-IntegrationAttributes
   var timeAction = parentNode ? parentNode.timeAction : "intrinsic";
@@ -937,6 +1224,7 @@ function smilTimeItem(domNode, parentNode, targetNode) {
   // http://www.w3.org/TR/SMIL3/smil-timing.html#Timing-fillAttribute
   var fillDefault = parentNode ? parentNode.fillDefault : "remove";
   this.fill = this.parseAttribute("fill", fillDefault);
+  this.fillDefault = this.parseAttribute("fillDefault", null);
 
   // show/hide target nodes according to the 'timeAction' attribute
   // 'setTargetState' should be considered as a protected method
@@ -953,22 +1241,26 @@ function smilTimeItem(domNode, parentNode, targetNode) {
   this.onend      = this.parseAttribute("onend");
   var beginEvents = this.parseEvents(this.begin);
   var endEvents   = this.parseEvents(this.end);
-  var onbeginListener = function() {
+  function onbeginListener() {
     consoleLog("onbeginListener");
-    self.time_in = self.parentNode.getTime();
+    self.time_in = self.parentNode.getCurrentTime();
     self.time_out = isNaN(self.end) ? Infinity : self.end;
     //self.parentNode.onTimeUpdate();
     //self.show();
     self.parentNode.selectItem(self);
-  };
-  var onendListener = function() {
+  }
+  function onendListener() {
     consoleLog("onendListener");
     self.time_in = isNaN(self.begin) ? Infinity : self.begin;
-    self.time_out = self.parentNode.getTime();
+    self.time_out = self.parentNode.getCurrentTime();
     //self.parentNode.onTimeUpdate();
-    self.parentNode.currentIndex = -1;
+    // XXX dirty hack for <seq> nodes
+    if (self.parentNode.timeContainer == "seq")
+      self.parentNode.selectIndex(self.parentNode.currentIndex + 1);
+    else
+      self.parentNode.currentIndex = -1;
     self.hide();
-  };
+  }
 
   // main public methods, exposed to DOM via the 'timing' property
   var state = "";
@@ -976,15 +1268,21 @@ function smilTimeItem(domNode, parentNode, targetNode) {
   this.show  = function() {
     if (state == "active") return;
     state = "active";
+    if (0) try {
+      consoleLog(domNode.nodeName + "#" + domNode.id + " -- show()");
+    } catch(e) {}
     self.setTargetState(state);
     self.dispatchEvent("begin");
     self.addEventListener(endEvents, onendListener);
     self.removeEventListener(beginEvents, onbeginListener);
-    if (self.parentNode.timeContainer == "excl") consoleLog("show");
+    //if (self.parentNode.timeContainer == "excl") consoleLog("show");
   };
   this.hide  = function() {
     if (state == "done") return;
     state = "done";
+    if (0) try {
+      consoleLog(domNode.nodeName + "#" + domNode.id + " -- hide()");
+    } catch(e) {}
     if (self.fill != "hold")
       self.setTargetState(state);
     self.dispatchEvent("end");
@@ -995,19 +1293,26 @@ function smilTimeItem(domNode, parentNode, targetNode) {
   this.reset = function() {
     if (state == "idle") return;
     state = "idle";
+    if (0) try {
+      consoleLog(domNode.nodeName + "#" + domNode.id + " -- reset()");
+    } catch(e) {}
     self.setTargetState(state);
     self.addEventListener(beginEvents, onbeginListener);
     self.removeEventListener(endEvents, onendListener);
     //consoleLog("time node: " + self.getNode().nodeName + "/" + self.timeAction + " -- " + state);
-    if (self.parentNode.timeContainer == "excl") consoleLog("reset");
+    //if (self.parentNode.timeContainer == "excl") consoleLog("reset");
   };
-  try { // this raises a bug with external timesheets on OLDIE
+
+  // attach this object to the target element
+  if (targetNode && (targetNode != domNode)) { // timesheet item
+    // store the timesheet item reference in the 'extTiming' property
+    if (!targetNode.extTiming)
+      targetNode.extTiming = new Array();
+    targetNode.extTiming.push(this);
+    consoleLog("extTiming: " + targetNode.nodeName);
+  } else if (this.target) { // inline timing
+    // store the object reference in the 'timing' property
     domNode.timing = this;
-  } catch(e) {
-    // MSXML doesn't allow to attach an object to an XML document
-    // but it does allow to attach it as an attribute... :-/
-    // *.timing still won't work, though. FIXME.
-    domNode.setAttribute("timing", this);
   }
 }
 
@@ -1029,8 +1334,8 @@ function smilTimeItem(domNode, parentNode, targetNode) {
 |    .getMediaSync()           returns the 'syncMaster' time node, if any     |
 |                                                                             |
 |    .isPaused()               timer methods -- see smil[In|Ex]ternalTimer()  |
-|    .getTime()                                                               |
-|    .setTime()                                                               |
+|    .getCurrentTime()                                                        |
+|    .setCurrentTime()                                                        |
 |    .Play()                                                                  |
 |    .Pause()                                                                 |
 |    .Stop()                                                                  |
@@ -1041,34 +1346,37 @@ function smilTimeItem(domNode, parentNode, targetNode) {
 \*****************************************************************************/
 
 // Time Sync
-smilTimeContainer_generic.prototype.getTime = function() {};
-smilTimeContainer_generic.prototype.setTime = function() {};
-smilTimeContainer_generic.prototype.onTimeUpdate = function() {};
+smilTimeContainer_generic.prototype.getCurrentTime = function() {};
+smilTimeContainer_generic.prototype.setCurrentTime = function() {};
+smilTimeContainer_generic.prototype.onTimeUpdate   = function() {};
 
 // This method will return an array of all timeNodes that have a non-null
 // timeAction (i.e. where *.timeAction != "none").
 smilTimeContainer_generic.prototype.parseTimeNodes = function() {
   var timeNodes = new Array();
   var syncMasterNode = null;
+  var segment;
 
   // find all time nodes
   var children = this.getNode().childNodes;
   for (var i = 0; i < children.length; i++) {
-    var segment = children[i];
+    segment = children[i];
     var targets = new Array();
     if (segment.nodeType == 1) { // Node.ELEMENT_NODE
       if (segment.timing || segment.getAttribute("timing")) { // OLDIE
         // XXX already initialized: should never happen
-        consoleLog("!! " + segment.nodeName + " is already initialized !!");
-        alert("!! " + segment.nodeName + " is already initialized !!");
-        //var segment = segment.timing;
+        consoleWarn("!! " + segment.nodeName + " is already initialized !!");
+        //alert("!! " + segment.nodeName + " is already initialized !!");
+        //segment = segment.timing;
       }
-      //else if (segment.nodeName.toLowerCase == "smil:item") { // timesheet item
-      else if (/item$/i.test(segment.nodeName)) { // timesheet item
-        // TODO: create several time nodes
+      //else if (/^item$/i.test(segment.nodeName)) { // timesheet item
+      else if (/^(smil:){0,1}item$/i.test(segment.nodeName)) { // timesheet item
         var select = segment.getAttribute("select")
                   || segment.getAttribute("smil:select");
         targets = document.querySelectorAll(select);
+        // an <item> with child nodes is considered as a <par> container
+        if (segment.childNodes.length)
+          segment.setAttribute("timeContainer", "par");
       }
       else {
         targets.push(segment);
@@ -1078,7 +1386,7 @@ smilTimeContainer_generic.prototype.parseTimeNodes = function() {
         var target = targets[j];
         var node = null;
         if (segment != target) { // timesheet item
-          node = new smilTimeItem(segment, this, target);
+          node = new smilTimeElement(segment, this, target);
           var beginInc = node.parseAttribute("beginInc");
           if (isNaN(node.begin) && !isNaN(beginInc))
             node.begin = j * beginInc;
@@ -1099,7 +1407,7 @@ smilTimeContainer_generic.prototype.parseTimeNodes = function() {
 
   // add parentNode, previousSibling, nextSibling -- just in case
   for (i = 0; i < timeNodes.length; i++) {
-    var segment = timeNodes[i];
+    segment = timeNodes[i];
     if (i > 0)
       segment.previousSibling = timeNodes[i-1];
     if (i < timeNodes.length - 1)
@@ -1135,8 +1443,7 @@ smilTimeContainer_generic.prototype.getMediaSync = function(syncMasterNode) {
   // this timeContainer attribute directly points to the master clock,
   // which should be either an <audio> or a <video> element.
   var mediaSyncSelector = this.parseAttribute("mediaSync");
-  var mediaSyncNode = document.querySelector(mediaSyncSelector);
-  return mediaSyncNode || syncMasterNode;
+  return document.querySelector(mediaSyncSelector) || syncMasterNode;
 };
 
 // <seq|excl> time containers can only show one item at a time,
@@ -1170,11 +1477,11 @@ smilTimeContainer_generic.prototype.selectIndex = function(index) {
     if (!isNaN(time) && (time < Infinity)) {
       consoleLog("hashchange: set time to " + time);
       if (this.mediaSyncNode) { // continuous media
-        this.setTime(time + 0.1); // XXX hack
+        this.setCurrentTime(time + 0.1); // XXX hack
         this.onTimeUpdate();
         return;
       } else
-        this.setTime(time);
+        this.setCurrentTime(time);
     }
 
     // update the target state of all time nodes
@@ -1224,17 +1531,59 @@ function smilTimeContainer_generic(timeContainerNode, parentNode, timerate) {
 
   // timer
   this.mediaSyncNode = this.getMediaSync(result.syncMasterNode);
-  var timer = (this.mediaSyncNode) ? new smilExternalTimer(this.mediaSyncNode)
-                                   : new smilInternalTimer(timerate);
+  //var timer = (this.mediaSyncNode) ? new smilExternalTimer(this.mediaSyncNode)
+                                   //: new smilInternalTimer(timerate);
+  var timer = null;
+  this.mediaSyncAPI = this.mediaSyncNode;
+  if (this.mediaSyncNode) {
+    timer = new smilExternalTimer(this.mediaSyncNode);
+    if (this.mediaSyncNode.mediaAPI)
+      this.mediaSyncAPI = this.mediaSyncNode.mediaAPI;
+  } else {
+    timer = new smilInternalTimer(timerate);
+  }
+
   // XXX it would be simpler (?) to inherit from the timer
-  this.isPaused = timer.isPaused;
-  this.getTime  = timer.getTime;
-  this.setTime  = timer.setTime;
-  this.Play     = timer.Play;
-  this.Pause    = timer.Pause;
-  this.Stop     = timer.Stop;
+  this.isPaused       = timer.isPaused;
+  this.getCurrentTime = timer.getTime;
+  this.setCurrentTime = timer.setTime;
+  this.Play           = timer.Play;
+  this.Pause          = timer.Pause;
+  this.Stop           = timer.Stop;
   timer.onTimeUpdate = function() { self.onTimeUpdate(); };
-  
+
+  // event handlers (copied from smilTimeItem)
+  this.addEventListener    = smilTimeItem.prototype.addEventListener;
+  this.removeEventListener = smilTimeItem.prototype.removeEventListener;
+  this.dispatchEvent       = smilTimeItem.prototype.dispatchEvent;
+  this.onbegin    = this.parseAttribute("onbegin");
+  this.onend      = this.parseAttribute("onend");
+  var beginEvents = this.parseEvents(this.begin);
+  var endEvents   = this.parseEvents(this.end);
+  function onbeginListener() {
+    consoleLog("onbeginListener");
+    self.time_in = self.parentNode.getCurrentTime();
+    self.time_out = isNaN(self.end) ? Infinity : self.end;
+    //self.parentNode.onTimeUpdate();
+    //self.show();
+    self.parentNode.selectItem(self);
+  }
+  function onendListener() {
+    consoleLog("onendListener");
+    self.time_in = isNaN(self.begin) ? Infinity : self.begin;
+    self.time_out = self.parentNode.getCurrentTime();
+    //self.parentNode.onTimeUpdate();
+    self.parentNode.currentIndex = -1;
+    // XXX dirty hack for <seq> nodes
+    if (self.parentNode) {
+      if (self.parentNode.timeContainer == "seq")
+        self.parentNode.selectIndex(self.parentNode.currentIndex + 1);
+      else
+        self.parentNode.currentIndex = -1;
+      self.hide();
+    }
+  }
+
   // Public methods to show/hide/reset time container
   var state = "";
   this.isActive = function() { return (state == "active"); };
@@ -1244,6 +1593,9 @@ function smilTimeContainer_generic(timeContainerNode, parentNode, timerate) {
     self.Play();
     self.setTargetState(state);
     //consoleLog("timeContainer: " + self.timeContainer + " / " + self.timeAction + " -- " + state);
+    self.dispatchEvent("begin");
+    self.addEventListener(endEvents, onendListener);
+    self.removeEventListener(beginEvents, onbeginListener);
     this.currentIndex = -1;
   };
   this.hide  = function() {
@@ -1257,6 +1609,9 @@ function smilTimeContainer_generic(timeContainerNode, parentNode, timerate) {
         self.timeNodes[i].setTargetState("done");
     }
     //consoleLog("timeContainer: " + self.timeContainer + " / " + self.timeAction + " -- " + state);
+    self.dispatchEvent("end");
+    self.addEventListener(beginEvents, onbeginListener);
+    self.removeEventListener(endEvents, onendListener);
     // do not reset currentIndex in this case
   };
   this.reset = function() {
@@ -1267,11 +1622,13 @@ function smilTimeContainer_generic(timeContainerNode, parentNode, timerate) {
     for (var i = 0; i < self.timeNodes.length; i++)
       self.timeNodes[i].reset();
     //consoleLog("timeContainer: " + self.timeContainer + " / " + self.timeAction + " -- " + state);
+    self.addEventListener(beginEvents, onbeginListener);
+    self.removeEventListener(endEvents, onendListener);
     this.currentIndex = -1;
   };
 
-  // experimental: attach this timeContainer to the HTML node
-  //this.getNode().timing = this; // moved to smilTimeItem()
+  // keep a reference of this timeContainer
+  TIMECONTAINERS.push(this);
 }
 
 
@@ -1307,7 +1664,7 @@ smilTimeContainer_par.prototype.computeTimeNodes = function() {
   }
 };
 smilTimeContainer_par.prototype.onTimeUpdate = function() {
-  var time = this.getTime();
+  var time = this.getCurrentTime();
   // FIXME handle integer values of repeatCount
   if (this.repeatCount >= Infinity)
     time = time % this.dur;
@@ -1335,7 +1692,7 @@ function smilTimeContainer_par(domNode, parentNode, timerate) {
   this.selectIndex = function(index){};
   this.selectItem  = function(item){
     if (!isNaN(item.time_in))
-      this.setTime(item.time_in);
+      this.setCurrentTime(item.time_in);
     item.show();
   };
 }
@@ -1388,7 +1745,7 @@ smilTimeContainer_excl.prototype.computeTimeNodes = function() {
     //this.end = segment.time_out;
 };
 smilTimeContainer_excl.prototype.onTimeUpdate = function() {
-  var time = this.getTime();
+  var time = this.getCurrentTime();
   // FIXME handle integer values of repeatCount
   if (this.repeatCount >= Infinity)
     time = time % this.dur;
@@ -1519,7 +1876,8 @@ smilTimeContainer_seq.prototype.computeTimeNodes = function() {
     this.end = segment.time_out + this.begin;
 };
 smilTimeContainer_seq.prototype.onTimeUpdate = function() {
-  var time = this.getTime();
+  var time = this.getCurrentTime();
+  var withinBounds, outOfBounds, segment;
   // FIXME handle integer values of repeatCount
   if (this.repeatCount >= Infinity)
     time = time % this.dur;
@@ -1528,10 +1886,10 @@ smilTimeContainer_seq.prototype.onTimeUpdate = function() {
   if (this.currentIndex >= 0) {
     //var time_in  = this.timeNodes[this.currentIndex].time_in;
     //var time_out = this.timeNodes[this.currentIndex].time_out;
-    var segment = this.timeNodes[this.currentIndex];
+    segment = this.timeNodes[this.currentIndex];
     // note: 'outOfBounds' is false if time_in and time_out are both 'NaN'
-    var outOfBounds  = (time < segment.time_in) || (time >= segment.time_out);
-    var withinBounds = (time >= segment.time_in) && (time < segment.time_out);
+    outOfBounds  = (time < segment.time_in) || (time >= segment.time_out);
+    withinBounds = (time >= segment.time_in) && (time < segment.time_out);
     if (withinBounds)
       return;
     else
@@ -1547,7 +1905,7 @@ smilTimeContainer_seq.prototype.onTimeUpdate = function() {
     var time_in  = this.timeNodes[this.currentIndex + 1].time_in;
     var time_out = this.timeNodes[this.currentIndex + 1].time_out;
     // note: 'outOfBounds' is false if time_in and time_out are both 'NaN'
-    var outOfBounds = (time < time_in) || (time >= time_out);
+    outOfBounds = (time < time_in) || (time >= time_out);
     if ((time_in >= Infinity) || !outOfBounds) {
       this.currentIndex++;
       this.timeNodes[this.currentIndex].show();
@@ -1560,8 +1918,8 @@ smilTimeContainer_seq.prototype.onTimeUpdate = function() {
   var index = -1;
   var active = false;
   for (var i = 0; i < this.timeNodes.length; i++) {
-    var segment = this.timeNodes[i];
-    var withinBounds = (time >= segment.time_in) && (time < segment.time_out);
+    segment = this.timeNodes[i];
+    withinBounds = (time >= segment.time_in) && (time < segment.time_out);
     if (time < segment.time_in)
       segment.reset();
     else if (time >= segment.time_out)
@@ -1634,9 +1992,9 @@ function smilTimeContainer_seq(domNode, parentNode, timerate) {
 |                                                                             |
 \*****************************************************************************/
 
-function smilTimeElement(domNode, parentNode, timerate) {
+function smilTimeElement(domNode, parentNode, targetNode, timerate) {
   //if (domNode.timing) consoleLog(domNode.nodeName + " is already intialized.");
-  smilTimeItem.call(this, domNode, parentNode);
+  smilTimeItem.call(this, domNode, parentNode, targetNode);
   switch (this.timeContainer) {
     case "par":
       smilTimeContainer_par.call(this, domNode, parentNode, timerate);
@@ -1650,6 +2008,7 @@ function smilTimeElement(domNode, parentNode, timerate) {
     default: // time item
       this.timeContainer = null;
       this.timeNodes = new Array();
+      break;
   }
 
   // experimental: attach this timeContainer to the HTML node
@@ -1661,5 +2020,62 @@ function smilTimeElement(domNode, parentNode, timerate) {
   // define show/hide/reset here rather than in
   // smilTimeItem/smilTimeContainer_generic?
 }
+
+/*****************************************************************************\
+|                                                                             |
+|  Public API                                                                 |
+|                                                                             |
+|*****************************************************************************|
+|                                                                             |
+|  document.createTimeContainer(domNode, parentNode, targetNode, timerate)    |
+|                                                                             |
+|  document.getTimeNodesByTarget(node)                                        |
+|  document.getTimeContainersByTarget(node)                                   |
+|  document.getTimeContainersByTagName(tagName)                               |
+|                                                                             |
+\*****************************************************************************/
+
+document.createTimeContainer = function(domNode, parentNode, targetNode, timerate) {
+  return new smilTimeElement(domNode, parentNode, targetNode, timerate);
+};
+
+document.getTimeNodesByTarget = function(node) {
+  var timeNodes = [];
+  if (!node) return timeNodes;
+  if (node.timing)    // inline SMIL Timing
+    timeNodes.push(node.timing);
+  if (node.extTiming) { // SMIL Timesheet
+    for (var i = 0; i < node.extTiming.length; i++)
+      timeNodes.push(node.extTiming[i]);
+  }
+  timeNodes.item = function(index) { return timeNodes[index]; };
+  return timeNodes;
+};
+
+document.getTimeContainersByTarget = function(node) {
+  var contNodes = [];
+  var timeNodes = document.getTimeNodesByTarget(node);
+  for (var i = 0; i < timeNodes.length; i++) {
+    if (timeNodes[i].timeContainer)
+      contNodes.push(timeNodes[i]);
+  }
+  contNodes.item = function(index) { return contNodes[index]; };
+  return contNodes;
+};
+
+document.getTimeContainersByTagName = function(tagName) {
+  var contNodes = [];
+  tagName = tagName.toLowerCase();
+  if ((/^(par|seq|excl)$/).test(tagName)) {
+    for (var i = 0; i < TIMECONTAINERS.length; i++) {
+      if (TIMECONTAINERS[i].timeContainer.toLowerCase() == tagName)
+        contNodes.push(TIMECONTAINERS[i]);
+    }
+  } else if (tagName == "*") {
+    contNodes = TIMECONTAINERS;
+  }
+  contNodes.item = function(index) { return contNodes[index]; };
+  return contNodes;
+};
 
 })();
