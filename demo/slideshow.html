@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> HTML Timing :: Slideshow Engine </title>
+  <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/slideshow.css">
+  <script type="text/javascript" src="../timesheets.js"></script>
+  <script type="text/javascript" src="../timesheets-navigation.js"></script>
+</head>
+<body>
+  <div id="demo">
+    <div id="slideshow" class="highlight"
+         data-timecontainer="seq"
+         data-navigation="arrows; hash"
+         data-first = "first.click"
+         data-prev  = "prev.click"
+         data-next  = "next.click"
+         data-last  = "last.click">
+
+      <div id="slide1">
+        <h2> Slideshows With SMIL/Timing </h2>
+        <p>
+          A <code>&lt;seq&gt;</code> time container is a good basis for a
+          slideshow engine:
+        </p>
+        <ul>
+          <li>
+            each slide is a child of this main <code>&lt;seq&gt;</code> time
+            container
+          </li>
+          <li>
+            the <code>first|prev|next|last</code> attributes provide a navigation
+            menu "out of the box"
+          </li>
+          <li>
+            setting an ID attribute to each slide allows to use hyperlinks to get
+            a direct access
+          </li>
+        </ul>
+      </div>
+
+      <div id="slide1" class="transition" data-timecontainer="par" data-dur="20s">
+        <h2> Progressive Display with &lt;par&gt; </h2>
+        <ul data-timecontainer="par">
+          <li data-begin="0:02"> On this slide </li>
+          <li data-begin="0:04"> the list items </li>
+          <li data-begin="0:06"> appear one after another </li>
+          <li data-begin="0:08"> at 2s intervals. </li>
+        </ul>
+        <p data-begin="0:10">
+          The next slide will appear in 10s or if you click
+          on the "Next" button below — whatever comes first.
+        </p>
+      </div>
+
+      <div id="slide2" class="transition" data-timecontainer="par">
+        <h2> Incremental Display with &lt;seq&gt; </h2>
+        <ul data-timecontainer="seq" data-next="slide2.click">
+          <li data-fill="hold"> Click on this slide </li>
+          <li data-fill="hold"> and the list items  </li>
+          <li data-fill="hold"> will appear         </li>
+          <li data-fill="hold"> one after another.  </li>
+        </ul>
+        <p data-begin="0:15">
+          (you still have to click the "next" button to get the next slide)
+        </p>
+      </div>
+
+      <div id="slide3" data-timecontainer="par">
+        <h2> Outlines with event-values </h2>
+        <ul class="outline" data-timecontainer="par" data-timeaction="class:active">
+          <li data-begin="mouseover" data-end="mouseout">
+            hover me
+            <ul>
+              <li> this item is collapsed by default </li>
+              <li> this item is expanded when active </li>
+            </ul>
+          </li>
+          <li data-begin="click" data-end="click">
+            click me
+            <ul>
+              <li> this item is collapsed by default </li>
+              <li> this item is expanded when active </li>
+            </ul>
+          </li>
+          <li data-begin="click" data-end="click">
+            click me
+            <ul class="expand">
+              <li> this item is expanded by default </li>
+              <li> this item is collapsed when active </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div id="slide4">
+        <h2> And More! </h2>
+        <ul>
+          <li>
+            define your own transitions with CSS3
+          </li>
+          <li>
+            define user interactions with <a
+            href="http://www.w3.org/TR/SMIL3/smil-timing.html#Timing-EventValueSyntax">event-values</a>
+          </li>
+          <li>
+            include audio|video clips in any slide
+          </li>
+          <li>
+            sync your slides with an audio or video track
+          </li>
+        </ul>
+        <p>
+          A slideshow alone doesn’t bring much information, but it can get much
+          more useful <a href="audio.html">when the speaker’s voice is sync’ed!</a>
+        </p>
+      </div>
+
+      <p class="menu" data-timeaction="none">
+        <button id="first" title="first slide">       |«     </button>
+        <button id="prev"  title="previous slide"> &lt; prev </button>
+        <button id="next"  title="next slide">     next &gt; </button>
+        <button id="last"  title="last slide">         »|    </button>
+      </p>
+
+    </div>
+  </div>
+</body>
+</html>

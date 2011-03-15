@@ -1,0 +1,133 @@
+/*@import url(../../style/layout.css);*/
+/*@import url(../../style/syntax.css);*/
+
+/* layout */
+#slideshow {
+  width: 600px;
+  height: 360px;
+  overflow: none;
+  position: relative;
+  padding: 0;
+}
+#slideshow, #slideshow p, #slideshow li {
+  /*font-size: 1.2em;*/
+  margin-top: 0.5em;
+}
+#slideshow li p, #slideshow li li {
+  font-size: 0.9em;
+  margin-top: 0.5em;
+}
+#slideshow .menu {
+  position: absolute;
+  /*bottom: 0;*/
+  /*right: 2em;*/
+  /*font-size: 0.75em;*/
+  bottom: 1em;
+  right: 0;
+}
+#slideshow h2 {
+  margin: 0.2em 0;
+  /*font-size: 1.5em;*/
+  color: brown;
+}
+#slideshow div {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 500px;
+  height: 100%;
+  padding: 0;
+  margin: 0.8em 50px;
+}
+#slideshow pre {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 550px;
+  height: 100%;
+  margin: 0;
+  padding: 0 20px;
+  overflow: auto;
+  font-size: 0.85em;
+  border-left: 10px solid #ddf;
+}
+* html #slideshow pre {
+  /* IE6 hack, ignored by other browsers */
+  height: 360px;
+}
+
+/* outline */
+#slideshow .outline li {
+  list-style-type: square;
+}
+#slideshow .outline li:hover {
+  list-style-type: circle;
+  cursor: pointer;
+}
+#slideshow .outline li ul {
+  display: none;
+}
+#slideshow .outline li.active ul {
+  display: block;
+}
+#slideshow .outline li ul.expand {
+  display: block;
+}
+#slideshow .outline li.active ul.expand {
+  display: none;
+}
+
+/* slide transition: slide-in */
+#slideshow {
+  overflow: hidden;
+}
+#slideshow > *,
+.transition  * {
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+}
+#slideshow > *[smil=idle],
+.transition  *[smil=idle] {
+  opacity: 0;
+  transform         : translate(+640px);
+  -o-transform      : translate(+640px);
+  -moz-transform    : translate(+640px);
+  -webkit-transform : translate(+640px);
+}
+#slideshow > *[smil=active],
+.transition  *[smil=active] {
+  opacity: 1;
+  z-index: 1;
+}
+#slideshow > *[smil=done],
+.transition  *[smil=done] {
+  opacity: 0;
+  transform         : translate(-640px);
+  -o-transform      : translate(-640px);
+  -moz-transform    : translate(-640px);
+  -webkit-transform : translate(-640px);
+}
+
+/* navigation menu */
+p.menu {
+  z-index: 2;
+}
+p.menu button {
+  opacity: 1;
+  /* no transition for the menu! */
+  transition         : none;
+  -o-transition      : none;
+  -moz-transition    : none;
+  -webkit-transition : none;
+}
+p.menu button[smil=idle] {
+  opacity: 0.5;
+  /* no transition for the menu! */
+  transform         : none;
+  -o-transform      : none;
+  -moz-transform    : none;
+  -webkit-transform : none;
+}
+

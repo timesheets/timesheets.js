@@ -1,0 +1,56 @@
+/* transitions */
+body > div {
+	overflow-x: hidden;
+}
+#slideshow * {
+	/* define a 1s transition on all CSS properties */
+	transition         : all 1s;
+	-o-transition      : all 1s;
+	-moz-transition    : all 1s;
+	-webkit-transition : all 1s;
+}
+#slideshow div[smil=done] {
+	opacity: 0;
+	transform         : scale(0.3) translate(-200%);
+	-o-transform      : scale(0.3) translate(-200%);
+	-moz-transform    : scale(0.3) translate(-200%);
+	-webkit-transform : scale(0.3) translate(-200%);
+}
+#slideshow *[smil=idle], #slideshow *[smil=done] {
+	opacity: 0;
+}
+#slideshow *[smil=active] {
+	opacity: 1;
+	z-index: 10;
+}
+#slideshow div * {
+	transition         : all 0.5s;
+	-o-transition      : all 0.5s;
+	-moz-transition    : all 0.5s;
+	-webkit-transition : all 0.5s;
+}
+#slideshow div *[smil=idle] {
+	transform         : scale(0) translate(+900px);
+	-o-transform      : scale(0) translate(+900px);
+	-moz-transform    : scale(0) translate(+900px);
+	-webkit-transform : scale(0) translate(+900px);
+}
+#slideshow .menu {
+	/* disable tranformations on the "learn more / restart" menu */
+	transform         : none !important;
+	-o-transform      : none !important;
+	-moz-transform    : none !important;
+	-webkit-transform : none !important;
+	/* use a long opacity transition instead */
+	transition         : opacity 3s;
+	-o-transition      : opacity 3s;
+	-moz-transition    : opacity 3s;
+	-webkit-transition : opacity 3s;
+}
+#slideshow button {
+	/* disable transition on the "restart" button */
+	transition         : none 0s;
+	-o-transition      : none 0s;
+	-moz-transition    : none 0s;
+	-webkit-transition : none 0s;
+}
