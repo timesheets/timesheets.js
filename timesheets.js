@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 Fabien Cazenave, INRIA <http://wam.inrialpes.fr/>
+/* Copyright (c) 2010-2011 Fabien Cazenave, INRIA <http://wam.inrialpes.fr/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
  * version     : 0.4pre
- * last change : 2011-03-12
+ * last change : 2011-03-14
  *
  * TODO:
  *  • redesign EVENTS to make it compatible with jQuery
@@ -286,7 +286,7 @@ function consoleWarn(message) {
 }
 // predefined CSS selectors to parse time containers and external timesheets
 var CSSQUERY = {
-  timeContainer: "*[data-timecontainer], *[timeContainer], par, seq, excl",
+  timeContainer: "*[data-timecontainer], *[smil-timecontainer], *[timeContainer], par, seq, excl",
   extTimesheets: "link[rel=timesheet]",
   parTimeNodes: "" // TODO
 };
@@ -398,6 +398,7 @@ if (!document.querySelectorAll) {
       for (i = 0; i < tmp.length; i++) {
         if (re.test(tmp[i].nodeName)
             || tmp[i].getAttribute("data-timecontainer")
+            || tmp[i].getAttribute("smil-timecontainer")
             || tmp[i].getAttribute("timeContainer")) {
           results.push(tmp[i]);
         }
@@ -617,8 +618,9 @@ function parseTimeContainerNode(node) {
     // the "timing" property isn't set: this node hasn't been parsed yet.
     var smilPlayer = new smilTimeElement(node);
     smilPlayer.show();
-  } else
+  } else {
     consoleLog("Child time container found: " + node.nodeName);
+	}
 }
 function parseTimesheetNode(timesheetNode) {
   var containers = timesheetNode.childNodes;
@@ -1049,12 +1051,11 @@ smilTimeItem.prototype.parseAttribute = function(attrName, dValue) {
   // get raw attribute value
   if ((attrName == "timeContainer") && (/^(seq|par|excl)$/i).test(nodeName))
     value = nodeName;
-  else if (node.getAttribute(attrName))
-    value = node.getAttribute(attrName);
-  else if (node.getAttribute("smil:" + attrName))
-    value = node.getAttribute("smil:" + attrName);
   else
-    value = node.getAttribute("data-" + attrName.toLowerCase());
+    value = node.getAttribute(attrName)
+         || node.getAttribute("data-" + attrName.toLowerCase())
+         || node.getAttribute("smil-" + attrName.toLowerCase())
+         || node.getAttribute("smil:" + attrName);
 
   if (!value || !value.length)
     return dValue; // default value or undefined
