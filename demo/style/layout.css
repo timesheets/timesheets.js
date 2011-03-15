@@ -1,28 +1,28 @@
 html {
-	background-color: #ddd; /* Opera 10.x doesn't support CSS gradients */
-	background:      linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
-	background:   -o-linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
-	background: -moz-linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
-	background: -webkit-gradient(linear, left top, left bottom, from(black), to(white), color-stop(50%, #eaeaea));
-	min-height: 100%;
+  background-color: #ddd; /* Opera 10.x doesn't support CSS gradients */
+  background:      linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
+  background:   -o-linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
+  background: -moz-linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
+  background: -webkit-gradient(linear, left top, left bottom, from(black), to(white), color-stop(50%, #eaeaea));
+  min-height: 100%;
 }
 /*
 body {
-	position: relative;
-	width: 900px;
-	height: 570px;
-	margin: 30px auto;
+  position: relative;
+  width: 900px;
+  height: 570px;
+  margin: 30px auto;
 }
 p#transitionSelector {
-	position: absolute;
-	bottom: 0;
-	right: 120px;
+  position: absolute;
+  bottom: 0;
+  right: 120px;
 }
 */
 #demo {
-	width: 800px;
-	margin: 0 auto;
-	padding: 1em 0;
+  width: 800px;
+  margin: 0 auto;
+  padding: 1em 0;
 }
 .highlight {
   /*width: 400px;*/
@@ -43,41 +43,41 @@ p#transitionSelector {
 
 /* navigation menu */
 .menu button {
-	display: block;
-	cursor: pointer;
-	float: left;
-	/* min-width: 2em; */ /* bugs on IE7 */
-	text-align: center;
-	background-color: #ddf;
-	border: 1px solid #cce;
-	margin: 1px;
-	padding: 1px 4px;
-	user-select         : none;
-	-o-user-select      : none;
-	-moz-user-select    : none;
-	-webkit-user-select : none;
+  display: block;
+  cursor: pointer;
+  float: left;
+  /* min-width: 2em; */ /* bugs on IE7 */
+  text-align: center;
+  background-color: #ddf;
+  border: 1px solid #cce;
+  margin: 1px;
+  padding: 1px 4px;
+  user-select         : none;
+  -o-user-select      : none;
+  -moz-user-select    : none;
+  -webkit-user-select : none;
 }
 .menu button:hover {
-	background-color: #ccf;
+  background-color: #ccf;
 }
 .menu button:first-child {
-	border-top-left-radius         : 1em;
-	-o-border-top-left-radius      : 1em;
-	-moz-border-radius-topleft     : 1em;
-	-webkit-border-top-left-radius : 1em;
-	border-bottom-left-radius         : 1em;
-	-o-border-bottom-left-radius      : 1em;
-	-moz-border-radius-bottomleft     : 1em;
-	-webkit-border-bottom-left-radius : 1em;
+  border-top-left-radius         : 1em;
+  -o-border-top-left-radius      : 1em;
+  -moz-border-radius-topleft     : 1em;
+  -webkit-border-top-left-radius : 1em;
+  border-bottom-left-radius         : 1em;
+  -o-border-bottom-left-radius      : 1em;
+  -moz-border-radius-bottomleft     : 1em;
+  -webkit-border-bottom-left-radius : 1em;
 }
 .menu button:last-child {
-	border-top-right-radius         : 1em;
-	-o-border-top-right-radius      : 1em;
-	-moz-border-radius-topright     : 1em;
-	-webkit-border-top-right-radius : 1em;
-	border-bottom-right-radius         : 1em;
-	-o-border-bottom-right-radius      : 1em;
-	-moz-border-radius-bottomright     : 1em;
-	-webkit-border-bottom-right-radius : 1em;
+  border-top-right-radius         : 1em;
+  -o-border-top-right-radius      : 1em;
+  -moz-border-radius-topright     : 1em;
+  -webkit-border-top-right-radius : 1em;
+  border-bottom-right-radius         : 1em;
+  -o-border-bottom-right-radius      : 1em;
+  -moz-border-radius-bottomright     : 1em;
+  -webkit-border-bottom-right-radius : 1em;
 }
 

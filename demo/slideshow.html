@@ -11,12 +11,12 @@
 <body>
   <div id="demo">
     <div id="slideshow" class="highlight"
-         data-timecontainer="seq"
-         data-navigation="arrows; hash"
-         data-first = "first.click"
-         data-prev  = "prev.click"
-         data-next  = "next.click"
-         data-last  = "last.click">
+         data-timecontainer = "seq"
+         data-navigation    = "arrows; hash; scroll;"
+         data-first         = "first.click"
+         data-prev          = "prev.click"
+         data-next          = "next.click"
+         data-last          = "last.click">
 
       <div id="slide1">
         <h2> Slideshows With SMIL/Timing </h2>
@@ -40,7 +40,7 @@
         </ul>
       </div>
 
-      <div id="slide1" class="transition" data-timecontainer="par" data-dur="20s">
+      <div id="slide2" class="transition" data-timecontainer="par" data-dur="20s">
         <h2> Progressive Display with &lt;par&gt; </h2>
         <ul data-timecontainer="par">
           <li data-begin="0:02"> On this slide </li>
@@ -54,7 +54,7 @@
         </p>
       </div>
 
-      <div id="slide2" class="transition" data-timecontainer="par">
+      <div id="slide3" class="transition" data-timecontainer="par">
         <h2> Incremental Display with &lt;seq&gt; </h2>
         <ul data-timecontainer="seq" data-next="slide2.click">
           <li data-fill="hold"> Click on this slide </li>
@@ -67,7 +67,7 @@
         </p>
       </div>
 
-      <div id="slide3" data-timecontainer="par">
+      <div id="slide4" data-timecontainer="par">
         <h2> Outlines with event-values </h2>
         <ul class="outline" data-timecontainer="par" data-timeaction="class:active">
           <li data-begin="mouseover" data-end="mouseout">
@@ -94,7 +94,7 @@
         </ul>
       </div>
 
-      <div id="slide4">
+      <div id="slide5">
         <h2> And More! </h2>
         <ul>
           <li>

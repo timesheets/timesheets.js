@@ -1,6 +1,3 @@
-/*@import url(../../style/layout.css);*/
-/*@import url(../../style/syntax.css);*/
-
 /* layout */
 #slideshow {
   width: 600px;
@@ -10,7 +7,7 @@
   padding: 0;
 }
 #slideshow, #slideshow p, #slideshow li {
-  /*font-size: 1.2em;*/
+  font-size: 1.2em;
   margin-top: 0.5em;
 }
 #slideshow li p, #slideshow li li {
@@ -22,22 +19,26 @@
   /*bottom: 0;*/
   /*right: 2em;*/
   /*font-size: 0.75em;*/
-  bottom: 1em;
-  right: 0;
+  bottom: 0.5em;
+  right: 1em;
+	margin: 0;
 }
 #slideshow h2 {
   margin: 0.2em 0;
-  /*font-size: 1.5em;*/
+  font-size: 1.5em;
   color: brown;
+	border-bottom: 1px inset brown;
 }
 #slideshow div {
   opacity: 0;
   position: absolute;
   top: 0;
   width: 500px;
-  height: 100%;
+  /*height: 100%;*/
+  height: 340px;
   padding: 0;
-  margin: 0.8em 50px;
+  /*margin: 0.8em 50px;*/
+  margin: 10px 50px;
 }
 #slideshow pre {
   opacity: 0;

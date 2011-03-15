@@ -620,7 +620,7 @@ function parseTimeContainerNode(node) {
     smilPlayer.show();
   } else {
     consoleLog("Child time container found: " + node.nodeName);
-	}
+  }
 }
 function parseTimesheetNode(timesheetNode) {
   var containers = timesheetNode.childNodes;

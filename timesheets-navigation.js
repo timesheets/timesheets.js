@@ -40,41 +40,53 @@
 \*****************************************************************************/
 
 function bindNavControls(timeContainer, navigation) {
-	function hasControl(control) {
+  function hasControl(control) {
     var re = new RegExp("(^|[\\s;]+)" + control + "([\\s;]+|$)", "i");
-		return re.test(navigation);
-	}
+    return re.test(navigation);
+  }
 
-	// get slideshow node
+  // get slideshow node
   var slideshow = timeContainer.target; // works fine with inline timing but...
-	if (!slideshow) // ...sometimes the timeContainer is defined in a timesheet
-		slideshow = timeContainer.timeNodes[0].target.parentNode;
+  if (!slideshow) // ...sometimes the timeContainer is defined in a timesheet
+    slideshow = timeContainer.timeNodes[0].target.parentNode;
 
-  // keyboard events
+  // keyboard events: http://unixpapa.com/js/key.html
   if (hasControl("arrows")) EVENTS.bind(document, "keydown", function(e) {
+    var index = timeContainer.currentIndex;     // index of the current slide
+    var count = timeContainer.timeNodes.length; // number of slides
+    var slide = timeContainer.timeNodes[index]; // current slide
     switch(e.keyCode) {
-      case 35: // end key => last slide
-        EVENTS.preventDefault(e);
-				timeContainer.selectIndex(timeContainer.timeNodes.length - 1);
-        break;
-      case 36: // home key => first slide
-        EVENTS.preventDefault(e);
-				timeContainer.selectIndex(0);
-        break;
-      case 37: // left arrow key => previous slide
-        EVENTS.preventDefault(e);
-				timeContainer.selectIndex(timeContainer.currentIndex - 1);
-        break;
-      case 39: // right arrow key => next slide
-        EVENTS.preventDefault(e);
-					timeContainer.selectIndex(timeContainer.currentIndex + 1);
-        break;
       case 32: // spacebar => next/prev slide
         EVENTS.preventDefault(e);
         if (e.shiftKey)
-					timeContainer.selectIndex(timeContainer.currentIndex - 1);
+          timeContainer.selectIndex(index - 1);
         else
-					timeContainer.selectIndex(timeContainer.currentIndex + 1);
+          timeContainer.selectIndex(index + 1);
+        break;
+      case 35: // end key => last slide
+        EVENTS.preventDefault(e);
+        timeContainer.selectIndex(count - 1);
+        break;
+      case 36: // home key => first slide
+        EVENTS.preventDefault(e);
+        timeContainer.selectIndex(0);
+        break;
+      case 37: // left arrow key => previous slide
+        EVENTS.preventDefault(e);
+        timeContainer.selectIndex(index - 1);
+        break;
+      case 38: // up arrow key => restart current slide
+        EVENTS.preventDefault(e);
+        slide.reset();
+        slide.show();
+        break;
+      case 39: // right arrow key => next slide
+        EVENTS.preventDefault(e);
+        timeContainer.selectIndex(index + 1);
+        break;
+      case 40: // down arrow key => click on current slide
+        EVENTS.preventDefault(e);
+        EVENTS.trigger(slide.target, "click");
         break;
       default:
         break;
@@ -86,9 +98,9 @@ function bindNavControls(timeContainer, navigation) {
     // IE doesn't support event.which, relying on event.button instead
     var button = event.which || ([0,1,3,0,2])[event.button];
     if (button == 1)      // left click => next slide
-			timeContainer.selectIndex(timeContainer.currentIndex + 1);
+      timeContainer.selectIndex(timeContainer.currentIndex + 1);
     else if (button == 2) // middle click => previous slide
-			timeContainer.selectIndex(timeContainer.currentIndex - 1);
+      timeContainer.selectIndex(timeContainer.currentIndex - 1);
   });
 
   // mouse scroll: http://adomas.org/javascript-mouse-wheel/
@@ -112,9 +124,9 @@ function bindNavControls(timeContainer, navigation) {
       }
       // prev/next slide
       if (delta < 0)
-				timeContainer.selectIndex(timeContainer.currentIndex + 1);
+        timeContainer.selectIndex(timeContainer.currentIndex + 1);
       else if (delta > 0)
-				timeContainer.selectIndex(timeContainer.currentIndex - 1);
+        timeContainer.selectIndex(timeContainer.currentIndex - 1);
     }
     if (window.addEventListener) // DOMMouseScroll is specific to Mozilla
       slideshow.addEventListener("DOMMouseScroll", onMouseWheel, false);
@@ -140,9 +152,9 @@ EVENTS.onSMILReady(function() {
     // parse the "navigation" attribute and get the target element
     // (works with "navigation", "data-navigation", "smil:navigation" and so on)
     var navigation = containers[i].parseAttribute("navigation");
-		if (navigation) {
-			bindNavControls(containers[i], navigation);
-		}
+    if (navigation) {
+      bindNavControls(containers[i], navigation);
+    }
   }
 });
 
