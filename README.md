@@ -10,10 +10,10 @@ standards to synchronize HTML content.
 
 W3C References:
 
-* [http://www.w3.org/TR/SMIL3/smil-timing.html]
-* [http://www.w3.org/TR/timesheets/]
+* [http://www.w3.org/TR/SMIL3/smil-timing.html](http://www.w3.org/TR/SMIL3/smil-timing.html)
+* [http://www.w3.org/TR/timesheets/](http://www.w3.org/TR/timesheets/)
 
 Demos and Documentation:
 
-* [http://wam.inrialpes.fr/timesheets/]
+* [http://wam.inrialpes.fr/timesheets/](http://wam.inrialpes.fr/timesheets/)
 

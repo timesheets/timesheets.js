@@ -10,8 +10,7 @@ Here’s a set of basic demos to get you started with SMIL-Timing.
 > has been applied to the Mozilla Firefox 4 beta “[first
 > run](http://www.mozilla.com/fr/firefox/4.0b1/firstrun/)” page…
 
-[http://wam.inrialpes.fr/timesheets/public/audio]
-(http://wam.inrialpes.fr/timesheets/public/audio)
+[http://wam.inrialpes.fr/timesheets/public/audio](http://wam.inrialpes.fr/timesheets/public/audio)
 
 > Here is a SMIL/Timing adaptation of [this HTML5/Audio
 > demo](http://apm.ircam.fr/page/audio-tag/) (proposed by Samuel Goldszmidt,
