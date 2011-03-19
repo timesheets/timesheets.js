@@ -23,8 +23,8 @@ Explorer 6/7/8, see: <http://wam.inrialpes.fr/timesheets/docs/oldie.html>
 
 * [html5shiv](http://code.google.com/p/html5shiv/) (1.5KB, gzipped)
 
-> We recommend using an HTML5 doctype. However, IE<9 can’t apply style rules on
-> “unknown” elements such as <header>, <footer>, <article>, <section>, etc.
+> We recommend using an HTML5 doctype. However, IE\<9 can’t apply style rules on
+> “unknown” elements such as \<header\>, \<footer\>, \<article\>, <section>, etc.
 > — html5shiv is a perfect workaround for that.
 
 These JavaScript libraries are available under MIT license.
