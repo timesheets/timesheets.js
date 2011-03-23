@@ -4,14 +4,16 @@
   <meta charset="utf-8">
   <title> HTML Timing :: Slideshow Engine </title>
   <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/transitions.css">
   <link rel="stylesheet" type="text/css" href="style/slideshow.css">
   <script type="text/javascript" src="../timesheets.js"></script>
   <script type="text/javascript" src="../timesheets-navigation.js"></script>
 </head>
-<body>
+<body class="carousel">
   <div id="demo">
-    <div id="slideshow" class="highlight"
+    <div id="slideshow"
          data-timecontainer = "seq"
+         data-timeaction    = "intrinsic"
          data-navigation    = "arrows; hash; scroll;"
          data-first         = "first.click"
          data-prev          = "prev.click"
@@ -56,7 +58,7 @@
 
       <div id="slide3" class="transition" data-timecontainer="par">
         <h2> Incremental Display with &lt;seq&gt; </h2>
-        <ul data-timecontainer="seq" data-next="slide2.click">
+        <ul data-timecontainer="seq" data-next="slide3.click">
           <li data-fill="hold"> Click on this slide </li>
           <li data-fill="hold"> and the list items  </li>
           <li data-fill="hold"> will appear         </li>
@@ -126,5 +128,21 @@
 
     </div>
   </div>
+
+  <p id="transitionSelector">
+    <strong>CSS transition</strong>:
+    <button class="none"
+      onclick="document.body.className='none';">none</button> |
+    <button class="crossfade"
+      onclick="document.body.className='crossfade';">cross-fade</button> |
+    <button class="fadethrough"
+      onclick="document.body.className='fadethrough';">fade-through</button> |
+    <button class="carousel"
+      onclick="document.body.className='carousel';">carousel</button> |
+    <button class="slide"
+      onclick="document.body.className='slide';">slide-in</button> |
+    <button class="toss"
+      onclick="document.body.className='toss';">toss</button>
+  </p>
 </body>
 </html>

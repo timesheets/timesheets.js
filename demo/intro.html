@@ -18,13 +18,12 @@
 <body class="carousel">
   <div id="demo">
 
-    <div id="slideshow"
+    <div id="slideshow" class="highlight"
          data-timecontainer = "seq"
          data-timeaction    = "intrinsic"
-         data-first         = "restart.click"
-         data-last          = "slide1.click">
+         data-first         = "restart.click">
 
-      <div id="slide1" class="crossfade" data-timecontainer="par" data-dur="12s">
+      <div id="slide1" class="transition" data-timecontainer="par" data-dur="12s">
         <!--[if lt IE 7]><p><br></p><![endif]-->
         <p> Ever wanted to… </p>
         <ul data-timecontainer="par">
@@ -44,7 +43,7 @@
         </h2>
       </div>
 
-      <div id="slide2" class="crossfade" data-timecontainer="par" data-dur="12s">
+      <div id="slide2" class="transition" data-timecontainer="par" data-dur="12s">
         <p> </p>
         <span data-begin="0:00"> It’s possible. </span>
         <span data-begin="0:01.5"> It’s <strong>easy</strong>. </span>
@@ -62,7 +61,7 @@
         </p>
       </div>
 
-      <div id="slide3" class="crossfade" data-timecontainer="par">
+      <div id="slide3" class="transition" data-timecontainer="par">
         <dl data-timecontainer="par">
           <dt data-begin="0:01">
             <a href="video.html">HTML Subtitles</a>

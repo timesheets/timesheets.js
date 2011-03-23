@@ -1,8 +1,8 @@
 /* each slide is 640x480px */
+/*#slideshow > * {*/
 #slideshow header,
 #slideshow footer,
 #slideshow div {
-/*#slideshow > * {*/
   width: 560px;
   height: 440px;
   padding: 20px 40px;
@@ -28,6 +28,7 @@
 }
 #slideshow header,
 #slideshow footer {
+  display: block; /* required by IE<9 and possibly by Firefox 3 */
   background-image: url(images/background-big.png);
   background-position: bottom left;
   background-repeat: no-repeat;
