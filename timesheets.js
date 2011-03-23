@@ -504,7 +504,10 @@ function checkHash() {
     targetElement.tabIndex = 0;
     targetElement.focus();
     targetElement.blur();
-    targetElement.tabIndex = tabIndex;
+    if (tabIndex >= 0)
+      targetElement.tabIndex = tabIndex;
+    else
+      targetElement.removeAttribute("tabIndex");
   } catch(e) {}
 }
 EVENTS.onSMILReady(function() {
