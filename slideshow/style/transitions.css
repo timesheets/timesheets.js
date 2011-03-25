@@ -20,8 +20,14 @@ div#slideshow > *[smil=done] {
   -moz-transform    : translate(-960px);
   -webkit-transform : translate(-960px);
 }
+
 nav button[smil=idle] {
   opacity: 0.3;
+}
+
+div#slideshow > * *[smil=idle],
+div#slideshow > * *[smil=done] {
+	visibility: hidden;
 }
 
 /* rotating banner + transitions */
