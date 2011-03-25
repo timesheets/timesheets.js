@@ -1,0 +1,50 @@
+/* syntax highlighting */
+pre {
+  font-size: 0.6em;
+  /* margin-left: 1em; */
+  /* padding: 0.5em 1em; */
+  /* border-left: 1em solid #ddf; */
+  background-color: #eee;
+  /* max-height: 20em; */
+  overflow: auto;
+}
+pre em {
+  font-style: normal;
+  color: red;
+}
+pre .pi {
+  color: #f6a;
+  font-style: italic;
+}
+pre .doctype {
+  color: #366;
+  font-style: italic;
+}
+pre .tagName, pre .cssSelector {
+  font-weight: bold;
+  color: purple;
+}
+pre .attrName, pre .cssProperty {
+  font-weight: bold;
+}
+pre .smilNS {
+  font-weight: normal;
+  /* font-size: smaller; */
+  color: #400;
+  /* display: none; */
+}
+pre .attrValue {
+  color: blue;
+}
+pre .comment {
+  color: green;
+}
+pre .smilNS {
+  display: none;
+}
+/* IE6 hacks */
+* html pre {
+  margin-left: 4%;
+  border-left: 4% solid #ddf;
+  width: 90%;
+}

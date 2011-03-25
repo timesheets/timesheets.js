@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <title> HTML Timing :: markup </title>
+  <link rel="stylesheet" type="text/css" href="style/layout.css"/>
+  <link rel="stylesheet" type="text/css" href="style/syntax.css"/>
+  <style type="text/css">
+    html { background: none; }
+    pre  { margin: 1em auto; }
+    /*body { font-size : 14px; }*/
+  </style>
+</head>
+<body>
+
+  #seq-code
+  <pre id="seq-code">
+    <br/><br/><br/>
+    &lt;<span class="tagName">ol</span> <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">seq</span>" <span class="attrName"><em>repeatCount</em></span>="<span class="attrValue">indefinite</span>"&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">1s</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:01</span>"&gt;  first item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">1s</span>"&gt;              second item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">1s</span>"&gt;               third item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">1s</span>"&gt;              fourth item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">1s</span>"&gt;                last item &lt;/<span class="tagName">li</span>&gt;
+    &lt;/<span class="tagName">ol</span>&gt;
+  </pre>
+
+  #par-code
+  <pre id="par-code">
+    <br/><br/><br/>
+    &lt;<span class="tagName">ol</span> <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">par</span>" <span class="attrName"><em>dur</em></span>="<span class="attrValue">6s</span>" <span class="attrName"><em>repeatCount</em></span>="<span class="attrValue">indefinite</span>"&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:01</span>"&gt;  first item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:02</span>"&gt; second item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:03</span>"&gt;  third item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:04</span>"&gt; fourth item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:05</span>"&gt;   last item &lt;/<span class="tagName">li</span>&gt;
+    &lt;/<span class="tagName">ol</span>&gt;
+  </pre>
+
+  #excl-code
+  <pre id="excl-code">
+    <br/><br/><br/>
+    &lt;<span class="tagName">ol</span> <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">excl</span>" <span class="attrName"><em>dur</em></span>="<span class="attrValue">6s</span>" <span class="attrName"><em>repeatCount</em></span>="<span class="attrValue">indefinite</span>"&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:01</span>"&gt;  first item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:02</span>"&gt; second item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:03</span>"&gt;  third item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:04</span>"&gt; fourth item &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:05</span>"&gt;   last item &lt;/<span class="tagName">li</span>&gt;
+    &lt;/<span class="tagName">ol</span>&gt;
+  </pre>
+
+  #event1-code
+  <pre id="event1-code">
+    <br/><br/>
+    &lt;<span class="tagName">dl</span> <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">par</span>" <span class="attrName"><em>timeAction</em></span>="<span class="attrValue">display</span>"&gt;
+
+      &lt;<span class="tagName">dt</span> <span class="attrName">id</span>="<span class="attrValue">fold1</span>"&gt; click me &lt;/<span class="tagName">dt</span>&gt;
+      &lt;<span class="tagName">dd</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">fold1.click</span>" <span class="attrName"><em>end</em></span>="<span class="attrValue">fold1.click</span>"&gt;
+        The quick brown fox jumps over the lazy dog.
+      &lt;/<span class="tagName">dd</span>&gt;
+
+      &lt;<span class="tagName">dt</span> <span class="attrName">id</span>="<span class="attrValue">fold2</span>"&gt; click me &lt;/<span class="tagName">dt</span>&gt;
+      &lt;<span class="tagName">dd</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">fold2.click</span>" <span class="attrName"><em>end</em></span>="<span class="attrValue">fold2.click</span>"&gt;
+        Lorem ipsum dolor sit amet, consectetur adipisicing
+        elit, sed do eiusmod tempor incididunt ut labore et
+        dolore magna aliqua. Ut enim ad minim veniam, quis
+        nostrud exercitation ullamco laboris nisi ut aliquip
+        ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore
+        eu fugiat nulla pariatur. Excepteur sint occaecat
+        cupidatat non proident, sunt in culpa qui officia
+        deserunt mollit anim id est laborum.
+      &lt;/<span class="tagName">dd</span>&gt;
+
+    &lt;/<span class="tagName">dl</span>&gt;
+  </pre>
+
+  #event2-code
+  <pre id="event2-code">
+    &lt;<span class="tagName">ul</span> <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">excl</span>" <span class="attrName"><em>timeAction</em></span>="<span class="attrValue">class:active</span>"&gt;
+      &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">click</span>"&gt; first item
+        &lt;<span class="tagName">ol</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; one   &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; two   &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; three &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; four  &lt;/<span class="tagName">li</span>&gt;
+        &lt;/<span class="tagName">ol</span>&gt;
+      &lt;/<span class="tagName">li</span>&gt;
+
+      &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">click</span>"&gt; second item
+        &lt;<span class="tagName">ol</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; un     &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; deux   &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; trois  &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; quatre &lt;/<span class="tagName">li</span>&gt;
+        &lt;/<span class="tagName">ol</span>&gt;
+      &lt;/<span class="tagName">li</span>&gt;
+
+      &lt;<span class="tagName">li</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">click</span>"&gt; last item
+        &lt;<span class="tagName">ol</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; uno    &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; dos    &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; tres   &lt;/<span class="tagName">li</span>&gt;
+          &lt;<span class="tagName">li</span>&gt; cuatro &lt;/<span class="tagName">li</span>&gt;
+        &lt;/<span class="tagName">ol</span>&gt;
+      &lt;/<span class="tagName">li</span>&gt;
+    &lt;/<span class="tagName">ul</span>&gt;
+  </pre>
+
+  #lazy-code
+  <pre id="lazy-code">
+    &lt;<span class="tagName">ul</span> <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">seq</span>" <span class="attrName"><em>timeAction</em></span>="<span class="attrValue">class:active</span>"
+        <span class="attrName"><em>first</em></span> = "<span class="attrValue">first.click</span>"
+        <span class="attrName"><em>prev</em></span>  = "<span class="attrValue">prev.click</span>"
+        <span class="attrName"><em>next</em></span>  = "<span class="attrValue">next.click</span>"
+        <span class="attrName"><em>last</em></span>  = "<span class="attrValue">last.click</span>"&gt;
+
+      &lt;<span class="tagName">li</span>&gt; first item
+        &lt;<span class="tagName">ol</span>&gt; […] &lt;/<span class="tagName">ol</span>&gt;
+      &lt;/<span class="tagName">li</span>&gt;
+
+      &lt;<span class="tagName">li</span>&gt; second item
+        &lt;<span class="tagName">ol</span>&gt; […] &lt;/<span class="tagName">ol</span>&gt;
+      &lt;/<span class="tagName">li</span>&gt;
+
+      &lt;<span class="tagName">li</span>&gt; last item
+        &lt;<span class="tagName">ol</span>&gt; […] &lt;/<span class="tagName">ol</span>&gt;
+      &lt;/<span class="tagName">li</span>&gt;
+    &lt;/<span class="tagName">ul</span>&gt;
+
+    &lt;<span class="tagName">p</span>&gt; 
+      &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">first</span>"&gt;   |«     &lt;/<span class="tagName">button</span>&gt;
+      &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">prev</span>"&gt; &amp;lt; prev &lt;/<span class="tagName">button</span>&gt;
+      &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">next</span>"&gt; next &amp;gt; &lt;/<span class="tagName">button</span>&gt;
+      &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">last</span>"&gt;     »|    &lt;/<span class="tagName">button</span>&gt;
+    &lt;/<span class="tagName">p</span>&gt;
+  </pre>
+
+  #banner-code
+  <pre id="banner-code"><br/>HTML:<br/>
+<span class="doctype">&lt;!DOCTYPE html&gt;</span>
+&lt;<span class="tagName">html</span>&gt;
+  &lt;<span class="tagName">head</span>&gt;
+    […] 
+    &lt;<span class="tagName">script</span> <span class="attrName">type</span>="<span class="attrValue">text/javascript</span>" <span class="attrName">src</span>="<span class="attrValue">timesheets.js</span>"&gt;&lt;/<span class="tagName">script</span>&gt;
+  &lt;/<span class="tagName">head</span>&gt;
+  &lt;<span class="tagName">body</span>&gt;
+    […]
+    &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">banner</span>" <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">seq</span>" <span class="attrName"><em>repeatCount</em></span>="<span class="attrValue">indefinite</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">3s</span>" <span class="attrName">src</span>="<span class="attrValue">images/dosbox.png</span>"       <span class="attrName">alt</span>="<span class="attrValue">[…]</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">3s</span>" <span class="attrName">src</span>="<span class="attrValue">images/gnote.png</span>"        <span class="attrName">alt</span>="<span class="attrValue">[…]</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">3s</span>" <span class="attrName">src</span>="<span class="attrValue">images/gpodder.png</span>"      <span class="attrName">alt</span>="<span class="attrValue">[…]</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName"><em>dur</em></span>="<span class="attrValue">3s</span>" <span class="attrName">src</span>="<span class="attrValue">images/transmission.png</span>" <span class="attrName">alt</span>="<span class="attrValue">[…]</span>"&gt;
+    &lt;/<span class="tagName">div</span>&gt;
+    […]
+  &lt;/<span class="tagName">body</span>&gt;
+&lt;/<span class="tagName">html</span>&gt;
+<br/>CSS:<br/>
+<span class="cssSelector">#banner</span> {
+  <span class="cssProperty">position</span>: relative;
+}
+<span class="cssSelector">#banner img</span> {
+  <span class="cssProperty">position</span>: absolute;
+  <span class="cssProperty">top</span>: 0;
+  <span class="cssProperty">transition         </span>: all 2s;
+  <span class="cssProperty">-o-transition      </span>: all 2s;
+  <span class="cssProperty">-moz-transition    </span>: all 2s;
+  <span class="cssProperty">-webkit-transition </span>: all 2s;
+  <span class="cssProperty">opacity</span>: 0;
+}
+<span class="cssSelector">#banner img<em>[smil=active]</em></span> {
+  <span class="cssProperty">opacity</span>: 1;
+} </pre>
+
+  #banner-timesheet
+  <pre id="banner-timesheet"><br/>HTML:<br/>
+<span class="doctype">&lt;!DOCTYPE html&gt;</span>
+&lt;<span class="tagName">html</span>&gt;
+  &lt;<span class="tagName">head</span>&gt;
+    […] 
+    &lt;<span class="tagName">link</span> <span class="attrName">href</span>="<span class="attrValue">banner.smil</span>" <span class="attrName">rel</span>="<span class="attrValue">timesheet</span>" <span class="attrName">type</span>="<span class="attrValue">application/smil+xml</span>"&gt;
+    &lt;<span class="tagName">script</span> <span class="attrName">type</span>="<span class="attrValue">text/javascript</span>" <span class="attrName">src</span>="<span class="attrValue">timesheets.js</span>"&gt;&lt;/<span class="tagName">script</span>&gt;
+  &lt;/<span class="tagName">head</span>&gt;
+  &lt;<span class="tagName">body</span>&gt;
+    […]
+    &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">banner</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName">src</span>="<span class="attrValue">images/dosbox.png</span>"       <span class="attrName">alt</span>="<span class="attrValue">relive the good old days</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName">src</span>="<span class="attrValue">images/gnote.png</span>"        <span class="attrName">alt</span>="<span class="attrValue">100% free software, 0% hassle</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName">src</span>="<span class="attrValue">images/gpodder.png</span>"      <span class="attrName">alt</span>="<span class="attrValue">simple, usable podcast consumption</span>"&gt;
+      &lt;<span class="tagName">img</span> <span class="attrName">src</span>="<span class="attrValue">images/transmission.png</span>" <span class="attrName">alt</span>="<span class="attrValue">a fast, easy and free BitTorrent client</span>"&gt;
+    &lt;/<span class="tagName">div</span>&gt;
+    […]
+  &lt;/<span class="tagName">body</span>&gt;
+&lt;/<span class="tagName">html</span>&gt;
+<br/><br/>SMIL:<br/>
+<span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+&lt;<span class="tagName">timesheet</span> <span class="attrName">xmlns</span>="<span class="attrValue">http://www.w3.org/ns/SMIL</span>"&gt;
+  &lt;<span class="tagName">seq</span> <span class="attrName">repeatCount</span>="<span class="attrValue">indefinite</span>"&gt;
+    &lt;<span class="tagName">item</span> <span class="attrName">select</span>="<span class="attrValue">#banner img</span>" <span class="attrName">dur</span>="<span class="attrValue">3s</span>"/&gt;
+  &lt;/<span class="tagName">seq</span>&gt;
+&lt;/<span class="tagName">timesheet</span>&gt;
+<br/><br/>(same CSS)</pre>
+
+  #subtitles-code
+  <pre id="subtitles-code">
+&lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">video</span>" <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">excl</span>" <span class="attrName"><em>timeAction</em></span>="<span class="attrValue">display</span>" <span class="attrName"><em>dur</em></span>="<span class="attrValue">1:09</span>"&gt;
+
+  &lt;<span class="tagName">video</span> <span class="attrName"><em>syncMaster</em></span>="<span class="attrValue">true</span>" <span class="attrName"><em>timeAction</em></span>="<span class="attrValue">none</span>" <span class="attrName">controls</span> <span class="attrName">preload</span>&gt;
+    &lt;<span class="tagName">source</span> <span class="attrName">type</span>="<span class="attrValue">video/webm</span>" <span class="attrName">src</span>="<span class="attrValue">http://videos-cdn.mozilla.net/firefox4beta/Firefox_4_beta.webm</span>" /&gt;
+    &lt;<span class="tagName">source</span> <span class="attrName">type</span>="<span class="attrValue">video/ogg</span>"  <span class="attrName">src</span>="<span class="attrValue">http://videos-cdn.mozilla.net/firefox4beta/Firefox_4_beta.ogv</span>" /&gt;
+    &lt;<span class="tagName">source</span> <span class="attrName">type</span>="<span class="attrValue">video/mp4</span>"  <span class="attrName">src</span>="<span class="attrValue">http://videos-cdn.mozilla.net/firefox4beta/Firefox_4_beta.mp4</span>" /&gt;
+      Your browser does not support the HTML5 &amp;lt;video&amp;gt; tag,
+      please upgrade to a modern browser to see this demo.
+  &lt;/<span class="tagName">video</span>&gt;
+
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:00.00</span>"&gt;
+    As an open source project and community, &lt;<span class="tagName">br</span> /&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">http://mozilla.com/firefox/beta/feedback/</span>"&gt;we need your feedback&lt;/<span class="tagName">a</span>&gt;
+    to make the &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">http://mozilla.com/firefox/beta/</span>"&gt;next generation browser&lt;/<span class="tagName">a</span>&gt;.
+  &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:04.93</span>" <span class="attrName"><em>end</em></span>="<span class="attrValue">0:10</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:11.14</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:15.57</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:18.32</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:23.00</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:27.00</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:30.04</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:31.00</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:33.00</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:35.63</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:37.05</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:41.01</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:42.64</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:44.63</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:48.06</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:49.85</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:55.32</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:57.57</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">1:01.74</span> <span class="attrName"><em>end</em></span>="<span class="attrValue">1:04</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+  &lt;<span class="tagName">p</span> <span class="attrName"><em>begin</em></span>="<span class="attrValue">1:05.00</span>"&gt; … &lt;/<span class="tagName">p</span>&gt;
+
+&lt;/<span class="tagName">div</span>&gt;
+</pre>
+
+  #annotations-code
+  <pre id="annotations-code">
+&lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">audio</span>" <span class="attrName"><em>timeContainer</em></span>="<span class="attrValue">excl</span>" <span class="attrName"><em>mediaSync</em></span>="<span class="attrValue">audio</span>"&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">section1</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:00</span>"&gt;
+    &lt;<span class="tagName">img</span> <span class="attrName">alt</span>="<span class="attrValue">treble clef</span>" <span class="attrName">style</span>="<span class="attrValue">float: left;</span>" <span class="attrName">src</span>="<span class="attrValue">images/music-trebleClef.png</span>" /&gt;
+    While the three other instruments hold a cluster of high notes, the
+    cellist’s silent gestures interact with them, provoking a windy sonority
+    that becomes noisier as the cellist’s gestures become more energetic.
+  &lt;/<span class="tagName">div</span>&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">section2</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:36</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">section3</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">0:43</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">section4</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">1:09</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">section5</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">2:04</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">section6</span>" <span class="attrName"><em>begin</em></span>="<span class="attrValue">3:10</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+&lt;/<span class="tagName">div</span>&gt;
+
+&lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">mediaController</span>"&gt;
+  &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">mediaTimeline</span>"&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">#section1</span>" <span class="attrName">style</span>="<span class="attrValue">width: 87px; background-color: #2cb3ec;</span>"&gt;
+      &lt;<span class="tagName">span</span>&gt;0:00 =&gt; 0:36&lt;/<span class="tagName">span</span>&gt;
+    &lt;/<span class="tagName">a</span>&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">#section2</span>" <span class="attrName">style</span>="<span class="attrValue">width: 16px; background-color: #958b5f;</span>"&gt;
+      &lt;<span class="tagName">span</span>&gt;0:36 =&gt; 0:43&lt;/<span class="tagName">span</span>&gt;
+    &lt;/<span class="tagName">a</span>&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">#section3</span>" <span class="attrName">style</span>="<span class="attrValue">width: 62px; background-color: #efa8a8;</span>"&gt; […] &lt;/<span class="tagName">a</span>&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">#section4</span>" <span class="attrName">style</span>="<span class="attrValue">width:133px; background-color: #ed8484;</span>"&gt; […] &lt;/<span class="tagName">a</span>&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">#section5</span>" <span class="attrName">style</span>="<span class="attrValue">width:159px; background-color: #ed5a5a;</span>"&gt; […] &lt;/<span class="tagName">a</span>&gt;
+    &lt;<span class="tagName">a</span> <span class="attrName">href</span>="<span class="attrValue">#section6</span>" <span class="attrName">style</span>="<span class="attrValue">width:141px; background-color: #ec2c2c;</span>"&gt; […] &lt;/<span class="tagName">a</span>&gt;
+  &lt;/<span class="tagName">div</span>&gt;
+  &lt;<span class="tagName">audio</span> <span class="attrName">id</span>="<span class="attrValue">audioPlayer</span>" <span class="attrName">controls</span> <span class="attrName">autoplay</span> <span class="attrName">preload</span>&gt;
+    &lt;<span class="tagName">source</span> <span class="attrName">src</span>="<span class="attrValue">media/StreicherKreis_BASCHET_extract.ogg</span>" <span class="attrName">type</span>="<span class="attrValue">audio/ogg</span>" /&gt;
+    &lt;<span class="tagName">source</span> <span class="attrName">src</span>="<span class="attrValue">media/StreicherKreis_BASCHET_extract.mp3</span>" <span class="attrName">type</span>="<span class="attrValue">audio/mpeg</span>" /&gt;
+      Your browser does not support the HTML5 &amp;lt;audio&amp;gt; tag,
+      please upgrade to a modern browser to see this demo.
+  &lt;/<span class="tagName">audio</span>&gt;
+&lt;/<span class="tagName">div</span>&gt;
+  </pre>
+
+  #annotations-style
+  <pre id="annotations-style">
+    <span class="cssSelector">div#audio</span> {
+      <span class="comment">/* define a 1s transition on all properties */</span>
+      <span class="cssProperty">transition</span>         : all 1s;
+      <span class="cssProperty">-o-transition</span>      : all 1s;
+      <span class="cssProperty">-moz-transition</span>    : all 1s;
+      <span class="cssProperty">-webkit-transition</span> : all 1s;
+    }
+    <span class="cssSelector">div#audio div<em>[smil=idle]</em></span> {
+      <span class="comment">/* position and shape before the transition */</span>
+      <span class="cssProperty">opacity</span>: 0;
+      <span class="cssProperty">transform</span>         : scale(0.3) translate(+200%);
+      <span class="cssProperty">-o-transform</span>      : scale(0.3) translate(+200%);
+      <span class="cssProperty">-moz-transform</span>    : scale(0.3) translate(+200%);
+      <span class="cssProperty">-webkit-transform</span> : scale(0.3) translate(+200%);
+    }
+    <span class="cssSelector">div#audio div<em>[smil=done]</em></span> {
+      <span class="comment">/* position and shape after the transition */</span>
+      <span class="cssProperty">opacity</span>: 0;
+      <span class="cssProperty">transform</span>         : scale(0.3) translate(-200%);
+      <span class="cssProperty">-o-transform</span>      : scale(0.3) translate(-200%);
+      <span class="cssProperty">-moz-transform</span>    : scale(0.3) translate(-200%);
+      <span class="cssProperty">-webkit-transform</span> : scale(0.3) translate(-200%);
+    }
+    <span class="cssSelector">div#audio div<em>[smil=active]</em></span> {
+      <span class="comment">/* position and shape when active */</span>
+      <span class="cssProperty">opacity</span>: 1;
+      <span class="comment">/* «transform: none;» is implicit */</span>
+    }
+  </pre>
+
+  #slides-code
+  <pre id="slides-code">
+    &lt;<span class="tagName">html</span>&gt;
+      &lt;<span class="tagName">head</span>&gt; […] &lt;/<span class="tagName">head</span>&gt;
+      &lt;<span class="tagName">body</span> <span class="attrName"><span class="smilNS">smil:</span><em>timeContainer</em></span>="<span class="attrValue">seq</span>"
+            <span class="attrName"><span class="smilNS">smil:</span><em>first</em></span> = "<span class="attrValue">first.click</span>"
+            <span class="attrName"><span class="smilNS">smil:</span><em>prev</em></span>  = "<span class="attrValue">prev.click</span>"
+            <span class="attrName"><span class="smilNS">smil:</span><em>next</em></span>  = "<span class="attrValue">next.click</span>"
+            <span class="attrName"><span class="smilNS">smil:</span><em>last</em></span>  = "<span class="attrValue">last.click</span>"&gt;
+
+        &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">slide1</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+        &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">slide2</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+        &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">slide3</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+        &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">slide4</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+        […]
+        &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">slideN</span>"&gt; […] &lt;/<span class="tagName">div</span>&gt;
+
+        &lt;<span class="tagName">p</span> <span class="attrName"><span class="smilNS">smil:</span><em>timeAction</em></span>="<span class="attrValue">none</span>"&gt; 
+          &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">first</span>"&gt;    «     &lt;/<span class="tagName">button</span>&gt;
+          &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">prev</span>"&gt; &amp;lt; prev &lt;/<span class="tagName">button</span>&gt;
+          &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">next</span>"&gt; next &amp;gt; &lt;/<span class="tagName">button</span>&gt;
+          &lt;<span class="tagName">button</span> <span class="attrName">id</span>="<span class="attrValue">last</span>"&gt;     »     &lt;/<span class="tagName">button</span>&gt;
+        &lt;/<span class="tagName">p</span>&gt;
+      &lt;/<span class="tagName">body</span>&gt;
+    &lt;/<span class="tagName">html</span>&gt;
+  </pre>
+
+  #progressive-code
+  <pre id="progressive-code">
+    &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">progressive</span>" <span class="attrName"><span class="smilNS">smil:</span><em>timeContainer</em></span>="<span class="attrValue">par</span>" <span class="attrName"><span class="smilNS">smil:</span><em>dur</em></span>="<span class="attrValue">20s</span>"&gt; 
+
+      &lt;<span class="tagName">h2</span>&gt; Progressive Display &lt;/<span class="tagName">h2</span>&gt;
+
+      &lt;<span class="tagName">ul</span> <span class="attrName"><span class="smilNS">smil:</span><em>timeContainer</em></span>="<span class="attrValue">par</span>"&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>begin</em></span>="<span class="attrValue">0:02</span>"&gt; On this slide &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>begin</em></span>="<span class="attrValue">0:04</span>"&gt; the list items &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>begin</em></span>="<span class="attrValue">0:06</span>"&gt; appear one after another &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>begin</em></span>="<span class="attrValue">0:08</span>"&gt; at 2s intervals.  &lt;/<span class="tagName">li</span>&gt;
+      &lt;/<span class="tagName">ul</span>&gt;
+
+      &lt;<span class="tagName">p</span> <span class="attrName"><span class="smilNS">smil:</span><em>begin</em></span>="<span class="attrValue">0:10</span>"&gt;
+        The next slide will appear in 10s or if you click
+        on the "Next" button below — whatever comes first.
+      &lt;/<span class="tagName">p</span>&gt;
+
+    &lt;/<span class="tagName">div</span>&gt;
+  </pre>
+
+  #incremental-code
+  <pre id="incremental-code">
+    &lt;<span class="tagName">div</span> <span class="attrName">id</span>="<span class="attrValue">incremental</span>" <span class="attrName"><span class="smilNS">smil:</span><em>timeContainer</em></span>="<span class="attrValue">par</span>"&gt; 
+
+      &lt;<span class="tagName">h2</span>&gt; Incremental Display &lt;/<span class="tagName">h2</span>&gt;
+
+      &lt;<span class="tagName">ul</span> <span class="attrName"><span class="smilNS">smil:</span><em>timeContainer</em></span>="<span class="attrValue">seq</span>" <span class="attrName"><span class="smilNS">smil:</span><em>next</em></span>="<span class="attrValue">incremental.click</span>"&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>fill</em></span>="<span class="attrValue">hold</span>"&gt; Click on this slide &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>fill</em></span>="<span class="attrValue">hold</span>"&gt; and the list items  &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>fill</em></span>="<span class="attrValue">hold</span>"&gt; will appear         &lt;/<span class="tagName">li</span>&gt;
+        &lt;<span class="tagName">li</span> <span class="attrName"><span class="smilNS">smil:</span><em>fill</em></span>="<span class="attrValue">hold</span>"&gt; one after another.  &lt;/<span class="tagName">li</span>&gt;
+      &lt;/<span class="tagName">ul</span>&gt;
+
+      &lt;<span class="tagName">p</span> <span class="attrName"><span class="smilNS">smil:</span><em>begin</em></span>="<span class="attrValue">0:10</span>"&gt;
+        (you still have to click the "next" button
+         to get the next slide)
+      &lt;/<span class="tagName">p</span>&gt;
+
+    &lt;/<span class="tagName">div</span>&gt;
+  </pre>
+
+</body>
+</html>

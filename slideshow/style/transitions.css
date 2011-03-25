@@ -1,0 +1,292 @@
+/* */
+div#slideshow > * {
+  opacity: 1;
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+}
+div#slideshow > *[smil=idle] {
+  opacity: 0;
+  transform         : translate(+960px);
+  -o-transform      : translate(+960px);
+  -moz-transform    : translate(+960px);
+  -webkit-transform : translate(+960px);
+}
+div#slideshow > *[smil=done] {
+  opacity: 0;
+  transform         : translate(-960px);
+  -o-transform      : translate(-960px);
+  -moz-transform    : translate(-960px);
+  -webkit-transform : translate(-960px);
+}
+nav button[smil=idle] {
+  opacity: 0.3;
+}
+
+/* rotating banner + transitions */
+div#banner {
+  position: relative;
+  left: 0px;
+  width: 720px;
+  height: 300px;
+  margin: 2em auto;
+  padding: 0.5em;
+  z-index: 0;
+}
+div#banner img {
+  position: absolute;
+  top: 0.5em;
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+}
+div#banner img {
+  opacity: 0;
+  transform         : none !important;
+  -o-transform      : none !important;
+  -moz-transform    : none !important;
+  -webkit-transform : none !important;
+}
+div#banner img[smil=active] {
+  opacity: 1;
+}
+
+/* video subtitles */
+div#video {
+  position: relative;
+  overflow: none;
+  width: 640px;
+  height: 385px;
+  padding: 0.5em 1.5em;
+  margin: 0 auto;
+  text-align: center;
+}
+div#video video {
+  width: 640px;
+  height: 385px;
+  /*padding: 5px;*/
+}
+div#video p {
+  position: absolute;
+  bottom: 3em;
+  height: 2em;
+  width: 620px;
+  padding: 0.25em 10px;
+  margin: 0;
+  color: white;
+  background: rgba(0,0,0,0.2);
+  text-shadow: black 1px 1px 3px;
+  font-family: sans-serif;
+  font-weight: bold;
+  /* font-size: 1.1em; */
+  font-size: 16px;
+  /* see timeAction="display" */
+  display: none;
+  /*
+   * ugly hack to align the text vertically:
+   * the line height is set to 2em by default, and it’s set manually to 1em
+   * in the paragraph blocks (w/ inline style) that are known to use 2 lines.
+   */
+  line-height: 2em;
+}
+div#video p.twolines {
+  line-height: 1em;
+}
+div#video p.top {
+  bottom: 7em;
+}
+div#video p a {
+  /*color: #f88;*/
+  color: orange;
+}
+div#video p a:hover {
+  color: white;
+}
+
+/* audio annotations + transitions */
+div#audio {
+  position: relative;
+  /*height: 12em;*/
+  width: 700px;
+  padding-top: 12em;
+  overflow: none;
+  position: relative;
+  z-index: 0;
+}
+div#audio div {
+  opacity: 0; /* hide items */
+  font-size: 1.2em;
+  position: absolute;
+  top: 1em;
+  width: 80%;
+  margin: 0 10% 0 10%;
+}
+div#audio div img {
+  margin: 0 1em;
+  overflow: none !important;
+  border: none;
+}
+div#audio div {
+  /* define a 1s transition on all CSS properties */
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+}
+div#audio div[smil=idle] {
+  /* position and shape before the transition */
+  opacity: 0;
+  transform         : scale(0.3) translate(+200%);
+  -o-transform      : scale(0.3) translate(+200%);
+  -moz-transform    : scale(0.3) translate(+200%);
+  -webkit-transform : scale(0.3) translate(+200%);
+}
+div#audio div[smil=done] {
+  /* position and shape after the transition */
+  opacity: 0;
+  transform         : scale(0.3) translate(-200%);
+  -o-transform      : scale(0.3) translate(-200%);
+  -moz-transform    : scale(0.3) translate(-200%);
+  -webkit-transform : scale(0.3) translate(-200%);
+}
+div#audio div[smil=active] {
+  /* position and shape when active */
+  opacity: 1;
+  /* «transform: none;» is implicit */
+}
+div#mediaController,
+div#mediaController * {
+  transition         : none 0s;
+  -o-transition      : none 0s;
+  -moz-transition    : none 0s;
+  -webkit-transition : none 0s;
+}
+
+/* diaporama */
+div#diaporama {
+  position: relative;
+  width: 500px;
+  height: 320px;
+  padding-left: 3em;
+  font-size: 22px !important;
+}
+div#diaporama div {
+  position: absolute;
+  top: 0;
+  width: 500px;
+}
+div#demos {
+  font-size: 14px !important;
+}
+div#demos a {
+  color: brown !important;
+}
+div#demos dt,
+div#demos dd {
+  margin-bottom: 5px;
+}
+div#demos p.menu {
+  text-align: right;
+}
+div#demos p.menu[smil=idle],
+div#demos p.menu[smil=done] {
+  transform         : none;
+  -o-transform      : none;
+  -moz-transform    : none;
+  -webkit-transform : none;
+  transition         : opacity 3s;
+  -o-transition      : opacity 3s;
+  -moz-transition    : opacity 3s;
+  -webkit-transition : opacity 3s;
+}
+div#demos p.menu a#about {
+  float: left;
+}
+
+/* disable all transitions in some '.highlight' blocks */
+#lazy *, #event2 * {
+  transition         : none 0s !important;
+  -o-transition      : none 0s !important;
+  -moz-transition    : none 0s !important;
+  -webkit-transition : none 0s !important;
+  transform         : none !important;
+  -o-transform      : none !important;
+  -moz-transform    : none !important;
+  -webkit-transform : none !important;
+  opacity: 1 !important;
+}
+
+/* event-value #1 */
+dl.highlight dt {
+  color: brown;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  font-size: 25px;
+}
+dl.highlight dt:hover {
+  text-decoration: underline;
+}
+dl.highlight dd {
+  /*display: none;*/
+}
+
+/* event-value #2 */
+ul.nested {
+  margin-top: 60px;
+}
+ul.nested li {
+  list-style-type: disc;
+  cursor: pointer;
+  font-size: 25px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+ul.nested li:hover {
+  text-decoration: underline;
+}
+ul.nested li ol {
+  display: none;
+}
+ul.nested li.active {
+  list-style-type: circle;
+}
+ul.nested li.active ol {
+  display: block;
+}
+ul.nested li li {
+  list-style-type: decimal;
+  text-decoration: none !important; /* not working, wtf? */
+}
+
+/* lazy interaction */
+p.menu button,
+p.menu button[smil=idle],
+p.menu button[smil=done] {
+  transform         : none !important;
+  -o-transform      : none !important;
+  -moz-transform    : none !important;
+  -webkit-transform : none !important;
+}
+p.menu button[smil=idle],
+p.menu button[smil=done] {
+  opacity: 0.5 !important;
+}
+
+/* begin/end events */
+ol#smilEvents {
+  margin-top: 120px;
+}
+ol#smilEvents,
+ol#smilEvents li,
+#par  ol.highlight li,
+#seq  ol.highlight li,
+#excl ol.highlight li {
+  transition         : none 0s;
+  -o-transition      : none 0s;
+  -moz-transition    : none 0s;
+  -webkit-transition : none 0s;
+  font-size: 25px;
+}

@@ -1,0 +1,39 @@
+div#slideshow {
+  /*padding: 50px 0;*/
+  background: white;
+  /*padding: 0;*/
+  border: none;
+}
+pre {
+  position: absolute;
+  top: 0;
+  left: -36px; /* WTF? */
+  width: 800px;
+  height: 600px;
+  padding: 50px 90px; /* 90px? WTF? */
+  margin: 0;
+  border: none;
+  background-color: #eee;
+  overflow: auto;
+}
+audio, video {
+  display: block;
+  text-align: center;
+}
+/* IE6 hacks, ignored by newer IEs
+* html h2 {
+  margin-right: 0;
+  margin-right: -0.5em;
+}
+* html div {
+  clear: both;
+}
+ */
+* html nav ol {
+  bottom: 1em;
+}
+* html h2 {
+  display: block;
+  float: none;
+  /*width: 100%;*/
+}
