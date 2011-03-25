@@ -23,8 +23,8 @@
  * author      : Fabien Cazenave (:kaze)
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
- * version     : 0.4pre
- * last change : 2011-03-14
+ * version     : 0.4.0
+ * last change : 2011-03-25
  *
  * TODO:
  *  • redesign EVENTS to make it compatible with jQuery
@@ -87,7 +87,7 @@ if (window.addEventListener) { // modern browsers
     if (!node) return;
     //console.log(node.innerHTML + " : " + type);
     if (!EVENTS.eventList)
-      EVENTS.eventList = new Array();
+      EVENTS.eventList = [];
     var evtObject = EVENTS.eventList[type];
     if (!evtObject) {
       evtObject = document.createEvent("Event");
@@ -105,52 +105,54 @@ else if (window.attachEvent) { // Internet Explorer 6/7/8
   // -- both for standard and custom events.
   // http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
   // However, this solution isn't perfect. We probably should think of a jQuery
-  // dependancy for OLDIE.
+  // dependency for OLDIE.
   EVENTS.bind = function(node, type, callback) {
     if (!node) return;
     var ref = type + callback;
     type = "on" + type;
-    if (type in node) { // standard DOM event?
+    if (type in node) { // standard DOM event
       if (!node["e"+ref]) {
-      //try {
         node["e"+ref] = callback;
         node[ref] = function() { // try {
           node["e"+ref](window.event);
-        }; // catch(e) {} };
+        };
         node.attachEvent(type, node[ref]);
-        //return;
-      //} catch(e) {}
       }
-      return;
     }
-    // custom event
-    if (!node.eventList)
-      node.eventList = new Array();
-    if (!node.eventList[type])
-      node.eventList[type] = new Array();
-    node.eventList[type].push(callback);
+    else { // custom event
+      if (!node.eventList)
+        node.eventList = [];
+      if (!node.eventList[type])
+        node.eventList[type] = [];
+      node.eventList[type].push(callback);
+    }
   };
   EVENTS.unbind = function(node, type, callback) {
     if (!node) return;
     var ref = type + callback;
     type = "on" + type;
-    if (type in node) try { // standard DOM event?
-      node.detachEvent(type, node[ref]);
-      //node[ref] = null;
-      //node["e"+ref] = null;
-      delete(node[ref]);
-      delete(node["e"+ref]);
-      return;
-    } catch(e) {}
-    // custom event
-    if (!node || !node.eventList || !node.eventList[type])
-      return;
-    var callbacks = node.eventList[type];
-    var cbLength = callbacks.length;
-    for (var i = 0; i < cbLength; i++) {
-      if (callbacks[i] == callback) {
-        callbacks.slice(i, 1);
+    if (type in node) { // standard DOM event
+      if (node["e"+ref]) {
+        node.detachEvent(type, node[ref]);
+        try {
+          delete(node[ref]);
+          delete(node["e"+ref]);
+        } catch(e) { // IE6 doesn't support 'delete()' above
+          node[ref]     = null;
+          node["e"+ref] = null;
+        }
+      }
+    }
+    else { // custom event
+      if (!node || !node.eventList || !node.eventList[type])
         return;
+      var callbacks = node.eventList[type];
+      var cbLength = callbacks.length;
+      for (var i = 0; i < cbLength; i++) {
+        if (callbacks[i] == callback) {
+          callbacks.slice(i, 1);
+          return;
+        }
       }
     }
   };
@@ -370,7 +372,7 @@ if (!document.querySelectorAll) {
   else document.querySelectorAll = function(cssQuery) {
     // Crap. We'll just test anchors, tag names and predefined queries then.
     // XXX this will never work for 'select' attributes (timesheets)
-    var results = new Array();
+    var results = [];
     var i;
     // anchor?
     if (/^#[^\s]+$/.test(cssQuery)) {
@@ -460,9 +462,9 @@ function checkHash() {
   // http://www.w3.org/TR/SMIL3/smil-timing.html#Timing-HyperlinkImplicationsOnSeqExcl
   // we're extending this to all time containers, including <par>
   // -- but we still haven't checked wether '.selectIndex()' works properly with <par>
-  var containers = new Array();
-  var indexes    = new Array();
-  var timeNodes  = new Array();
+  var containers = [];
+  var indexes    = [];
+  var timeNodes  = [];
   var element = targetElement;
   while (container) {
     for (var index = 0; index < container.timeNodes.length; index++) {
@@ -586,8 +588,8 @@ function parseAllMediaElements() {
   }
   else if (OLDIE && !window.MediaElement) {
     // http://mediaelementjs.com/ required
-    //EVENTS.trigger(window, "MediaContentLoaded");
-    throw "MediaElement.js is required on IE<9";
+    // disabled at the moment
+    if (0) throw "MediaElement.js is required on IE<9";
   }
 
   // callback to count all parsed media elements
@@ -634,7 +636,7 @@ function parseTimesheetNode(timesheetNode) {
   }
 }
 function parseAllTimeContainers() {
-  TIMECONTAINERS = new Array();
+  TIMECONTAINERS = [];
 
   // Inline Time Containers (HTML namespace)
   var allTimeContainers = document.querySelectorAll(CSSQUERY.timeContainer);
@@ -941,10 +943,12 @@ function smilExternalTimer(mediaPlayerNode) {
   // TODO: implement the HTML5 MediaElement API instead
   this.Play  = function() {
     consoleLog("starting continuous timeContainer");
-    mediaPlayerAPI.addEventListener("timeupdate", self.onTimeUpdate, false);
+    if (mediaPlayerAPI.addEventListener) // !OLDIE
+      mediaPlayerAPI.addEventListener("timeupdate", self.onTimeUpdate, false);
   };
   this.Pause = function() {
-    mediaPlayerAPI.pause(); // XXX useless? confusing?
+    if (mediaPlayerAPI.pause) // !OLDIE
+      mediaPlayerAPI.pause(); // XXX useless? confusing?
   };
   this.Stop  = function() {
     if (mediaPlayerAPI.removeEventListener) // !OLDIE
@@ -1023,7 +1027,7 @@ smilTimeItem.prototype.parseEvent = function(eventStr, callback) { // XXX to be 
   return target;
 };
 smilTimeItem.prototype.parseEvents = function(eventStr, callback) {
-  var events = new Array();
+  var events = [];
   if (!eventStr || !eventStr.length || !isNaN(eventStr))
     return events;
 
@@ -1311,7 +1315,7 @@ function smilTimeItem(domNode, parentNode, targetNode) {
   if (targetNode && (targetNode != domNode)) { // timesheet item
     // store the timesheet item reference in the 'extTiming' property
     if (!targetNode.extTiming)
-      targetNode.extTiming = new Array();
+      targetNode.extTiming = [];
     targetNode.extTiming.push(this);
     consoleLog("extTiming: " + targetNode.nodeName);
   } else if (this.target) { // inline timing
@@ -1357,7 +1361,7 @@ smilTimeContainer_generic.prototype.onTimeUpdate   = function() {};
 // This method will return an array of all timeNodes that have a non-null
 // timeAction (i.e. where *.timeAction != "none").
 smilTimeContainer_generic.prototype.parseTimeNodes = function() {
-  var timeNodes = new Array();
+  var timeNodes = [];
   var syncMasterNode = null;
   var segment;
 
@@ -1365,7 +1369,7 @@ smilTimeContainer_generic.prototype.parseTimeNodes = function() {
   var children = this.getNode().childNodes;
   for (var i = 0; i < children.length; i++) {
     segment = children[i];
-    var targets = new Array();
+    var targets = [];
     if (segment.nodeType == 1) { // Node.ELEMENT_NODE
       if (segment.timing || segment.getAttribute("timing")) { // OLDIE
         // XXX already initialized: should never happen
@@ -2011,7 +2015,7 @@ function smilTimeElement(domNode, parentNode, targetNode, timerate) {
       break;
     default: // time item
       this.timeContainer = null;
-      this.timeNodes = new Array();
+      this.timeNodes = [];
       break;
   }
 
