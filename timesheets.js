@@ -24,7 +24,7 @@
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
  * version     : 0.4.0
- * last change : 2011-03-25
+ * last change : 2011-03-28
  *
  * TODO:
  *  • redesign EVENTS to make it compatible with jQuery
@@ -703,13 +703,12 @@ function parseAllTimeContainers() {
   // => don't use internal timesheets nor smil:* attributes for web content!
   if (!OLDIE) {
     var docElt = document.documentElement;
-    function nsResolver(prefix) {
-      var ns = {
-        "xhtml" : docElt.getAttribute("xmlns"),     // "http://www.w3.org/1999/xhtml"
-        "smil"  : docElt.getAttribute("xmlns:smil") // "http://www.w3.org/ns/SMIL"
-      };
-      return ns[prefix] || null;
-    }
+		var ns = {
+			"xhtml" : "http://www.w3.org/1999/xhtml", 
+			"svg"   : "http://www.w3.org/2000/svg",
+			"smil"  : docElt.getAttribute("xmlns:smil") || "http://www.w3.org/ns/SMIL"
+		};
+    function nsResolver(prefix) { return ns[prefix] || null; }
 
     // Internal Timesheets (application/xhtml+xml)
     var TimesheetNS = nsResolver("smil");
@@ -719,11 +718,12 @@ function parseAllTimeContainers() {
 
     // Inline Time Containers (SMIL namespace) -- we have to use XPath because
     // document.querySelectorAll("[smil|timeContainer]") raises an exception.
-    if (docElt.getAttribute("xmlns") && docElt.getAttribute("xmlns:smil")) {
-      consoleLog("document has SMIL extensions: " + nsResolver("smil"));
+    //if (docElt.getAttribute("xmlns") && docElt.getAttribute("xmlns:smil")) {
+    if (docElt.getAttribute("xmlns")) {
+			// the document might have SMIL extensions
+      //consoleLog("document has SMIL extensions: " + nsResolver("smil"));
       var containers = document.evaluate("//*[@smil:timeContainer]", document,
                   nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-                  //nsResolver, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
       var thisContainer = containers.iterateNext();
       try {
         while (thisContainer) {
