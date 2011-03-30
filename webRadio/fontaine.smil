@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- diaporama / sections principales -->
+  <excl timeAction="display" mediaSync="#main" controls="#timeController" dur="20:47">
+    <item select="#section1" begin="00:00.000"/>
+    <item select="#section2" begin="01:12.120"/>
+    <item select="#section3" begin="04:41.742"/>
+    <item select="#section4" begin="08:58.353"/>
+    <item select="#section5" begin="11:31.796"/>
+    <item select="#section6" begin="16:15.550"/>
+  </excl>
+
+  <!-- compléments : fenêtres -->
+  <excl>
+    <item select="#extra2" begin="open2.click; toc-extra2.click" end="close2.click; section2.end"/>
+    <item select="#extra3" begin="open3.click; toc-extra3.click" end="close3.click; section3.end"/>
+    <item select="#extra4" begin="open4.click; toc-extra4.click" end="close4.click; section4.end"/>
+    <item select="#extra6" begin="open6.click; toc-extra6.click" end="close6.click; section6.end"/>
+  </excl>
+  <!-- compléments : pistes audio -->
+  <par mediaSync="#track2a" controls="#timeline2a" dur="2:24.039"/>
+  <par mediaSync="#track2b" controls="#timeline2b" dur="3:59.928"/>
+  <par mediaSync="#track3"  controls="#timeline3"  dur="1:29.380"/>
+  <par mediaSync="#track6"  controls="#timeline6"  dur="1:23.424"/>
+  <!-- compléments : visuels « Fontaine des Musiciens » -->
+  <seq timeAction="display" repeatCount="indefinite">
+    <item select="#extra4 img" dur="3s"/>
+  </seq>
+
+  <!-- compléments : scénario équivalent (plus rigoureux mais moins lisible)
+  <excl>
+    <item select="#extra2" begin="open2.click; toc-extra2.click" end="close2.click; section2.end">
+      <par mediaSync="#track2a" controls="#timeline2a" dur="2:24.039"/>
+      <par mediaSync="#track2b" controls="#timeline2b" dur="3:59.928"/>
+    </item>
+    <item select="#extra3" begin="open3.click; toc-extra3.click" end="close3.click; section3.end">
+      <par mediaSync="#track3"  controls="#timeline3"  dur="1:29.380"/>
+    </item>
+    <item select="#extra4" begin="open4.click; toc-extra4.click" end="close4.click; section4.end">
+      <seq timeAction="display" repeatCount="indefinite">
+        <item select="#extra4 img" dur="3s"/>
+      </seq>
+    </item>
+    <item select="#extra6" begin="open6.click; toc-extra6.click" end="close6.click; section6.end">
+      <par mediaSync="#track6"  controls="#timeline6"  dur="1:23.424"/>
+    </item>
+  </excl>
+  -->
+
+</timesheet>

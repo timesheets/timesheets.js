@@ -1,0 +1,303 @@
+html {
+  background-color: #ddd;
+  /*background-color: #dde;*/
+  /*background-color: #99d;*/
+}
+body {
+  width: 800px;
+  padding: 20px;
+  padding-bottom: 50px;
+  margin: 80px auto 20px auto;
+  background-color: white;
+  font-family: sans-serif;
+  border-radius         : 10px;
+  -o-border-radius      : 10px;
+  -moz-border-radius    : 10px;
+  -webkit-border-radius : 10px;
+  box-shadow         : 0px 1px 10px #333;
+  -o-box-shadow      : 0px 1px 10px #333;
+  -moz-box-shadow    : 0px 1px 10px #333;
+  -webkit-box-shadow : 0px 1px 10px #333;
+}
+h1 {
+  position: absolute;
+  top: 0;
+  line-height: 60px;
+  font-size: 24px;
+  width: 800px;
+  text-align: right;
+}
+h1 a {
+  color: #333 !important;
+  text-shadow         : 0px 1px 10px #333;
+  -o-text-shadow      : 0px 1px 10px #333;
+  -moz-text-shadow    : 0px 1px 10px #333;
+  -webkit-text-shadow : 0px 1px 10px #333;
+}
+
+/* annotations audio */
+/*#slideshow > div,*/
+#slideshow div.slide {
+  height: 560px;
+  overflow: hidden;
+  position: relative;
+  /*display: none; [> activated by SMIL <]*/
+}
+#slideshow h2 {
+  color: brown;
+  border-bottom: 1px inset;
+}
+#slideshow p.illustration {
+  text-align: center;
+}
+
+/* annotations audio — compléments */
+#slideshow div.extra {
+  position: absolute;
+  top: 60px;
+  width: 760px;
+  height: 450px;
+  padding: 20px;
+  background-color: #eee;
+  opacity: 0.95;
+  filter: alpha(opacity=95);
+  z-index: 1;
+  border-radius         : 10px;
+  -o-border-radius      : 10px;
+  -moz-border-radius    : 10px;
+  -webkit-border-radius : 10px;
+  /* transition */
+  transition         :         transform 1s;
+  -o-transition      :      -o-transform 1s;
+  -moz-transition    :    -moz-transform 1s;
+  -webkit-transition : -webkit-transform 1s;
+  transform         : translate(+200%);
+  -o-transform      : translate(+200%);
+  -moz-transform    : translate(+200%);
+  -webkit-transform : translate(+200%);
+}
+* html #slideshow div.extra {
+  top: 40px; /* IE6: décalage de 20px correspondant au padding (?) */
+}
+#slideshow div.extra[smil=active] {
+  transform         : none;
+  -o-transform      : none;
+  -moz-transform    : none;
+  -webkit-transform : none;
+}
+#slideshow div.extra h3 {
+  width: 100%;
+  padding: 5px 20px;
+  margin: -20px -20px 0 -20px;
+  background-color: brown;
+  color: white;
+  clear: none;
+  height: 50px;
+  line-height: 50px;
+}
+#slideshow div.extra h3 button {
+  float: right;
+  margin-top: 1.5em;
+}
+
+/* annotations audio — carrousel d’images */
+#extra4 img {
+  margin: 1em auto;
+}
+
+/* annotations audio — menu */
+#slideshow nav {
+  width: 200px;
+  max-width: 200px;
+  min-width: 200px;
+  float: right;
+}
+#slideshow nav p {
+  padding-left: 15px;
+  background-color: brown;
+  height: 3em;
+  line-height: 3em;
+  color: white;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-top-left-radius          : 8px;
+  -o-border-top-left-radius       : 8px;
+  -moz-border-radius-topleft      : 8px;
+  -webkit-border-top-left-radius  : 8px;
+  border-top-right-radius         : 8px;
+  -o-border-top-right-radius      : 8px;
+  -moz-border-radius-topright     : 8px;
+  -webkit-border-top-right-radius : 8px;
+}
+#slideshow nav div {
+  margin-top: 0;
+  background-color: #fee;
+  /*list-style-type: none;*/
+  height: 400px;
+  padding: 1em 15px;
+  border-bottom-left-radius          : 8px;
+  -o-border-bottom-left-radius       : 8px;
+  -moz-border-radius-bottomleft      : 8px;
+  -webkit-border-bottom-left-radius  : 8px;
+  border-bottom-right-radius         : 8px;
+  -o-border-bottom-right-radius      : 8px;
+  -moz-border-radius-bottomright     : 8px;
+  -webkit-border-bottom-right-radius : 8px;
+}
+#slideshow nav button {
+  display: block;
+  text-align: center;
+  width: 150px;
+  margin: 10px auto;
+}
+
+/* controles utilisateur */
+#timeController {
+  /*position: relative;*/
+  position: absolute;
+  width: 700px;
+  height: 32px;
+  margin: 0 auto;
+  z-index: 2;
+}
+#timeline, #sommaire {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-color: #555;
+  border-radius          : 8px;
+  -o-border-radius       : 8px;
+  -moz-border-radius     : 8px;
+  -webkit-border-radius  : 8px;
+}
+
+/* controles utilisateur : table des matieres */
+.smil-toc {
+  margin: 0 auto;
+  width: 660px;
+  padding: 0 20px 20px 20px;
+  color: white;
+  opacity: 0.9;
+  filter: alpha(opacity=90);
+  /* transition */
+  transition         : height 0.5s;
+  -o-transition      : height 0.5s;
+  -moz-transition    : height 0.5s;
+  -webkit-transition : height 0.5s;
+  height: 0;
+  overflow: hidden;
+}
+.smil-toc.active, .active {
+  height: 300px;
+}
+.smil-toc a {
+  color: white !important;
+  text-decoration: none;
+  /*font-weight: bold;*/
+}
+.smil-toc a:hover {
+  color: #fcc !important;
+}
+
+/* controles utilisateur : ligne de temps */
+.smil-controlBar {
+  width: 100%;
+  z-index: 10;
+}
+.smil-timeline {
+  /*width: 500px;*/
+}
+.smil-timeSegments a span {
+  height: 1.2em;
+  line-height: 1.2em;
+  margin-top: -1.2em;
+  padding: 0.5em 0;
+  border-top-left-radius          : 8px;
+  -o-border-top-left-radius       : 8px;
+  -moz-border-radius-topleft      : 8px;
+  -webkit-border-top-left-radius  : 8px;
+  border-top-right-radius         : 8px;
+  -o-border-top-right-radius      : 8px;
+  -moz-border-radius-topright     : 8px;
+  -webkit-border-top-right-radius : 8px;
+  opacity: 0.8;
+  filter: alpha(opacity=80);
+  background-color: #555;
+}
+.smil-timeSegments a:hover span {
+  top: -16px;
+  /*left: -2px;*/
+  width: 100%;
+}
+.smil-currentTime {
+  display: block;
+  float: left;
+  /*padding-bottom: 5px;*/
+  width: 40px;
+  text-align: center;
+}
+
+/* transitions principales */
+#slideshow {
+  overflow-x: hidden;
+}
+#slideshow > div {
+  /* define a 1s transition on all CSS properties */
+  transition         :         transform 1s;
+  -o-transition      :      -o-transform 1s;
+  -moz-transition    :    -moz-transform 1s;
+  -webkit-transition : -webkit-transform 1s;
+}
+#slideshow > div[smil=idle] {
+  /* position and shape before the transition */
+  transform         : translate(+200%);
+  -o-transform      : translate(+200%);
+  -moz-transform    : translate(+200%);
+  -webkit-transform : translate(+200%);
+}
+#slideshow > div[smil=done] {
+  /* position and shape after the transition */
+  transform         : translate(-200%);
+  -o-transform      : translate(-200%);
+  -moz-transform    : translate(-200%);
+  -webkit-transform : translate(-200%);
+}
+#slideshow > div[smil=active] {
+  /* position and shape when active */
+  /* «transform: none;» is implicit */
+}
+
+/* annotations audio — lecteur média */
+#slideshow div.smil-controlBar {
+  position: static;
+  display: block;
+  width: 400px;
+  height: 32px;
+  background-color: #555;
+}
+* html #slideshow .smil-left button {
+  width: 32px; /* IE6 would use 100% instead */
+}
+/* * html #slideshow .smil-left button {
+  height: 48px;
+} */
+#slideshow .smil-timeline {
+  width: 295px;
+  height: 12px;
+  margin-top: 10px;
+  border-radius         : 5px;
+  -o-border-radius      : 5px;
+  -moz-border-radius    : 5px;
+  -webkit-border-radius : 5px;
+  background-color: #999;
+}
+#slideshow .smil-timeSlider {
+  height: 100%;
+  width: 0;
+  border-radius         : 5px;
+  -o-border-radius      : 5px;
+  -moz-border-radius    : 5px;
+  -webkit-border-radius : 5px;
+  background-color: #ccc;
+}
+
