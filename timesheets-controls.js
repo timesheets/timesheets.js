@@ -23,8 +23,8 @@
  * author      : Fabien Cazenave (:kaze)
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
- * version     : 0.4
- * last change : 2011-03-09
+ * version     : 0.4.1
+ * last change : 2011-03-30
  */
 
 (function(){

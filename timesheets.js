@@ -23,8 +23,8 @@
  * author      : Fabien Cazenave (:kaze)
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
- * version     : 0.4.0
- * last change : 2011-03-28
+ * version     : 0.4.1
+ * last change : 2011-03-30
  *
  * TODO:
  *  • redesign EVENTS to make it compatible with jQuery
@@ -1475,6 +1475,9 @@ smilTimeContainer_generic.prototype.checkIndex = function(index) {
     this.last.setAttribute("smil", state);
 };
 smilTimeContainer_generic.prototype.selectIndex = function(index) {
+  // FIXME handle integer values of repeatCount
+  if (this.repeatCount == Infinity)
+    index = index % this.timeNodes.length;
   if ((index >= 0) && (index < this.timeNodes.length)
                    && (index != this.currentIndex)) {
     consoleLog("current index: " + this.currentIndex);
