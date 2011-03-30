@@ -721,7 +721,6 @@ function parseAllTimeContainers() {
     //if (docElt.getAttribute("xmlns") && docElt.getAttribute("xmlns:smil")) {
     if (docElt.getAttribute("xmlns")) {
 			// the document might have SMIL extensions
-      //consoleLog("document has SMIL extensions: " + nsResolver("smil"));
       var containers = document.evaluate("//*[@smil:timeContainer]", document,
                   nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
       var thisContainer = containers.iterateNext();
