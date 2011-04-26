@@ -24,426 +24,204 @@
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
  * version     : 0.5.0pre
- * last change : 2011-04-24
+ * last change : 2011-04-14
  *
  * TODO:
+ *  - redesign EVENTS to make it compatible with jQuery
  *  - factorize the onbegin/onend code
  *       in smilTimeItem and smilTimeContainer_generic
- *  - support complex event-values (event + time offset)
- *  - add a decent onDOMReady() for IE<9
+ *  - support multiple event-values (semicolon-separated)
  *  - fix the repeatCount/repeatDur stuff
- *  - fix the 'begin' behaviour in 'seq' containers
- *  - redesign EVENTS to make it compatible with bean.js
- *  - propose timesheets.js as jQuery / YUI modules
+ *  - fix parsing rules in timesheets (store a ref in <item> nodes)
  */
 
 /*****************************************************************************\
 |                                                                             |
-|  Browser Abstraction Layer:                                                 |
-|    required to cope with Internet Explorer 6/7/8 (see the 'OLDIE' tag)      |
+|  Basic Event Management Abstraction Layer                                   |
+|    completely useless... except to support Internet Explorer 6/7/8 :-/      |
+|      * fixes the 'this' reference issue in callbacks on IE<9                |
+|      * handles custom (= non W3C-standard) events on IE<9                   |
+|    exposed as window.EVENTS                                                 |
+|                                                                             |
+|*****************************************************************************|
+|                                                                             |
+|  Generic events:                                                            |
+|    EVENTS.bind(node, type, callback)                                        |
+|             equivalent to 'node.addEventListener(type, callback, false)'    |
+|    EVENTS.unbind(node, type, callback)                                      |
+|             equivalent to 'node.removeEventListener(type, callback, false)' |
+|    EVENTS.trigger(node, type)                                               |
+|             equivalent to 'node.dispatchEvent()'                            |
+|    EVENTS.preventDefault(event)                                             |
+|             equivalent to 'event.preventDefault()'                          |
+|                                                                             |
+|  Specific events:                                                           |
+|    EVENTS.onHashChange(callback)                                            |
+|             triggers 'callback()' when the URL hash is changed              |
+|    EVENTS.onDOMReady(callback)                                              |
+|             triggers 'callback()' when the DOM content is loaded            |
+|    EVENTS.onSMILReady(callback)                                             |
+|             triggers 'callback()' when the SMIL content is parsed           |
 |                                                                             |
 \*****************************************************************************/
 
-// ===========================================================================
-// EVENTS.[*]: event handler
-// ===========================================================================
+window.EVENTS = {
+  bind    : function(node, type, callback) {},
+  unbind  : function(node, type, callback) {},
+  trigger : function(node, type) {}
+};
 
-(function(){
-  /***************************************************************************\
-  |                                                                           |
-  |  Basic Event Management Abstraction Layer                                 |
-  |    completely useless... except to support Internet Explorer 6/7/8 :-/    |
-  |      * fixes the 'this' reference issue in callbacks on IE<9              |
-  |      * handles custom (= non W3C-standard) events on IE<9                 |
-  |    exposed as window.EVENTS                                               |
-  |                                                                           |
-  |---------------------------------------------------------------------------|
-  |                                                                           |
-  |  Generic events:                                                          |
-  |    EVENTS.bind(node, type, callback)                                      |
-  |      equivalent to 'node.addEventListener(type, callback, false)'         |
-  |    EVENTS.unbind(node, type, callback)                                    |
-  |      equivalent to 'node.removeEventListener(type, callback, false)'      |
-  |    EVENTS.trigger(node, type)                                             |
-  |      equivalent to 'node.dispatchEvent()'                                 |
-  |    EVENTS.preventDefault(event)                                           |
-  |      equivalent to 'event.preventDefault()'                               |
-  |                                                                           |
-  |  Specific events:                                                         |
-  |    EVENTS.onHashChange(callback)                                          |
-  |      triggers 'callback()' when the URL hash is changed                   |
-  |    EVENTS.onDOMReady(callback)                                            |
-  |      triggers 'callback()' when the DOM content is loaded                 |
-  |    EVENTS.onSMILReady(callback)                                           |
-  |      triggers 'callback()' when the SMIL content is parsed                |
-  |                                                                           |
-  \***************************************************************************/
-
-  var EVENTS = {
-    bind    : function(node, type, callback) {},
-    unbind  : function(node, type, callback) {},
-    trigger : function(node, type) {}
+// ===========================================================================
+// Generic Events
+// ===========================================================================
+// addEventListener should work fine everywhere except with IE<9
+if (window.addEventListener) { // modern browsers
+  EVENTS.bind = function(node, type, callback) {
+    if (!node) return;
+    node.addEventListener(type, callback, false);
   };
-
-  // ==========================================================================
-  // Generic Events
-  // ==========================================================================
-  // addEventListener should work fine everywhere except with IE<9
-  if (window.addEventListener) { // modern browsers
-    EVENTS.bind = function(node, type, callback) {
-      if (!node) return;
-      node.addEventListener(type, callback, false);
-    };
-    EVENTS.unbind = function(node, type, callback) {
-      if (!node) return;
-      node.removeEventListener(type, callback, false);
-    };
-    EVENTS.trigger = function(node, type) {
-      if (!node) return;
-      //console.log(node.innerHTML + " : " + type);
-      if (!EVENTS.eventList)
-        EVENTS.eventList = [];
-      var evtObject = EVENTS.eventList[type];
-      if (!evtObject) {
-        evtObject = document.createEvent("Event");
-        evtObject.initEvent(type, false, false);
-        EVENTS.eventList[type] = evtObject;
+  EVENTS.unbind = function(node, type, callback) {
+    if (!node) return;
+    node.removeEventListener(type, callback, false);
+  };
+  EVENTS.trigger = function(node, type) {
+    if (!node) return;
+    //console.log(node.innerHTML + " : " + type);
+    if (!EVENTS.eventList)
+      EVENTS.eventList = [];
+    var evtObject = EVENTS.eventList[type];
+    if (!evtObject) {
+      evtObject = document.createEvent("Event");
+      evtObject.initEvent(type, false, false);
+      EVENTS.eventList[type] = evtObject;
+    }
+    node.dispatchEvent(evtObject);
+  };
+  EVENTS.preventDefault = function(e) {
+    e.preventDefault();
+  };
+}
+else if (window.attachEvent) { // Internet Explorer 6/7/8
+  // This also fixes the 'this' reference issue in all callbacks
+  // -- both for standard and custom events.
+  // http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
+  // However, this solution isn't perfect. We probably should think of a jQuery
+  // dependency for OLDIE.
+  EVENTS.bind = function(node, type, callback) {
+    if (!node) return;
+    var ref = type + callback;
+    type = "on" + type;
+    if (type in node) { // standard DOM event
+      if (!node["e"+ref]) {
+        node["e"+ref] = callback;
+        node[ref] = function() { // try {
+          node["e"+ref](window.event);
+        };
+        node.attachEvent(type, node[ref]);
       }
-      node.dispatchEvent(evtObject);
-    };
-    EVENTS.preventDefault = function(e) {
-      e.preventDefault();
-    };
-  }
-  else if (window.attachEvent) { // Internet Explorer 6/7/8
-    // This also fixes the 'this' reference issue in all callbacks
-    // -- both for standard and custom events.
-    // http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
-    // However, this solution isn't perfect. We probably should think of a jQuery
-    // dependency for OLDIE.
-    EVENTS.bind = function(node, type, callback) {
-      if (!node) return;
-      var ref = type + callback;
-      type = "on" + type;
-      if (type in node) { // standard DOM event
-        if (!node["e"+ref]) {
-          node["e"+ref] = callback;
-          node[ref] = function() { // try {
-            node["e"+ref](window.event);
-          };
-          node.attachEvent(type, node[ref]);
+    }
+    else { // custom event
+      if (!node.eventList)
+        node.eventList = [];
+      if (!node.eventList[type])
+        node.eventList[type] = [];
+      node.eventList[type].push(callback);
+    }
+  };
+  EVENTS.unbind = function(node, type, callback) {
+    if (!node) return;
+    var ref = type + callback;
+    type = "on" + type;
+    if (type in node) { // standard DOM event
+      if (node["e"+ref]) {
+        node.detachEvent(type, node[ref]);
+        try {
+          delete(node[ref]);
+          delete(node["e"+ref]);
+        } catch(e) { // IE6 doesn't support 'delete()' above
+          node[ref]     = null;
+          node["e"+ref] = null;
         }
       }
-      else { // custom event
-        if (!node.eventList)
-          node.eventList = [];
-        if (!node.eventList[type])
-          node.eventList[type] = [];
-        node.eventList[type].push(callback);
-      }
-    };
-    EVENTS.unbind = function(node, type, callback) {
-      if (!node) return;
-      var ref = type + callback;
-      type = "on" + type;
-      if (type in node) { // standard DOM event
-        if (node["e"+ref]) {
-          node.detachEvent(type, node[ref]);
-          try {
-            delete(node[ref]);
-            delete(node["e"+ref]);
-          } catch(e) { // IE6 doesn't support 'delete()' above
-            node[ref]     = null;
-            node["e"+ref] = null;
-          }
-        }
-      }
-      else { // custom event
-        if (!node || !node.eventList || !node.eventList[type])
-          return;
-        var callbacks = node.eventList[type];
-        var cbLength = callbacks.length;
-        for (var i = 0; i < cbLength; i++) {
-          if (callbacks[i] == callback) {
-            callbacks.slice(i, 1);
-            return;
-          }
-        }
-      }
-    };
-    EVENTS.trigger = function(node, type) {
-      if (!node) return;
-      type = "on" + type;
-      if (type in node) try { // standard DOM event?
-        node.fireEvent(type);
-        return;
-      } catch(e) {}
-      // custom event: pass an event-like structure to the callback
-      // + use call() to set the 'this' reference within the callback
-      var evtObject = {};
-      evtObject.target = node;
-      evtObject.srcElement = node;
+    }
+    else { // custom event
       if (!node || !node.eventList || !node.eventList[type])
         return;
       var callbacks = node.eventList[type];
       var cbLength = callbacks.length;
-      for (var i = 0; i < cbLength; i++)
-        callbacks[i].call(node, evtObject);
-    };
-    EVENTS.preventDefault = function(e) {
-      e.returnValue = false;
-    };
-  }
-
-  // ==========================================================================
-  // Specific Events
-  // ==========================================================================
-  // 'hashchange' works on most recent browsers
-  EVENTS.onHashChange = function(callback) {
-    if ("onhashchange" in window) // IE8 and modern browsers
-      EVENTS.bind(window, "hashchange", callback);
-    else { // use a setInterval loop for older browsers
-      var hash = "";
-      window.setInterval(function() {
-        if (hash != window.location.hash) {
-          hash = window.location.hash;
-          callback();
+      for (var i = 0; i < cbLength; i++) {
+        if (callbacks[i] == callback) {
+          callbacks.slice(i, 1);
+          return;
         }
-      }, 250); // 250ms timerate by default
-    }
-  };
-  // 'DOMContentLoaded' should work fine everywhere except with IE<9
-  EVENTS.onDOMReady = function(callback) {
-    if (window.addEventListener) // modern browsers
-      // http://perfectionlabstips.wordpress.com/2008/12/01/which-browsers-support-native-domcontentloaded-event/
-      // a few browsers support addEventListener without DOMContentLoaded:
-      // namely, Firefox 1.0, Opera <8 and Safari <2 (according to this link).
-      // As these browsers aren't supported any more, we can safely ignore them.
-      window.addEventListener("DOMContentLoaded", callback, false);
-    else { // Internet Explorer 6/7/8
-      // there are plenty other ways to do this without delaying the execution
-      // but we haven't taken the time to test the properly yet (FIXME)
-      // http://javascript.nwbox.com/IEContentLoaded/
-      // http://tanny.ica.com/ICA/TKO/tkoblog.nsf/dx/domcontentloaded-for-browsers-part-v
-      // http://www.javascriptfr.com/codes/DOMCONTENTLOADED-DOCUMENT-READY_49923.aspx
-      // https://github.com/ded/domready
-      // http://www.dustindiaz.com/smallest-domready-ever/
-      //function r(f) {
-        ///in/.test(document.readyState) ? setTimeout('r('+f+')', 40) : f();
-      //}
-      //r(callback);
-      EVENTS.bind(window, "load", callback);
-    }
-  };
-  // 'MediaContentLoaded' is fired when all media elements have been parsed
-  EVENTS.onMediaReady = function(callback) {
-    EVENTS.bind(window, "MediaContentLoaded", callback);
-  };
-  // 'SMILContentLoaded' is fired when all time containers have been parsed
-  EVENTS.onSMILReady = function(callback) {
-    EVENTS.bind(window, "SMILContentLoaded", callback);
-  };
-
-  // ==========================================================================
-  // Expose as window.EVENTS
-  // ==========================================================================
-  window.EVENTS = EVENTS;
-})();
-
-// ============================================================================
-// QWERY.[*]: CSS selector (requires qwery|sizzle|jQuery|YUI)
-// ============================================================================
-
-(function(){
-  /***************************************************************************\
-  |                                                                           |
-  |  CSS Query Selector Abstraction Layer                                     |
-  |    completely useless... except to support Internet Explorer 6/7 :-/      |
-  |    exposed as window.qwerySelector[All]                                   |
-  |                                                                           |
-  |  No specific code is included, one of these libraries is required:        |
-  |    qwery.js      http://dustindiaz.com/qwery                              |
-  |    sizzle.js     http://sizzlejs.com/                                     |
-  |    jQuery        http://jquery.com/                                       |
-  |    YUI           http://developer.yahoo.com/yui/                          |
-  |                                                                           |
-  |---------------------------------------------------------------------------|
-  |                                                                           |
-  |  Generic methods:                                                         |
-  |    QWERY.select(cssQuery [, context])                                     |
-  |      equivalent to 'document.querySelector(cssQuery)'                     |
-  |                 or  'context.querySelector(cssQuery)'                     |
-  |    QWERY.selectAll(cssQuery [, context])                                  |
-  |      equivalent to 'document.querySelectorAll(cssQuery)'                  |
-  |                 or  'context.querySelectorAll(cssQuery)'                  |
-  |                                                                           |
-  |  Specific methods:                                                        |
-  |    QWERY.selectTimeContainers()                                           |
-  |      returns all inline time containers                                   |
-  |    QWERY.selectExtTimesheets()                                            |
-  |      returns all <link> nodes pointing to external timesheets             |
-  |                                                                           |
-  |  Properties: (read-only)                                                  |
-  |    QWERY.supported                                                        |
-  |      true if a CSS selector engine is usable, false if not                |
-  |    QWERY.native                                                           |
-  |      true if no supported CSS selector library is used                    |
-  |                                                                           |
-  \***************************************************************************/
-
-  var gSupported = true;  // 'false' when no CSS selector can be used
-  var gNative    = false; // 'true' when using native *.querySelector[All]
-  function qwerySelector    (cssQuery, context) {}
-  function qwerySelectorAll (cssQuery, context) {}
-
-  // ==========================================================================
-  // querySelectorAll() is required by 'select' attributes in timesheets
-  // ==========================================================================
-
-  if (window.qwery) {          // http://www.dustindiaz.com/qwery
-    qwerySelectorAll = qwery;
-  }
-  else if (window.Sizzle) {    // http://sizzlejs.com/
-    qwerySelectorAll = Sizzle;
-  }
-  /* these libs do not return elements in the right DOM order. Blocker!
-   * That's surprising for Dojo, since Sizzle.js is a Dojo Foundation project.
-  else if (window.cssQuery) {  // http://dean.edwards.name/my/cssQuery/
-    qwerySelectorAll = cssQuery;
-  }
-  else if (window.dojo) {      // http://dojotoolkit.org/
-    qwerySelectorAll = dojo.query;
-  } */
-  else if (window.jQuery) {    // http://jquery.com/
-    qwerySelectorAll = function(cssQuery, context) {
-      return $(cssQuery, context);
-    };
-  }
-  else if (window.YAHOO        // http://developer.yahoo.com/yui/
-        && window.YAHOO.util
-        && window.YAHOO.util.Selector) {
-    qwerySelectorAll = YAHOO.util.Selector.query;
-  }
-  /* these frameworks are untested
-   * (read: could't get them to work on my development box :-/)
-  else if (window.Ext) {       // http://www.sencha.com/products/js/
-    qwerySelectorAll = Ext.select;
-  }
-  else if (window.$$) {        // http://prototypejs.org/ http://mootools.net/
-    qwerySelectorAll = function(cssQuery, context) {
-      return $$(cssQuery, context);
-    };
-  } */
-  else if (document.querySelectorAll) { // IE8 and modern browsers
-    gNative = true;
-    qwerySelectorAll = function(cssQuery, context) {
-      context = context || document;
-      return context.querySelectorAll(cssQuery);
-    };
-  }
-  else { // OLDIE (IE6, IE7) and no CSS Selector library
-    gSupported = false;
-    // Crap. We'll just test anchors and tag names then.
-    // XXX this will never work for 'select' attributes (timesheets)
-    qwerySelectorAll = function(cssQuery, context) {
-      context = context || document;
-      var results = [];
-      if (/^#[^\s]+$/.test(cssQuery)) {      // anchor?
-        var target = document.getElementById(cssQuery.substring(1));
-        if (target)
-          results.push(target);
-      }
-      else if (/^[a-z]+$/i.test(cssQuery)) { // tag name?
-        results = context.getElementsByTagName(cssQuery);
-      }
-      return results;
-    }
-  };
-
-  // ==========================================================================
-  // querySelector() is required to support the 'mediaSync' attribute
-  // ==========================================================================
-
-  if (document.querySelector) { // IE8 and modern browsers
-    qwerySelector = function(cssQuery, context) {
-      context = context || document;
-      return context.querySelector(cssQuery);
-    };
-  }
-  else { // OLDIE (IE6, IE7) and no CSS Selector library
-    // fallback to qwerySelectorAll()
-    qwerySelector = function(cssQuery, context) {
-      var results = qwerySelectorAll(cssQuery, context);
-      if (results && results.length)
-        return results[0];
-      else
-        return null;
-    };
-  }
-
-  // ==========================================================================
-  // Timesheets-specific parsing helpers
-  // ==========================================================================
-
-  function qweryTimeContainers() { // inline time containers
-    if (gSupported) return qwerySelectorAll(
-      "*[data-timecontainer], *[smil-timecontainer], *[timeContainer]");
-    // OLDIE (IE6, IE7) and no CSS Selector library
-    var results = [];
-    var tmp = document.getElementsByTagName("*");
-    var re = /^(par|seq|excl)$/i;
-    for (var i = 0; i < tmp.length; i++) {
-      if (re.test(tmp[i].nodeName)
-          || tmp[i].getAttribute("data-timecontainer")
-          || tmp[i].getAttribute("smil-timecontainer")
-          || tmp[i].getAttribute("timeContainer")) {
-        results.push(tmp[i]);
       }
     }
-    return results;
-  }
-  function qweryExtTimesheets() { // external timesheets
-    if (gSupported) return qwerySelectorAll("link[rel=timesheet]");
-    // OLDIE (IE6, IE7) and no CSS Selector library
-    var results = [];
-    var links = document.getElementsByTagName("link");
-    for (var i = 0; i < links.length; i++) {
-      if (links[i].rel.toLowerCase() == "timesheet") {
-        results.push(links[i]);
-      }
-    }
-    return results;
-  }
-
-  // ==========================================================================
-  // Expose
-  // ==========================================================================
-
-  window.QWERY = {
-    select               : qwerySelector,
-    selectAll            : qwerySelectorAll,
-    selectTimeContainers : qweryTimeContainers,
-    selectExtTimesheets  : qweryExtTimesheets,
-    supported            : gSupported,
-    native               : gNative
   };
-})();
+  EVENTS.trigger = function(node, type) {
+    if (!node) return;
+    type = "on" + type;
+    if (type in node) try { // standard DOM event?
+      node.fireEvent(type);
+      return;
+    } catch(e) {}
+    // custom event: pass an event-like structure to the callback
+    // + use call() to set the 'this' reference within the callback
+    var evtObject = {};
+    evtObject.target = node;
+    evtObject.srcElement = node;
+    if (!node || !node.eventList || !node.eventList[type])
+      return;
+    var callbacks = node.eventList[type];
+    var cbLength = callbacks.length;
+    for (var i = 0; i < cbLength; i++)
+      callbacks[i].call(node, evtObject);
+  };
+  EVENTS.preventDefault = function(e) {
+    e.returnValue = false;
+  };
+}
 
-// ============================================================================
-// Array.indexOf(), Date.now()
-// ============================================================================
-
-if (!Array.indexOf) Array.prototype.indexOf = function(obj) {
-  for (var i = 0; i < this.length; i++) {
-    if (this[i] == obj) {
-      return i;
-    }
+// ===========================================================================
+// Specific Events
+// ===========================================================================
+// 'hashchange' works on most recent browsers
+EVENTS.onHashChange = function(callback) {
+  if ("onhashchange" in window) // IE8 and modern browsers
+    EVENTS.bind(window, "hashchange", callback);
+  else { // use a setInterval loop for older browsers
+    var hash = "";
+    window.setInterval(function() {
+      if (hash != window.location.hash) {
+        hash = window.location.hash;
+        callback();
+      }
+    }, 250); // 250ms timerate by default
   }
-  return -1;
 };
-if (!Date.now) Date.now = function() {
-  var timestamp = new Date();
-  return timestamp.getTime();
+// 'DOMContentLoaded' should work fine everywhere except with IE<9
+EVENTS.onDOMReady = function(callback) {
+  if (window.addEventListener) // modern browsers
+    // http://perfectionlabstips.wordpress.com/2008/12/01/which-browsers-support-native-domcontentloaded-event/
+    // a few browsers support addEventListener without DOMContentLoaded: namely,
+    //   Firefox 1.0, Opera <8 and Safari <2 (according to the above link).
+    // As these browsers aren't supported any more, we can safely ignore them.
+    window.addEventListener("DOMContentLoaded", callback, false);
+  else { // Internet Explorer 6/7/8
+    // there are plenty other ways to do this without delaying the execution
+    // but we haven't taken the time to test the properly yet (FIXME)
+    // http://javascript.nwbox.com/IEContentLoaded/
+    // http://tanny.ica.com/ICA/TKO/tkoblog.nsf/dx/domcontentloaded-for-browsers-part-v
+    // http://www.javascriptfr.com/codes/DOMCONTENTLOADED-DOCUMENT-READY_49923.aspx
+    EVENTS.bind(window, "load", callback);
+  }
+};
+// 'MediaContentLoaded' is fired when all media elements have been parsed
+EVENTS.onMediaReady = function(callback) {
+  EVENTS.bind(window, "MediaContentLoaded", callback);
+};
+// 'SMILContentLoaded' is fired when all time containers have been parsed
+EVENTS.onSMILReady = function(callback) {
+  EVENTS.bind(window, "SMILContentLoaded", callback);
 };
 
 
@@ -509,7 +287,13 @@ function consoleWarn(message) {
   if (typeof(console) == "object")
     console.warn(message);
 }
-
+// predefined CSS selectors to parse time containers and external timesheets
+var CSSQUERY = {
+  //timeContainer: "*[data-timecontainer], *[smil-timecontainer], *[timeContainer], par, seq, excl",
+  timeContainer: "*[data-timecontainer], *[smil-timecontainer], *[timeContainer]",
+  extTimesheets: "link[rel=timesheet]",
+  parTimeNodes: "" // TODO
+};
 // default timeContainer refresh rate = 40ms (25fps)
 var TIMERATE = 40;
 if (window.mejs) // http://mediaelementjs.com/
@@ -518,11 +302,123 @@ if (window.mejs) // http://mediaelementjs.com/
 // array to store all time containers
 var TIMECONTAINERS = [];
 
+// ===========================================================================
 // Detect Internet Explorer 6/7/8
+// ===========================================================================
 // these browsers don't support XHTML, <audio|video>, addEventListener...
-var OLDIE = (window.addEventListener) ? false : true;
 // var IE6 = (window.XMLHttpRequest) ? false : true;
-
+var OLDIE = (window.addEventListener) ? false : true;
+if (OLDIE) {
+  // define 'Date.now()', 'indexOf()' and CSS selectors for IE<9
+  // XXX use document.ELEMENT_NODE instead of Node.ELEMENT_NODE
+  /* if (!Node) var Node = {
+    ELEMENT_NODE                 :  1,
+    ATTRIBUTE_NODE               :  2,
+    TEXT_NODE                    :  3,
+    CDATA_SECTION_NODE           :  4,
+    ENTITY_REFERENCE_NODE        :  5,
+    ENTITY_NODE                  :  6,
+    PROCESSING_INSTRUCTION_NODE  :  7,
+    COMMENT_NODE                 :  8,
+    DOCUMENT_NODE                :  9,
+    DOCUMENT_TYPE_NODE           : 10,
+    DOCUMENT_FRAGMENT_NODE       : 11,
+    NOTATION_NODE                : 12
+  }; */
+  if (!Array.indexOf) Array.prototype.indexOf = function(obj) {
+    for (var i = 0; i < this.length; i++) {
+      if (this[i] == obj) {
+        return i;
+      }
+    }
+    return -1;
+  };
+  if (!Date.now) Date.now = function() {
+    var timestamp = new Date();
+    return timestamp.getTime();
+  };
+}
+// querySelectorAll() / querySelector() aren't supported by IE6 / IE7
+if (!document.querySelectorAll) {
+  // detect Sizzle, jQuery, Dojo, Prototype, Mootools, ExtJS, YUI...
+  if (window.Sizzle) {      // http://sizzlejs.com/
+    document.querySelectorAll = function(cssQuery) {
+      return Sizzle(cssQuery);
+    };
+  }
+  else if (window.jQuery) { // http://jquery.com/
+    document.querySelectorAll = function(cssQuery) {
+      return $(cssQuery);
+    };
+  }
+  else if (window.$$) {     // http://prototypejs.org/ http://mootools.net/
+    document.querySelectorAll = function(cssQuery) {
+      return $$(cssQuery);
+    };
+  }
+  else if (window.dojo) {   // http://dojotoolkit.org/
+    document.querySelectorAll = function(cssQuery) {
+      return dojo.query(cssQuery);
+    };
+  }
+  else if (window.Ext) {   // http://www.sencha.com/products/js/
+    document.querySelectorAll = function(cssQuery) {
+      return Ext.select(cssQuery);
+    };
+  }
+  else if (window.YAHOO) {  // http://developer.yahoo.com/yui/
+    document.querySelectorAll = function(cssQuery) {
+      return YAHOO.util.Selector.query(cssQuery);
+    };
+  }
+  else document.querySelectorAll = function(cssQuery) {
+    // Crap. We'll just test anchors, tag names and predefined queries then.
+    // XXX this will never work for 'select' attributes (timesheets)
+    var results = [];
+    var i;
+    // anchor?
+    if (/^#[^\s]+$/.test(cssQuery)) {
+      var target = document.getElementById(cssQuery.substring(1));
+      if (target)
+        results.push(target);
+    }
+    // tag name?
+    else if (/^[a-z]+$/i.test(cssQuery)) {
+      results = document.getElementsByTagName(cssQuery);
+    }
+    // external timesheets?
+    else if (cssQuery == CSSQUERY.extTimesheets) {
+      var links = document.getElementsByTagName("link");
+      for (i = 0; i < links.length; i++) {
+        if (links[i].rel.toLowerCase() == "timesheet") {
+          results.push(links[i]);
+        }
+      }
+    }
+    // time containers?
+    else if (cssQuery == CSSQUERY.timeContainer) {
+      var tmp = document.getElementsByTagName("*");
+      var re = /^(par|seq|excl)$/i;
+      for (i = 0; i < tmp.length; i++) {
+        if (re.test(tmp[i].nodeName)
+            || tmp[i].getAttribute("data-timecontainer")
+            || tmp[i].getAttribute("smil-timecontainer")
+            || tmp[i].getAttribute("timeContainer")) {
+          results.push(tmp[i]);
+        }
+      }
+    }
+    return results;
+  };
+}
+if (!document.querySelector) document.querySelector = function(cssQuery) {
+  // required by the 'mediaSync' attributes
+  var results = document.querySelectorAll(cssQuery);
+  if (results && results.length)
+    return results[0];
+  else
+    return null;
+};
 
 // ===========================================================================
 // Activate a time node if a hash is found in the URL
@@ -745,12 +641,12 @@ function parseAllTimeContainers() {
   TIMECONTAINERS = [];
 
   // Inline Time Containers (HTML namespace)
-  var allTimeContainers = QWERY.selectTimeContainers();
+  var allTimeContainers = document.querySelectorAll(CSSQUERY.timeContainer);
   for (var i = 0; i < allTimeContainers.length; i++)
     parseTimeContainerNode(allTimeContainers[i]);
 
   // External Timesheets: callback to count all parsed timesheets
-  var timesheets = QWERY.selectExtTimesheets();
+  var timesheets = document.querySelectorAll(CSSQUERY.extTimesheets);
   var tsLength = timesheets.length;
   var tsParsed = 0;
   function CountTimesheets() {
@@ -1215,8 +1111,7 @@ smilTimeItem.prototype.newTargetHandler = function(timeAction, target) {
   };
   var setTargetState_display    = function(state) {
     target.setAttribute("smil", state);
-    target.style.display = (state == "active") ? "block" : "none";
-    /* closer to the spec but raises a bunch of issues. Disabled.
+    //target.style.display = (state == "active") ? "block" : "none";
     if (!target._smildisplay) { // not initialized yet
       if (window.getComputedStyle)
         target._smildisplay = getComputedStyle(target, null).display;
@@ -1225,7 +1120,6 @@ smilTimeItem.prototype.newTargetHandler = function(timeAction, target) {
       consoleLog(target.style.display);
     }
     target.style.display = (state == "active") ? target._smildisplay : "none";
-    */
   };
   var setTargetState_visibility = function(state) {
     target.setAttribute("smil", state);
@@ -1252,7 +1146,6 @@ smilTimeItem.prototype.newTargetHandler = function(timeAction, target) {
   };
 
   // return the appropriate target handler
-  // alert(timeAction);
   switch (timeAction) {
     case "display":
       return setTargetState_display;
@@ -1352,6 +1245,10 @@ function smilTimeItem(domNode, parentNode, targetNode) {
   var fillDefault = parentNode ? parentNode.fillDefault : "remove";
   this.fill        = this.parseAttribute("fill", fillDefault);
   this.fillDefault = this.parseAttribute("fillDefault", null);
+  //if (this.fill == "hold")
+    //alert(this.fill);
+  //if (this.fillDefault)
+    //alert(this.fillDefault);
 
   // show/hide target nodes according to the 'timeAction' attribute
   // 'setTargetState' should be considered as a protected method
@@ -1408,6 +1305,7 @@ function smilTimeItem(domNode, parentNode, targetNode) {
     if (0) try {
       consoleLog(domNode.nodeName + "#" + domNode.id + " -- hide()");
     } catch(e) {}
+//alert(self.fill);
     if (self.fill != "hold")
       self.setTargetState(state);
     self.dispatchEvent("end");
@@ -1497,7 +1395,8 @@ smilTimeContainer_generic.prototype.parseTimeNodes = function() {
       else if (/^(smil:){0,1}item$/i.test(segment.nodeName)) { // timesheet item
         var select = segment.getAttribute("select")
                   || segment.getAttribute("smil:select");
-        targets = QWERY.selectAll(select, this.parentTarget);
+
+        targets = qwery(select, this.parentTarget || document); // XXX querySelectorAll
         // an <item> with child nodes is considered as a <par> container
         if (segment.childNodes.length)
           segment.setAttribute("timeContainer", "par");
@@ -1567,7 +1466,7 @@ smilTimeContainer_generic.prototype.getMediaSync = function(syncMasterNode) {
   // this timeContainer attribute directly points to the master clock,
   // which should be either an <audio> or a <video> element.
   var mediaSyncSelector = this.parseAttribute("mediaSync");
-  return QWERY.select(mediaSyncSelector) || syncMasterNode;
+  return document.querySelector(mediaSyncSelector) || syncMasterNode;
 };
 
 // <seq|excl> time containers can only show one item at a time,
