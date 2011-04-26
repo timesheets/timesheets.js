@@ -1,0 +1,41 @@
+li {
+  list-style-type: disc;
+}
+li li {
+  list-style-type: square !important;
+}
+
+/* collapsable lists */
+.outline   li,
+.accordion li {
+  cursor: pointer;
+  list-style-type: circle;
+}
+.outline   li:hover,
+.accordion li:hover {
+  text-decoration: underline;
+}
+.outline   li ol,
+.outline   li ul,
+.accordion li ol,
+.accordion li ul {
+  display: none;
+}
+.outline li.expanded.active ol,
+.outline li.expanded.active ul {
+  display: none;
+}
+.outline   li.active ol,
+.outline   li.active ul,
+.accordion li.active ol,
+.accordion li.active ul {
+  display: block;
+}
+.outline li.expanded ol,
+.outline li.expanded ul {
+  display: block;
+}
+
+/* hide slides before startup */
+div { display: none; }
+

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>slideshow</title>
+  <link rel="stylesheet" type="text/css" href="slidy.css" />
+  <link rel="timesheet" type="application/smil+xml" href="slidy.smil"></link>
+  <!--[if lt IE 9]>
+    <script type="text/javascript" src="../3rd-part/sizzle.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="../../public/timesheets.js"></script>
+</head>
+<body>
+  <nav>
+    <button id="prev"> « prev </button>
+    <button id="next"> next » </button>
+  </nav>
+
+  <div>
+    <h2> Folding </h2>
+    <ul class="outline">
+      <li>Topic 1 <small>(collapsed by default)</small>
+        <ul>
+          <li> subtopic a </li>
+          <li> subtopic b </li>
+        </ul>
+      </li>
+      <li class="expanded">Topic 2 <small>(expanded by default)</small>
+        <ul>
+          <li> subtopic c </li>
+          <li> subtopic d </li>
+        </ul>
+      </li>
+      <li>Topic 3 <small>(collapsed by default)</small>
+        <ul>
+          <li> subtopic e </li>
+          <li> subtopic f </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div>
+    <h2> Accordion </h2>
+    <ul class="accordion">
+      <li>Premier item Liste 1
+        <ul>
+          <li>Item liste 1 - 1</li>
+          <li>Item liste 1 - 2</li>
+        </ul>
+      </li>
+      <li>Deuxième item Liste 1
+        <ul>
+          <li>Item liste 2 - 1</li>
+          <li>Item liste 2 - 2</li>
+        </ul>
+      </li>
+      <li>Troisième item Liste 1
+        <ul>
+          <li>Item liste 3 - 1</li>
+          <li>Item liste 3 - 2</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="progressive">
+    <h2> Progressive Display </h2>
+    <p> On this slide… </p>
+    <ul>
+      <li>items will appear</li>
+      <li>one after another
+        <ul>
+          <li>even with subitems</li>
+          <li>(timesheet powwa!)</li>
+        </ul>
+      </li>
+      <li>at 2s interval.</li>
+    </ul>
+    <p> And it even works for paragraphs. :-) </p>
+  </div>
+
+  <div class="incremental">
+    <h2> Incremental <small>(click me!)</small></h2>
+    <p> Click again on this slide… </p>
+    <ul>
+      <li>Inc first
+        <ul>
+          <li>Inc Inc 1</li>
+          <li>Inc inc 2</li>
+        </ul>
+      </li>
+      <li>Inc two</li>
+      <li>Inc three</li>
+    </ul>
+    <p> …and it even works for paragraphs. :-) </p>
+    <p> Timesheet powwa! </p>
+  </div>
+
+</body>
+</html>
