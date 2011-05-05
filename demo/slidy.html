@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> timesheets.js :: Slidy Timesheet </title>
+  <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/transitions.css">
+  <link rel="stylesheet" type="text/css" href="style/slideshow.css">
+  <link rel="stylesheet" type="text/css" href="style/slidy.css">
+  <link rel="timesheet" type="application/smil+xml" href="slidy.smil">
+  <!--[if lt IE 9]>
+    <script type="text/javascript" src="../3rd-part/sizzle.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="../timesheets.js"></script>
+  <script type="text/javascript" src="../timesheets-navigation.js"></script>
+</head>
+<body class="carousel">
+  <div id="demo">
+    <div id="slideshow">
+
+      <div class="slide" id="slide1">
+        <h2> Folding </h2>
+        <ul class="outline">
+          <li>Topic 1 <small>(collapsed by default)</small>
+            <ul>
+              <li> subtopic a </li>
+              <li> subtopic b </li>
+            </ul>
+          </li>
+          <li class="expanded">Topic 2 <small>(expanded by default)</small>
+            <ul>
+              <li> subtopic c </li>
+              <li> subtopic d </li>
+            </ul>
+          </li>
+          <li>Topic 3 <small>(collapsed by default)</small>
+            <ul>
+              <li> subtopic e </li>
+              <li> subtopic f </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="slide" id="slide2">
+        <h2> Accordion </h2>
+        <ul class="accordion">
+          <li>Premier item Liste 1
+            <ul>
+              <li>Item liste 1 - 1</li>
+              <li>Item liste 1 - 2</li>
+            </ul>
+          </li>
+          <li>Deuxième item Liste 1
+            <ul>
+              <li>Item liste 2 - 1</li>
+              <li>Item liste 2 - 2</li>
+            </ul>
+          </li>
+          <li>Troisième item Liste 1
+            <ul>
+              <li>Item liste 3 - 1</li>
+              <li>Item liste 3 - 2</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="slide" id="slide3">
+        <h2> Incremental </h2>
+        <p> Click on this slide… </p>
+        <ul class="incremental">
+          <li> and items will appear </li>
+          <li> one after another
+            <ul>
+              <li>(this also applies to subitems)</li>
+              <li>(timesheet powwa!)</li>
+            </ul>
+        </ul>
+        <p class="incremental"> …and it even works for paragraphs. :-) </p>
+      </div>
+
+      <div class="slide" id="slide4">
+        <h2> Progressive Display </h2>
+        <p class="progressive"> On this slide… </p>
+        <ul class="progressive">
+          <li> items will appear </li>
+          <li> one after another
+            <ul>
+              <li> (this also applies to subitems) </li>
+              <li> (timesheet powwa!)              </li>
+            </ul>
+          </li>
+          <li> at 2s interval. </li>
+        </ul>
+      </div>
+
+      <p class="menu">
+        <button id="first" title="first slide">       |«     </button>
+        <button id="prev"  title="previous slide"> &lt; prev </button>
+        <button id="next"  title="next slide">     next &gt; </button>
+        <button id="last"  title="last slide">         »|    </button>
+      </p>
+
+    </div>
+  </div>
+
+  <p id="transitionSelector">
+    <strong>CSS transition</strong>:
+    <button class="none"
+      onclick="document.body.className='none';">none</button> |
+    <button class="crossfade"
+      onclick="document.body.className='crossfade';">cross-fade</button> |
+    <button class="fadethrough"
+      onclick="document.body.className='fadethrough';">fade-through</button> |
+    <button class="carousel"
+      onclick="document.body.className='carousel';">carousel</button> |
+    <button class="slide"
+      onclick="document.body.className='slide';">slide-in</button> |
+    <button class="toss"
+      onclick="document.body.className='toss';">toss</button>
+  </p>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- Slideshow Navigation -->
+  <seq timeAction="intrinsic" prev="prev.click" next="next.click" navigation="arrows">
+    <item select="div.slide">
+      <par>
+
+        <!-- Outline/Accordion Lists -->
+        <par timeAction="class:active">
+          <item select=".outline   > li" begin="click" end="click" />
+        </par>
+        <excl timeAction="class:active">
+          <item select=".accordion > li" begin="click" end="click" />
+        </excl>
+
+        <!-- Incremental/Progressive Display -->
+        <seq timeAction="visibility" begin="click" next="click">
+          <item select=".incremental:not(ul):not(ol), .incremental li" fill="hold" />
+        </seq>
+        <par timeAction="visibility">
+          <item select=".progressive:not(ul):not(ol), .progressive li" beginInc="2s" />
+        </par>
+
+      </par>
+    </item>
+  </seq>
+
+</timesheet>
