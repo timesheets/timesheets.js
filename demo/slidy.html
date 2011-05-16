@@ -19,80 +19,147 @@
     <div id="slideshow">
 
       <div class="slide" id="slide1">
-        <h2> Folding </h2>
-        <ul class="outline">
-          <li>Topic 1 <small>(collapsed by default)</small>
-            <ul>
-              <li> subtopic a </li>
-              <li> subtopic b </li>
-            </ul>
+        <h2> HTML Slidy </h2>
+        <ul>
+          <li>
+            Dave Raggett’s
+            <a href="http://www.w3.org/Talks/Tools/Slidy2/">Slidy</a> is a tool
+            to create slideshows in HTML / XHTML
           </li>
-          <li class="expanded">Topic 2 <small>(expanded by default)</small>
-            <ul>
-              <li> subtopic c </li>
-              <li> subtopic d </li>
-            </ul>
+          <li>
+            it relies on a simple micro-format and a JavaScript implementation
           </li>
-          <li>Topic 3 <small>(collapsed by default)</small>
-            <ul>
-              <li> subtopic e </li>
-              <li> subtopic f </li>
-            </ul>
+          <li>
+            most of Slidy’s features can be defined (and extended!) with a
+            simple timesheet
           </li>
         </ul>
       </div>
 
       <div class="slide" id="slide2">
-        <h2> Accordion </h2>
-        <ul class="accordion">
-          <li>Premier item Liste 1
+        <h2> Outline Lists With Hidden Content </h2>
+        <p>
+          You can make your bullet points or numbered list items into outlines
+          that you can expand or collapse:
+        </p>
+        <ul class="outline">
+          <li>
+            Add <code>class="outline"</code> to the <code>&lt;ul&gt;</code>
+            or <code>&lt;ol&gt;</code> element.
+            <small>(Click on this list item for more details)</small>
             <ul>
-              <li>Item liste 1 - 1</li>
-              <li>Item liste 1 - 2</li>
+              <li>Slidy will then treat the list as an outline list.</li>
+              <li>Clicking on outline list items will expand/collapse block-level elements within that list item.</li>
+              <!--<li>Click to make this list item collapse again.</li>-->
             </ul>
           </li>
-          <li>Deuxième item Liste 1
+          <!--
+             -<li>
+             -  Users will then see expand/collapse icons as appropriate and may click
+             -  anywhere on the list item to change its state.
+             -  This particular list item can't be expanded or collapsed.
+             -</li>
+             -->
+          <li class="expand">
+            Add <code>class="expand"</code> to any <code>&lt;li&gt;</code>
+            elements that you want to start in an expanded state.
             <ul>
-              <li>Item liste 2 - 1</li>
-              <li>Item liste 2 - 2</li>
+              <li>
+                All block-level elements within the outline list items are
+                hidden unless <code>class="expand"</code> is specified.
+              </li>
+              <li>
+                Such pre-expanded items can be collapsed by clicking on them
+                (not supported on IE6).
+              </li>
             </ul>
           </li>
-          <li>Troisième item Liste 1
-            <ul>
-              <li>Item liste 3 - 1</li>
-              <li>Item liste 3 - 2</li>
-            </ul>
-          </li>
+          <!--
+             -<li>
+             -  Note expand/collapse icon highlighting requires browser support for :hover which isn't supported by IE6.
+             -</li>
+             -->
         </ul>
       </div>
 
       <div class="slide" id="slide3">
-        <h2> Incremental </h2>
-        <p> Click on this slide… </p>
-        <ul class="incremental">
-          <li> and items will appear </li>
-          <li> one after another
+        <h2> Accordion Lists </h2>
+        <p>
+          Here’s a variant of the previous slide. This is not supported by
+          Slidy.
+        </p>
+        <ul class="accordion">
+          <li>
+            Add <code>class="accordion"</code> to the <code>&lt;ul&gt;</code>
+            or <code>&lt;ol&gt;</code> element. 
+            <small>(Click on this list item for more details)</small>
             <ul>
-              <li>(this also applies to subitems)</li>
-              <li>(timesheet powwa!)</li>
+              <li>Slidy will then treat the list as an accordion list.</li>
+              <li>Clicking on outline list items will expand/collapse block-level elements within that list item.</li>
             </ul>
+          </li>
+          <li>
+            Compared to the <code>outline</code> class, there are two
+            differences.
+            <small>(Click on this list item for more details)</small>
+            <ul>
+              <li>
+                Only one list item can be expanded at a time.
+              </li>
+              <li>
+                <code>class="expand"</code> is not supported (yet).
+              </li>
+            </ul>
+          </li>
         </ul>
-        <p class="incremental"> …and it even works for paragraphs. :-) </p>
       </div>
 
       <div class="slide" id="slide4">
-        <h2> Progressive Display </h2>
-        <p class="progressive"> On this slide… </p>
-        <ul class="progressive">
-          <li> items will appear </li>
-          <li> one after another
+        <h2> Incremental Display <small>(click me!)</small> </h2>
+        <p>
+          For incremental display, <br>
+          use <code>class="incremental"</code>:
+        </p>
+        <ul class="incremental">
+          <li> First bullet point
             <ul>
-              <li> (this also applies to subitems) </li>
-              <li> (timesheet powwa!)              </li>
+              <li> subitem [a] </li>
+              <li> subitem [b] </li>
             </ul>
           </li>
-          <li> at 2s interval. </li>
+          <li> Second bullet point </li>
+          <li> Third bullet point  </li>
         </ul>
+        <p class="incremental"> This also works for images. :-) </p>
+        <div class="incremental" style="position: absolute; top: 3em; right: 250px;"> 
+          <img src="images/face1.gif" alt="face"  style="position: static;"> 
+          <img src="images/face2.gif" alt="eyes"  style="position: absolute; left: 0; top: 0;"> 
+          <img src="images/face3.gif" alt="nose"  style="position: absolute; left: 0; top: 0;"> 
+          <img src="images/face4.gif" alt="mouth" style="position: absolute; left: 0; top: 0;"> 
+        </div> 
+      </div>
+
+      <div class="slide" id="slide5">
+        <h2> Progressive Display </h2>
+        <p class="progressive">
+          Variant: <code>class="progressive"</code>
+        </p>
+        <ul class="progressive">
+          <li> on this slide     </li>
+          <li> all items appear  </li>
+          <li> one after another </li>
+          <li> at 2s interval.   </li>
+        </ul>
+        <p class="progressive"> This still works for images. :-) </p>
+        <div class="progressive" style="position: absolute; top: 3em; right: 250px;"> 
+          <img src="images/face1.gif" alt="face"  style="position: static;"> 
+          <img src="images/face2.gif" alt="eyes"  style="position: absolute; left: 0; top: 0;"> 
+          <img src="images/face3.gif" alt="nose"  style="position: absolute; left: 0; top: 0;"> 
+          <img src="images/face4.gif" alt="mouth" style="position: absolute; left: 0; top: 0;"> 
+        </div> 
+        <!--<p class="progressive">-->
+          <!--(you still have to click on «Next» to get the next slide)-->
+        <!--</p>-->
       </div>
 
       <p class="menu">

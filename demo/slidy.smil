@@ -16,10 +16,10 @@
 
         <!-- Incremental/Progressive Display -->
         <seq timeAction="visibility" begin="click" next="click">
-          <item select=".incremental:not(ul):not(ol), .incremental li" fill="hold" />
+          <item select=".incremental:not(ul):not(ol):not(div), .incremental li, .incremental img" fill="hold" />
         </seq>
         <par timeAction="visibility">
-          <item select=".progressive:not(ul):not(ol), .progressive li" beginInc="2s" />
+          <item select=".progressive:not(ul):not(ol):not(div), .progressive li, .progressive img" beginInc="2s" />
         </par>
 
       </par>
