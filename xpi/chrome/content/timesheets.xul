@@ -216,18 +216,18 @@
       </html:h2>
       <label value="base URI:"/>
       <hbox>
-        <textbox id="mediaBaseURI" flex="1" readonly="true" crop="end"
+        <textbox id="mediaBaseURI" flex="1" crop="end"
                  value="http://wam.inrialpes.fr/timesheets/media/composer/" />
       </hbox>
       <label value="media file:"/>
       <hbox>
-        <textbox id="mediaSource" flex="1" readonly="true" value="audio.ogg" />
+        <textbox id="mediaSource" flex="1" value="audio.ogg" />
       </hbox>
       <label value="waveform file:"/>
       <hbox>
-        <textbox id="mediaWaveform" flex="1" readonly="true" value="audio-44k.wav" />
+        <textbox id="mediaWaveform" flex="1" value="audio-16k.wav" />
       </hbox>
-      <button label="downloadButton" onclick="loadMediaFiles()" />
+      <button id="downloadButton" label="download" oncommand="loadMediaFiles(true)" />
       <progressmeter id="downloadProgress" mode="determined" value="0"
       style="visibility: hidden;" />
       

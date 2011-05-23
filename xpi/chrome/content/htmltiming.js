@@ -176,10 +176,10 @@ function loadMediaFiles(aForceReload) {
                                .getService(Components.interfaces.nsIProperties)
                                .get("TmpD", Components.interfaces.nsIFile);
   waveformFile.append(gDialog.mediaWaveform.value);
-  consoleLog(waveformFile.path);
   if (waveformFile.exists() && !aForceReload) {
     // a temp file is already available, try using it
-    setTimeout(function() {
+    consoleLog(waveformFile.path + " already cached.");
+    setTimeout(function() { // XXX why do we need a delay here?
       drawWaveform(waveformFile);
     }, 500);
     return;
@@ -205,7 +205,10 @@ function loadMediaFiles(aForceReload) {
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & 0x10) { // finished, failed or canceled
         gDialog.downloadProgress.style.visibility = "hidden";
-        drawWaveform(waveformFile);
+        consoleLog(waveformFile.path + " downloaded.");
+        setTimeout(function() { // XXX why do we need a delay here?
+          drawWaveform(waveformFile);
+        }, 500);
       }
     }
   }
