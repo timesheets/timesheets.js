@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
+   -
+   - The contents of this file are subject to the Mozilla Public License Version
+   - 1.1 (the "License"); you may not use this file except in compliance with
+   - the License. You may obtain a copy of the License at
+   - http://www.mozilla.org/MPL/
+   -
+   - Software distributed under the License is distributed on an "AS IS" basis,
+   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+   - for the specific language governing rights and limitations under the
+   - License.
+   -
+   - The Original Code is INRIA.
+   -
+   - The Initial Developer of the Original Code is INRIA.
+   - Portions created by the Initial Developer are Copyright (C) 2010-2011
+   - the Initial Developer. All Rights Reserved.
+   -
+   - Contributor(s):
+   -    Fabien Cazenave <fabien@cazenave.cc>
+   -
+   - Alternatively, the contents of this file may be used under the terms of
+   - either the GNU General Public License Version 2 or later (the "GPL"), or
+   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+   - in which case the provisions of the GPL or the LGPL are applicable instead
+   - of those above. If you wish to allow use of your version of this file only
+   - under the terms of either the GPL or the LGPL, and not to allow others to
+   - use your version of this file under the terms of the MPL, indicate your
+   - decision by deleting the provisions above and replace them with the notice
+   - and other provisions required by the LGPL or the GPL. If you do not delete
+   - the provisions above, a recipient may use your version of this file under
+   - the terms of any one of the MPL, the GPL or the LGPL.
+   -
+   - ***** END LICENSE BLOCK ***** -->
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css" href="htmltiming.css" ?>
+<window title="Timesheet Composer"
+       onload="startup()"
+     onrezize="gTimeCursor.getBoundingBox();"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+   xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/waveform.js" />
+  <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/htmltiming.js" />
+
+  <toolbox />
+  <popupset>
+    <menupopup id="transition">
+      <menuitem label="none"/>
+      <menuseparator />
+      <menuitem label="cross-fade"/>
+      <menuitem label="fade-through"/>
+      <menuitem label="slide-x"/>
+      <menuitem label="slide-y"/>
+      <menuitem label="carousel-x"/>
+      <menuitem label="carousel-y"/>
+    </menupopup>
+  </popupset>
+
+  <hbox id="sidebar-parent" flex="1">
+
+    <!-- XXX add sidebarOverlay.xul -->
+    <vbox id="sidebar-left" class="chromeclass-extrachrome" hidden="false">
+    <!--
+      <hbox>
+        <label value="#1"/>
+      </hbox>
+      <hbox class="active">
+        <label value="#2"/>
+      </hbox>
+      <hbox>
+        <label value="#3"/>
+      </hbox>
+      <hbox>
+        <label value="#4"/>
+      </hbox>
+      <hbox>
+        <label value="#5"/>
+      </hbox>
+      -->
+    </vbox>
+
+    <splitter
+        id        = "sidebar-left-splitter"
+        class     = "chromeclass-extrachrome"
+        onmouseup = "gTimeCursor.getBoundingBox();"
+        state     = "collapsed"
+        collapse  = "before">
+      <vbox flex="1">
+        <grippy />
+      </vbox>
+    </splitter>
+
+    <!-- main window -->
+    <vbox id="appcontent" flex="1">
+
+      <!-- editable content / preview -->
+      <tabbox flex="1">
+        <tabpanels flex="1">
+          <tabpanel id="editionTab"> </tabpanel>
+          <tabpanel id="previewTab"> </tabpanel>
+        </tabpanels>
+        <tabs>
+          <tab label="Edit" />
+          <tab label="Preview" />
+        </tabs>
+      </tabbox>
+
+      <splitter
+          id       = "preview-splitter"
+          style    = "margin-top: 1em;"
+          class    = "chromeclass-extrachrome"
+          state    = "collapsed"
+          collapse = "before">
+        <!--<grippy />-->
+      </splitter>
+
+      <!-- editable timeline -->
+      <vbox id="timeController">
+        <!-- toolbar -->
+        <hbox>
+          <html:h1 flex="1">
+            Timeline
+          </html:h1>
+          <vbox pack="end">
+            <hbox>
+              <button label="|←→|" oncommand="drawWaveform()"/>
+              <button label="+"    oncommand="gTimeCursor.zoomIn()"/>
+              <button label="-"    oncommand="gTimeCursor.zoomOut()"/>
+              <button label="new"  oncommand="newSegment()"/>
+            </hbox>
+          </vbox>
+        </hbox>
+
+        <!-- timeline + segments -->
+        <html:div style="margin-top: 1em; margin-bottom: 2em; position: relative; height: 60px;">
+          <html:canvas id="waveformGraph" width="512" height="60" />
+          <html:div id="timePos" />
+          <html:div id="timeSpan" />
+        </html:div>
+
+        <hbox id="timeContainerProps" pack="begin" align="center">
+          <label value="timeContainer:"/>
+          <menulist id="timeContainer" style="width: 100px;" onselect="computeTimeNodes()">
+            <menupopup>
+              <menuitem value="par"  label="par" selected="true"/>
+              <menuitem value="seq"  label="seq" disabled="true"/>
+              <menuitem value="excl" label="excl"/>
+            </menupopup>
+          </menulist>
+          <label value="transition:"/>
+          <menulist style="width: 200px;">
+            <menupopup>
+              <menuitem label="none"/>
+              <menuseparator />
+              <menuitem label="cross-fade"/>
+              <menuitem label="fade-through"/>
+              <menuitem label="slide-x"/>
+              <menuitem label="slide-y"/>
+              <menuitem label="carousel-x"/>
+              <menuitem label="carousel-y"/>
+            </menupopup>
+          </menulist>
+          <spacer flex="1"/>
+          <button label="sort"  oncommand="sortSegments; computeTimeNodes()"/>
+        </hbox>
+
+        <html:div id="timeSegments" />
+
+        <deck id="mediaPlayer">
+          <html:audio controls="true" />
+          <html:video controls="true" />
+        </deck>
+      </vbox>
+
+      <splitter
+          id        = "timeController-splitter"
+          class     = "chromeclass-extrachrome"
+          onmouseup = "gTimeCursor.getBoundingBox();"
+          collapse  = "after">
+        <grippy />
+      </splitter>
+
+      <!-- content / data -->
+      <vbox id="content" flex="1">
+        <groupbox id="segmentTemplate" hidden="true">
+          <hbox align="center">
+            <spacer flex="1"/>
+            <label value="begin"/>
+            <textbox />
+            <label value="end"/>
+            <textbox />
+            <checkbox label="auto" checked="false" hidden="true"/>
+          </hbox>
+          <textbox multiline="true" value="(empty)"/>
+        </groupbox>
+      </vbox>
+
+    </vbox> <!-- appcontent -->
+
+    <splitter
+        id       = "sidebar-right-splitter"
+        class    = "chromeclass-extrachrome"
+        collapse = "after">
+      <vbox flex="1">
+        <grippy />
+      </vbox>
+    </splitter>
+
+    <vbox id="sidebar-right" class="chromeclass-extrachrome" hidden="false">
+      <html:h2>
+        Media
+      </html:h2>
+      <label value="base URI:"/>
+      <hbox>
+        <textbox id="mediaBaseURI" flex="1" readonly="true" crop="end"
+                 value="http://wam.inrialpes.fr/timesheets/media/composer/" />
+      </hbox>
+      <label value="media file:"/>
+      <hbox>
+        <textbox id="mediaSource" flex="1" readonly="true" value="audio.ogg" />
+      </hbox>
+      <label value="waveform file:"/>
+      <hbox>
+        <textbox id="mediaWaveform" flex="1" readonly="true" value="audio-44k.wav" />
+      </hbox>
+      <button label="downloadButton" onclick="loadMediaFiles()" />
+      <progressmeter id="downloadProgress" mode="determined" value="0"
+      style="visibility: hidden;" />
+      
+      <html:h2>
+        Parameters
+      </html:h2>
+      <!--
+      <label value="media file:"/>
+      <hbox>
+        <textbox id="mediaFilePath" flex="1" readonly="true" crop="end" />
+        <toolbarbutton label="…" oncommand="getMediaFile()"/>
+      </hbox>
+      <label value="waveform file:"/>
+      <hbox>
+        <textbox id="waveformFilePath" flex="1" readonly="true" crop="end" />
+        <toolbarbutton label="…" oncommand="getWaveformFile()"/>
+      </hbox>
+      -->
+      <label value="chunk duration:"/>
+      <hbox align="center">
+        <textbox id="chunkDuration" type="number" min="0" value="0" increment="50"
+            tooltiptext="leave 0 to parse the whole PCM/8 file"/>
+        <label value="ms"/>
+      </hbox>
+      <label value="zoom delay:"/>
+      <hbox align="center">
+        <textbox id="zoomDelay" type="number" min="0" value="0" increment="50"
+            tooltiptext="emulates the server’s response time"/>
+        <label value="ms"/>
+      </hbox>
+
+      <html:h2>
+        Tests
+      </html:h2>
+      <label value="elapsed time:"/>
+      <textbox id="elapsedTime" readonly="true" />
+      <label value="canvas width:"/>
+      <textbox id="canvasWidth" readonly="true" />
+      <label value="console:"/>
+      <textbox id="console" multiline="true" flex="1" readonly="true" />
+    </vbox>
+
+  </hbox><!-- sidebar-parent -->
+</window>

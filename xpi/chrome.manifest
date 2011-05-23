@@ -1,0 +1,3 @@
+content timesheets     chrome/content/
+overlay chrome://browser/content/browser.xul chrome://timesheets/content/overlay.xul
+
