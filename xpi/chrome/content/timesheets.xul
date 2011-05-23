@@ -225,7 +225,14 @@
       </hbox>
       <label value="waveform file:"/>
       <hbox>
-        <textbox id="mediaWaveform" flex="1" value="audio-16k.wav" />
+        <!--<textbox id="mediaWaveform" flex="1" value="audio-16k.wav" />-->
+        <menulist id="mediaWaveform" flex="1" editable="true">
+          <menupopup>
+            <menuitem label="audio-16k.wav" selected="true" />
+            <menuitem label="audio-44k.wav"/>
+            <menuitem label="audio.wav"/>
+          </menupopup>
+        </menulist>
       </hbox>
       <button id="downloadButton" label="download" oncommand="loadMediaFiles(true)" />
       <progressmeter id="downloadProgress" mode="determined" value="0"
