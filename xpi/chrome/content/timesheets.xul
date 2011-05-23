@@ -36,12 +36,12 @@
    - ***** END LICENSE BLOCK ***** -->
 
 <?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
-<?xml-stylesheet type="text/css" href="htmltiming.css" ?>
-<window title="Timesheet Composer"
-       onload="startup()"
-     onrezize="gTimeCursor.getBoundingBox();"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-   xmlns:html="http://www.w3.org/1999/xhtml">
+<?xml-stylesheet type="text/css" href="chrome://timesheets/content/htmltiming.css" ?>
+<window title = "Timesheet Composer"
+       onload = "startup()"
+     onrezize = "gTimeCursor.getBoundingBox();"
+        xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+   xmlns:html = "http://www.w3.org/1999/xhtml">
 
   <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/waveform.js" />
   <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/htmltiming.js" />
@@ -217,11 +217,13 @@
       <label value="base URI:"/>
       <hbox>
         <textbox id="mediaBaseURI" flex="1" crop="end"
+                 style="text-align: left;"
                  value="http://wam.inrialpes.fr/timesheets/media/composer/" />
       </hbox>
       <label value="media file:"/>
       <hbox>
-        <textbox id="mediaSource" flex="1" value="audio.ogg" />
+        <textbox id="mediaSource" flex="1" value="audio.ogg"
+                 style="text-align: left;" />
       </hbox>
       <label value="waveform file:"/>
       <hbox>
