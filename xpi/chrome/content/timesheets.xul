@@ -122,9 +122,10 @@
       <vbox id="timeController">
         <!-- toolbar -->
         <hbox>
-          <html:h1 flex="1">
+          <html:h1>
             Timeline
           </html:h1>
+          <spacer flex="1" />
           <vbox pack="end">
             <hbox>
               <button label="|←→|" oncommand="drawWaveform()"/>
@@ -136,14 +137,15 @@
         </hbox>
 
         <!-- timeline + segments -->
-        <html:div style="margin-top: 1em; margin-bottom: 2em; position: relative; height: 60px;">
+        <html:div style="margin-top: 1em; margin-bottom: 2em; position: relative; height: 90px;">
+          <html:canvas id="waveformZoom"  width="512" height="30" />
           <html:canvas id="waveformGraph" width="512" height="60" />
           <html:div id="timePos" />
           <html:div id="timeSpan" />
         </html:div>
 
         <hbox id="timeContainerProps" pack="begin" align="center">
-          <label value="timeContainer:"/>
+          <label value="timeContainer:" context="transition"/>
           <menulist id="timeContainer" style="width: 100px;" onselect="computeTimeNodes()">
             <menupopup>
               <menuitem value="par"  label="par" selected="true"/>

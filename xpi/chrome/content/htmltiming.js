@@ -34,18 +34,22 @@
   -
   - ***** END LICENSE BLOCK *****/
 
-const nsIFilePicker = Components.interfaces.nsIFilePicker;
-const htmlNS        = "http://www.w3.org/1999/xhtml";
-const xulNS         = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+const htmlNS  = "http://www.w3.org/1999/xhtml";
+const xulNS   = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+const SCENARI = false;
+const DEBUG   = false;
 
-var gDialog = {};
-var gMediaPlayer; // <audio|video> element
-var gTimeCursor;  // div#timePos|div#timeSpan elements and methods
-var gWaveform;    // <canvas> element and methods
+var gDialog = {};       // UI elements
+var gMediaPlayer;       // <audio|video> element
+var gTimeCursor;        // div#timePos|div#timeSpan elements and methods
+var gWaveform;          // <canvas> element and methods
+var gTimeSegments = []; // time segment array
 
 function startup() {
-  //gDialog.waveformGraph    = document.getElementById("waveformGraph");
-  gDialog.waveformGraph    = document.getElementsByTagNameNS(htmlNS, "canvas").item(0);
+  gDialog.waveformZoom     = document.getElementById("waveformZoom");
+  gDialog.waveformGraph    = document.getElementById("waveformGraph");
+  //gDialog.waveformZoom     = document.getElementsByTagNameNS(htmlNS, "canvas").item(0);
+  //gDialog.waveformGraph    = document.getElementsByTagNameNS(htmlNS, "canvas").item(1);
   gDialog.timePos          = document.getElementById("timePos");
   gDialog.timeSpan         = document.getElementById("timeSpan");
 
@@ -83,6 +87,19 @@ function startup() {
 
   consoleLog("startup");
 
+  // disable right-click on all HTML elements
+  // XXX I can't believe there's no better way to do that
+  if (!DEBUG) {
+    var elements = document.getElementsByTagNameNS(htmlNS, "*");
+    for (var i = 0; i < elements.length; i++) {
+      //elements[i].setAttribute("oncontextmenu", "return false;");
+      elements[i].addEventListener("contextmenu", function(event) {
+        if (/^html/i.test(event.target.nodeName))
+          event.preventDefault();
+      }, true);
+    }
+  }
+
   // create the waveform graph when the media player is ready
   gMediaPlayer.addEventListener("loadedmetadata", function() {
     gWaveform = new pcmWaveformGraph(gDialog.waveformGraph, gMediaPlayer.duration);
@@ -109,30 +126,8 @@ function consoleLog(message) {
 }
 
 /* testing: get the document folder and the default audio track+waveform
-function getTestTracks() {
-  // current path
-  var basePath;
-  netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-  var ios = Components.classes["@mozilla.org/network/io-service;1"]
-                      .getService(Components.interfaces.nsIIOService);
-  var url = ios.newURI(document.location, null, null);
-  if (!url || !url.schemeIs("file")) {
-    //throw "Expected a file URL.";
-    basePath = "/Users/kaze/Documents/htmltiming@kompozer.net/chrome/content/";
-  }
-  else {
-    var file = url.QueryInterface(Components.interfaces.nsIFileURL).file;
-    basePath = file.parent.path + "/";
-    //console.log(basePath);
-  }
-
-  //gDialog.waveformFilePath.value = basePath + "audio-44k.wav";
-  //gDialog.mediaFilePath.value    = "./audio.ogg";
-  //gDialog.audioPlayer.src        = "./audio.ogg";
-  //drawWaveform();
-}
-
 function getFilePicker(aTitle, aFileExt, aFallback) {
+  const nsIFilePicker = Components.interfaces.nsIFilePicker;
   var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
   fp.init(window, aTitle, nsIFilePicker.modeOpen);
   fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
@@ -160,28 +155,34 @@ function getWaveformFile() {
     console.log(fp.file.path);
     drawWaveform();
   });
-}
-*/
+} */
+
 function loadMediaFiles(aForceReload) {
   // get media URLs
   var baseURL = gDialog.mediaBaseURI.value;
   var mediaSource   = baseURL + gDialog.mediaSource.value;
   var mediaWaveform = baseURL + gDialog.mediaWaveform.value;
 
-  // load the remote media source in the HTML5 media player
-  gDialog.audioPlayer.src = mediaSource;
-
   // get a temp file for the local waveform data
   var waveformFile = Components.classes["@mozilla.org/file/directory_service;1"]
                                .getService(Components.interfaces.nsIProperties)
                                .get("TmpD", Components.interfaces.nsIFile);
   waveformFile.append(gDialog.mediaWaveform.value);
-  if (waveformFile.exists() && !aForceReload) {
-    // a temp file is already available, try using it
-    consoleLog(waveformFile.path + " already cached.");
+
+  // load the remote media source in the HTML5 media player
+  gMediaPlayer.src = mediaSource;
+
+  // draw as soon as the media's metadata is ready
+  function draw() {
     setTimeout(function() { // XXX why do we need a delay here?
       drawWaveform(waveformFile);
     }, 500);
+  }
+
+  // if a temp file is already available, use it and exit
+  if (waveformFile.exists() && !aForceReload) {
+    consoleLog(waveformFile.path + " already cached.");
+    draw();
     return;
   }
    
@@ -206,9 +207,7 @@ function loadMediaFiles(aForceReload) {
       if (aStateFlags & 0x10) { // finished, failed or canceled
         gDialog.downloadProgress.style.visibility = "hidden";
         consoleLog(waveformFile.path + " downloaded.");
-        setTimeout(function() { // XXX why do we need a delay here?
-          drawWaveform(waveformFile);
-        }, 500);
+        draw();
       }
     }
   }
@@ -217,8 +216,6 @@ function loadMediaFiles(aForceReload) {
 }
 
 // time segments
-var gTimeSegments = [];
-
 function newSegment() {
   var begin = Math.round(gTimeCursor.begin * 100) / 100;
   var end   = Math.round(gTimeCursor.end   * 100) / 100;
@@ -226,7 +223,6 @@ function newSegment() {
     end = Infinity;
   gTimeSegments.push(new timeSegment(begin, end));
 }
-
 function delSegment(timeSegment) {
   var i = gTimeSegments.indexOf(timeSegment);
   if (i >= 0) {
@@ -237,7 +233,6 @@ function delSegment(timeSegment) {
     gTimeSegments.splice(i, 1);
   }
 }
-
 function sortSegments() {
   var swap, data1, data2;
   do { // there are few items, we can do a lazy bubble sort
@@ -260,31 +255,6 @@ function sortSegments() {
       }
     }
   } while(swap);
-}
-function sortSegments_zilch() {
-  consoleLog("sort");
-  consoleLog("before:");
-  var before = "";
-  for (var i = 0; i < gTimeSegments.length; i++) {
-    consoleLog("  " + gTimeSegments[i].begin);
-  }
-
-  var segments = [];
-  for (var i = 0; i < gTimeSegments.length; i++) {
-    segments.push({
-      i : gTimeSegments[i].begin,
-      x : gTimeSegments[i]
-    });
-  }
-
-  //gTimeSegments = gTimeSegments.sort();
-  segments = segments.sort();
-
-  consoleLog("after:");
-  var after = "";
-  for (var i = 0; i < gTimeSegments.length; i++) {
-    consoleLog("  " + segments[i].i);
-  }
 }
 
 // redraw time blocks
@@ -374,9 +344,6 @@ function timeSegment(begin, end) {
         consoleLog("delete current time node");
         delSegment(self);
         break;
-      case 2:
-        consoleLog("right-click");
-        break;
     }
   }, false);
   block.main.addEventListener("dblclick", function(event) {
@@ -413,11 +380,13 @@ function timeSegment(begin, end) {
   this.block    = block;
 }
 
-// <div> block for the #timeSegments container
+// <hbox> block for the #timeSegments container
 function segmentBlock(parent, begin, end) {
   var self = this;
 
-  this.main  = document.createElementNS(htmlNS, "div"); // main block
+  // note: the 'main' element could be an <html:div> block
+  // but the contextual menu wouldn't work (see 'context' attribute)
+  this.main  = document.createElementNS(xulNS, "hbox"); // main block
   this.begin = document.createElementNS(htmlNS, "div"); // left handle
   this.end   = document.createElementNS(htmlNS, "div"); // right handle
 
@@ -425,9 +394,8 @@ function segmentBlock(parent, begin, end) {
   this.end.className   = "handle-right";
   this.main.appendChild(this.begin);
   this.main.appendChild(this.end);
-  //this.main.setAttributeNS(xulNS, "xul");
-  this.main.setAttributeNS(xulNS, "popup",     "transition"); // XXX not working
-  this.main.setAttributeNS(xulNS, "menupopup", "transition"); // XXX not working
+  if (!SCENARI)
+    this.main.setAttribute("context", "transition");
 
   this.draw = function (aWaveformBegin, aWaveformEnd) {
     var left  = Math.max(parent.time_in,  aWaveformBegin);

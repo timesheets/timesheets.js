@@ -220,7 +220,7 @@ function timeCursor(timePos, timeSpan, canvas, mediaPlayer) {
   mediaPlayer.addEventListener("timeupdate", onTimeUpdate, false);
 }
 
-function pcmFile(filePath, duration, chunkDuration) {
+function pcmFile(wavFile, duration, chunkDuration) {
   var iStream; // input stream handler
   var bStream; // binary stream handler
   var header;  // WAV header
@@ -242,11 +242,12 @@ function pcmFile(filePath, duration, chunkDuration) {
     var canvasWidth = parseInt(getComputedStyle(context.canvas, null).width, 10);
     gDialog.canvasWidth.value = canvasWidth;
 
-    // open WAV file
+    /* open WAV file
     netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
     var wavFile = Components.classes["@mozilla.org/file/local;1"]
                             .createInstance(Components.interfaces.nsILocalFile);
     wavFile.initWithPath(filePath);
+    */
 
     // get a binary stream for the WAV file
     iStream = Components.classes["@mozilla.org/network/file-input-stream;1"]
@@ -317,14 +318,16 @@ function pcmWaveformGraph(canvas, duration) {
   };
 
   // draw PCM/8 data (= 8-bit encoded WAV files)
-  var wavFile;
-  this.drawPCM = function(filePath, chunkDuration) {
+  var wavFile;   // private pcmFile instance
+  var localFile; // private nsILocalFile instance
+  this.drawPCM = function(aLocalFile, chunkDuration) {
     redrawSegmentBlocks(0, duration);
     var t1 = Date.now();
     this.clear();
     context.lineWidth = 0.7;
     context.strokeStyle = pcmCanvasColor;
-    wavFile = new pcmFile(filePath, duration, chunkDuration);
+    if (aLocalFile) localFile = aLocalFile;
+    wavFile = new pcmFile(localFile, duration, chunkDuration);
     wavFile.draw(context, 0, duration);
     var t2 = Date.now();
     this.begin = 0;
@@ -457,7 +460,7 @@ function pcmWaveformGraph(canvas, duration) {
 
 function drawWaveform(aWaveformFile) {
   var chunkDuration = parseInt(gDialog.chunkDuration.value);
-  var time = gWaveform.drawPCM(aWaveformFile.path, chunkDuration);
+  var time = gWaveform.drawPCM(aWaveformFile, chunkDuration);
   timeReport(time);
   //gDialog.timeSegments.style.MozTransform = "";
 }

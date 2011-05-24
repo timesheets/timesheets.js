@@ -37,15 +37,21 @@ splitter vbox, splitter hbox {
 }
 canvas {
   position: absolute;
-  top: 0;
   left: 0;
   z-index: 2;
   width: 100%;
+}
+canvas#waveformZoom {
+  top: 0;
+  height: 30px;
+}
+canvas#waveformGraph {
+  top: 30px;
   height: 60px;
 }
 div#timePos, div#timeSpan {
   position: absolute;
-  top: 0;
+  top: 30px;
   left: 0;
   height: 58px;
   /*height: 100%;*/
@@ -72,7 +78,7 @@ span#time {
   background-color: white;
   border: 1px solid #ddd;
 }
-#timeSegments > div {
+#timeSegments > * {
   position: absolute;
   top: 0;
   background-color: #99f;
@@ -84,12 +90,12 @@ span#time {
   cursor: pointer;
   opacity: 0.6;
 }
-#timeSegments > div.active {
+#timeSegments > *.active {
   background-color: #f99;
   outline-color: brown;
   z-index: 1;
 }
-#timeSegments > div:hover {
+#timeSegments > *:hover {
   /*background-color: #bbf;*/
   /*opacity: 1;*/
   outline-style: solid;
