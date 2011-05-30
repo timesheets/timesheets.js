@@ -12,7 +12,7 @@
    - for the specific language governing rights and limitations under the
    - License.
    -
-   - The Original Code is INRIA.
+   - The Original Code is Timesheet Composer.
    -
    - The Initial Developer of the Original Code is INRIA.
    - Portions created by the Initial Developer are Copyright (C) 2010-2011
@@ -36,15 +36,16 @@
    - ***** END LICENSE BLOCK ***** -->
 
 <?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
-<?xml-stylesheet type="text/css" href="chrome://timesheets/content/htmltiming.css" ?>
+<?xml-stylesheet type="text/css" href="chrome://timesheets/skin/" ?>
 <window title = "Timesheet Composer"
        onload = "startup()"
-     onrezize = "gTimeCursor.getBoundingBox();"
         xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
    xmlns:html = "http://www.w3.org/1999/xhtml">
 
-  <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/waveform.js" />
-  <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/htmltiming.js" />
+  <!--
+  <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/timeline.js" />
+  -->
+  <script type="application/x-javascript;version=1.8" src="chrome://timesheets/content/timesheets.js" />
 
   <toolbox />
   <popupset>
@@ -86,7 +87,6 @@
     <splitter
         id        = "sidebar-left-splitter"
         class     = "chromeclass-extrachrome"
-        onmouseup = "gTimeCursor.getBoundingBox();"
         state     = "collapsed"
         collapse  = "before">
       <vbox flex="1">
@@ -118,32 +118,17 @@
         <!--<grippy />-->
       </splitter>
 
-      <!-- editable timeline -->
-      <vbox id="timeController">
-        <!-- toolbar -->
-        <hbox>
-          <html:h1>
-            Timeline
-          </html:h1>
+      <!-- editable timeline, see timeline.xml for the relevant bindings -->
+      <vbox id="timeline">
+        <html:h1> Timeline </html:h1>
+
+        <!-- time controller -->
+        <timeController id="timeController" hidetoolbar="false" flex="1">
           <spacer flex="1" />
-          <vbox pack="end">
-            <hbox>
-              <button label="|←→|" oncommand="drawWaveform()"/>
-              <button label="+"    oncommand="gTimeCursor.zoomIn()"/>
-              <button label="-"    oncommand="gTimeCursor.zoomOut()"/>
-              <button label="new"  oncommand="newSegment()"/>
-            </hbox>
-          </vbox>
-        </hbox>
+          <toolbarbutton id="newSegment" label="new" oncommand="newSegmentXBL()"/>
+        </timeController>
 
-        <!-- timeline + segments -->
-        <html:div style="margin-top: 1em; margin-bottom: 2em; position: relative; height: 90px;">
-          <html:canvas id="waveformZoom"  width="512" height="30" />
-          <html:canvas id="waveformGraph" width="512" height="60" />
-          <html:div id="timePos" />
-          <html:div id="timeSpan" />
-        </html:div>
-
+        <!-- time container -->
         <hbox id="timeContainerProps" pack="begin" align="center">
           <label value="timeContainer:" context="transition"/>
           <menulist id="timeContainer" style="width: 100px;" onselect="computeTimeNodes()">
@@ -158,31 +143,24 @@
             <menupopup>
               <menuitem label="none"/>
               <menuseparator />
-              <menuitem label="cross-fade"/>
-              <menuitem label="fade-through"/>
-              <menuitem label="slide-x"/>
-              <menuitem label="slide-y"/>
-              <menuitem label="carousel-x"/>
-              <menuitem label="carousel-y"/>
+              <menuitem label="cross-fade"   />
+              <menuitem label="fade-through" />
+              <menuitem label="slide-x"      />
+              <menuitem label="slide-y"      />
+              <menuitem label="carousel-x"   />
+              <menuitem label="carousel-y"   />
             </menupopup>
           </menulist>
           <spacer flex="1"/>
           <button label="sort"  oncommand="sortSegments; computeTimeNodes()"/>
         </hbox>
-
         <html:div id="timeSegments" />
-
-        <deck id="mediaPlayer">
-          <html:audio controls="true" />
-          <html:video controls="true" />
-        </deck>
       </vbox>
 
       <splitter
-          id        = "timeController-splitter"
-          class     = "chromeclass-extrachrome"
-          onmouseup = "gTimeCursor.getBoundingBox();"
-          collapse  = "after">
+          id       = "timeline-splitter"
+          class    = "chromeclass-extrachrome"
+          collapse = "after">
         <grippy />
       </splitter>
 
@@ -242,10 +220,10 @@
       <progressmeter id="downloadProgress" mode="determined" value="0"
       style="visibility: hidden;" />
       
+      <!--
       <html:h2>
         Parameters
       </html:h2>
-      <!--
       <label value="media file:"/>
       <hbox>
         <textbox id="mediaFilePath" flex="1" readonly="true" crop="end" />
@@ -256,7 +234,6 @@
         <textbox id="waveformFilePath" flex="1" readonly="true" crop="end" />
         <toolbarbutton label="…" oncommand="getWaveformFile()"/>
       </hbox>
-      -->
       <label value="chunk duration:"/>
       <hbox align="center">
         <textbox id="chunkDuration" type="number" min="0" value="0" increment="50"
@@ -278,6 +255,10 @@
       <label value="canvas width:"/>
       <textbox id="canvasWidth" readonly="true" />
       <label value="console:"/>
+      -->
+      <html:h2>
+        Console
+      </html:h2>
       <textbox id="console" multiline="true" flex="1" readonly="true" />
     </vbox>
 

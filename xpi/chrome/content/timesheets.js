@@ -11,7 +11,7 @@
   - for the specific language governing rights and limitations under the
   - License.
   -
-  - The Original Code is INRIA.
+  - The Original Code is Timesheet Composer.
   -
   - The Initial Developer of the Original Code is INRIA.
   - Portions created by the Initial Developer are Copyright (C) 2010-2011
@@ -44,19 +44,25 @@ var gMediaPlayer;       // <audio|video> element
 var gTimeCursor;        // div#timePos|div#timeSpan elements and methods
 var gWaveform;          // <canvas> element and methods
 var gTimeSegments = []; // time segment array
+var gTimeController;
 
 function startup() {
-  gDialog.waveformZoom     = document.getElementById("waveformZoom");
-  gDialog.waveformGraph    = document.getElementById("waveformGraph");
+  gTimeController = document.getElementById("timeController");
+  gTimeController.addEventListener("update",  redrawSegmentBlocks, false);
+  gTimeController.addEventListener("middleclick", newSegmentXBL, false);
+  //gTimeController.setAttribute("hidetoolbar", "true");
+
+  //gDialog.waveformZoom     = document.getElementById("waveformZoom");
+  //gDialog.waveformGraph    = document.getElementById("waveformGraph");
   //gDialog.waveformZoom     = document.getElementsByTagNameNS(htmlNS, "canvas").item(0);
   //gDialog.waveformGraph    = document.getElementsByTagNameNS(htmlNS, "canvas").item(1);
-  gDialog.timePos          = document.getElementById("timePos");
-  gDialog.timeSpan         = document.getElementById("timeSpan");
+  //gDialog.timePos          = document.getElementById("timePos");
+  //gDialog.timeSpan         = document.getElementById("timeSpan");
 
   //gDialog.audioPlayer      = document.getElementById("audioPlayer");
-  gDialog.audioPlayer      = document.getElementsByTagNameNS(htmlNS, "audio").item(0);
-  gDialog.videoPlayer      = document.getElementsByTagNameNS(htmlNS, "video").item(0);
-  gMediaPlayer = gDialog.audioPlayer; // XXX use the <deck> properties here
+  //gDialog.audioPlayer      = document.getElementsByTagNameNS(htmlNS, "audio").item(0);
+  //gDialog.videoPlayer      = document.getElementsByTagNameNS(htmlNS, "video").item(0);
+  //gMediaPlayer = gDialog.audioPlayer; // XXX use the <deck> properties here
 
   // media
   gDialog.mediaBaseURI     = document.getElementById("mediaBaseURI");
@@ -66,14 +72,14 @@ function startup() {
   // params
   //gDialog.waveformFilePath = document.getElementById("waveformFilePath");
   //gDialog.mediaFilePath    = document.getElementById("mediaFilePath");
-  gDialog.chunkDuration    = document.getElementById("chunkDuration");
-  gDialog.zoomDelay        = document.getElementById("zoomDelay");
+  //gDialog.chunkDuration    = document.getElementById("chunkDuration");
+  //gDialog.zoomDelay        = document.getElementById("zoomDelay");
   gDialog.downloadButton   = document.getElementById("downloadButton");
   gDialog.downloadProgress = document.getElementById("downloadProgress");
 
   // outputs
-  gDialog.elapsedTime      = document.getElementById("elapsedTime");
-  gDialog.canvasWidth      = document.getElementById("canvasWidth");
+  //gDialog.elapsedTime      = document.getElementById("elapsedTime");
+  //gDialog.canvasWidth      = document.getElementById("canvasWidth");
   gDialog.console          = document.getElementById("console");
 
   // content
@@ -97,9 +103,11 @@ function startup() {
         if (/^html/i.test(event.target.nodeName))
           event.preventDefault();
       }, true);
+      //elements[i].title = null;
     }
   }
 
+  /*
   // create the waveform graph when the media player is ready
   gMediaPlayer.addEventListener("loadedmetadata", function() {
     gWaveform = new pcmWaveformGraph(gDialog.waveformGraph, gMediaPlayer.duration);
@@ -107,6 +115,7 @@ function startup() {
     // Audio API: update waveform graph as the media is played
     gMediaPlayer.addEventListener("MozAudioAvailable", gWaveform.drawFrameBuffer, false);
     //gMediaPlayer.mozFrameBufferLength = 16384; // max = 16384, default = 1024 * nbChannels
+    gTimeCursor.setWaveform(gWaveform);
   }, false);
 
   // canvas event handlers
@@ -116,6 +125,7 @@ function startup() {
     gDialog.waveformGraph,
     gMediaPlayer
   );
+  */
 
   // Load default media files
   loadMediaFiles();
@@ -170,13 +180,15 @@ function loadMediaFiles(aForceReload) {
   waveformFile.append(gDialog.mediaWaveform.value);
 
   // load the remote media source in the HTML5 media player
-  gMediaPlayer.src = mediaSource;
+  //gMediaPlayer.src = mediaSource;
+  gTimeController.src = mediaSource;
 
   // draw as soon as the media's metadata is ready
   function draw() {
     setTimeout(function() { // XXX why do we need a delay here?
-      drawWaveform(waveformFile);
-    }, 500);
+      //drawWaveform(waveformFile);
+      gTimeController.draw(waveformFile);
+    }, 1500);
   }
 
   // if a temp file is already available, use it and exit
@@ -215,10 +227,17 @@ function loadMediaFiles(aForceReload) {
   persist.saveURI(mediaWaveformURI, null, null, null, "", waveformFile);
 }
 
-// time segments
+/* time segments
 function newSegment() {
   var begin = Math.round(gTimeCursor.begin * 100) / 100;
   var end   = Math.round(gTimeCursor.end   * 100) / 100;
+  if (begin == end)
+    end = Infinity;
+  gTimeSegments.push(new timeSegment(begin, end));
+} */
+function newSegmentXBL() {
+  var begin = Math.round(gTimeController.selection.begin * 100) / 100;
+  var end   = Math.round(gTimeController.selection.end   * 100) / 100;
   if (begin == end)
     end = Infinity;
   gTimeSegments.push(new timeSegment(begin, end));
@@ -257,11 +276,19 @@ function sortSegments() {
   } while(swap);
 }
 
-// redraw time blocks
+/* redraw time blocks
 function redrawSegmentBlocks(aBegin, aEnd) {
   consoleLog("redraw");
   for (var i = 0; i < gTimeSegments.length; i++) {
     gTimeSegments[i].block.draw(aBegin, aEnd);
+  }
+} */
+function redrawSegmentBlocks(event) {
+  consoleLog("redraw " + event.target.nodeName);
+  var begin = event.target.begin; // == gTimeController.begin
+  var end   = event.target.end;   // == gTimeController.end
+  for (var i = 0; i < gTimeSegments.length; i++) {
+    gTimeSegments[i].block.draw(begin, end);
   }
 }
 function computeTimeNodes() { // XXX
@@ -282,7 +309,8 @@ function computeTimeNodes() { // XXX
     gTimeSegments[i].time_out = out;
     gTimeSegments[i].block.update();
   }
-  redrawSegmentBlocks(gWaveform.begin, gWaveform.end);
+  //redrawSegmentBlocks(gTimeController.begin, gTimeController.end);
+  redrawSegmentBlocks();
 }
 
 // main 'timeSegment' object
@@ -318,12 +346,11 @@ function timeSegment(begin, end) {
 
   // event handlers
   function updateCursor() {
-    //gTimeCursor.setBegin(self.begin);
-    //gTimeCursor.setEnd(self.end);
-    //gMediaPlayer.currentTime = self.begin;
-    gTimeCursor.setBegin(self.time_in);
-    gTimeCursor.setEnd(self.time_out);
-    gMediaPlayer.currentTime = self.time_in;
+    //gTimeCursor.setBegin(self.time_in);
+    //gTimeCursor.setEnd(self.time_out);
+    //gMediaPlayer.currentTime = self.time_in;
+    gTimeController.select(self.time_in, self.time_out);
+    gTimeController.currentTime = self.time_in;
   }
 
   // event handlers :: segmentBlock
@@ -349,7 +376,8 @@ function timeSegment(begin, end) {
   block.main.addEventListener("dblclick", function(event) {
     consoleLog("select current time node");
     updateCursor();
-    gTimeCursor.zoomIn();
+    //gTimeCursor.zoomIn();
+    gTimeController.zoomIn();
   }, false);
 
   // event handlers :: segmentControls
@@ -415,7 +443,7 @@ function segmentBlock(parent, begin, end) {
     }
   };
   this.update = function () {
-    self.draw(gWaveform.begin, gWaveform.end);
+    self.draw(gTimeController.begin, gTimeController.end);
   };
   this.update();
 

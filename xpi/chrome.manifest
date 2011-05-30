@@ -1,3 +1,6 @@
-content timesheets     chrome/content/
+content timesheets               chrome/content/
+locale  timesheets  en-US        chrome/locale/en-US/
+locale  timesheets  fr           chrome/locale/fr/
+skin    timesheets  classic/1.0  chrome/skin/classic/
 overlay chrome://browser/content/browser.xul chrome://timesheets/content/overlay.xul
 

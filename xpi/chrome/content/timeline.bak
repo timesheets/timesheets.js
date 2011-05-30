@@ -1,0 +1,762 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
+   -
+   - The contents of this file are subject to the Mozilla Public License Version
+   - 1.1 (the "License"); you may not use this file except in compliance with
+   - the License. You may obtain a copy of the License at
+   - http://www.mozilla.org/MPL/
+   -
+   - Software distributed under the License is distributed on an "AS IS" basis,
+   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+   - for the specific language governing rights and limitations under the
+   - License.
+   -
+   - The Original Code is Timesheet Composer.
+   -
+   - The Initial Developer of the Original Code is INRIA.
+   - Portions created by the Initial Developer are Copyright (C) 2010-2011
+   - the Initial Developer. All Rights Reserved.
+   -
+   - Contributor(s):
+   -    Fabien Cazenave <fabien@cazenave.cc>
+   -
+   - Alternatively, the contents of this file may be used under the terms of
+   - either the GNU General Public License Version 2 or later (the "GPL"), or
+   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+   - in which case the provisions of the GPL or the LGPL are applicable instead
+   - of those above. If you wish to allow use of your version of this file only
+   - under the terms of either the GPL or the LGPL, and not to allow others to
+   - use your version of this file under the terms of the MPL, indicate your
+   - decision by deleting the provisions above and replace them with the notice
+   - and other provisions required by the LGPL or the GPL. If you do not delete
+   - the provisions above, a recipient may use your version of this file under
+   - the terms of any one of the MPL, the GPL or the LGPL.
+   -
+   - ***** END LICENSE BLOCK ***** -->
+
+<bindings
+    xmlns      = "http://www.mozilla.org/xbl"
+    xmlns:xul  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    xmlns:html = "http://www.w3.org/1999/xhtml">
+
+  <binding id="timeController">
+    <resources>
+      <stylesheet src="chrome://timesheets/skin/timeline.css" />
+    </resources>
+
+    <content>
+      <!-- media player -->
+      <html:div anonid="mediaPlayer">
+        <html:audio anonid="audioPlayer" />
+        <html:video anonid="videoPlayer" />
+      </html:div>
+
+      <!-- toolbar -->
+      <xul:toolbar anonid="toolbar" class="chromeclass-toolbar">
+        <xul:toolbarbutton anonid="mediaPlay"  label="Play"  oncommand="play();" />
+        <xul:toolbarbutton anonid="mediaPause" label="Pause" oncommand="pause();"/>
+        <xul:timepicker    anonid="mediaTime"  value="0:02:05"  />
+        <xul:spacer flex="1" />
+        <xul:toolbarbutton anonid="zoomFit"    label="Fit"      oncommand="zoomFit();"/>
+        <xul:toolbarbutton anonid="zoomIn"     label="Zoom In"  oncommand="zoomIn();" />
+        <xul:toolbarbutton anonid="zoomOut"    label="Zoom Out" oncommand="zoomOut();"/>
+        <children />
+      </xul:toolbar>
+      
+      <!-- timeline -->
+      <html:div anonid="timeline">
+        <html:canvas anonid="pcmZoom"  width="512" height="30" />
+        <!-- <html:div    anonid="zoomSpan" /> -->
+        <html:canvas anonid="pcmGraph" width="512" height="60" />
+        <html:div    anonid="timePos"  />
+        <html:div    anonid="timeSpan" />
+      </html:div>
+    </content>
+
+    <implementation>
+      <constructor>
+        <![CDATA[
+          const timeController = this;
+          const kChunkDuration = 0; // leave 0 to parse the whole PCM/8 file
+          const kZoomDelay     = 0; // set a significant delay to debug the redraw
+
+          // UI elements
+          this.pcmZoom    = document.getAnonymousElementByAttribute(this, "anonid", "pcmZoom");
+          this.pcmGraph   = document.getAnonymousElementByAttribute(this, "anonid", "pcmGraph");
+          this.mediaTime  = document.getAnonymousElementByAttribute(this, "anonid", "mediaTime");
+          var timePos     = document.getAnonymousElementByAttribute(this, "anonid", "timePos");
+          var timeSpan    = document.getAnonymousElementByAttribute(this, "anonid", "timeSpan");
+          var audioPlayer = document.getAnonymousElementByAttribute(this, "anonid", "audioPlayer");
+          var videoPlayer = document.getAnonymousElementByAttribute(this, "anonid", "videoPlayer");
+          this.media = audioPlayer;
+
+          //this.mediaTime.amIndicator = "";
+          //this.mediaTime.pmIndicator = "";
+
+          /** Okay, there's a lot of code here -- mostly object constructors.
+            * I could have moved this to an external JS file, or a JSM module,
+            * but I wanted to keep everything in a single XBL file to ease the
+            * reuse and integration.
+            * The good thing is, outside this constructor the rest of the XBL
+            * code is very compact and rather straight-forward.
+            */
+           
+          // timeCursor object constructor
+          function pcmCursor(timePos, timeSpan, canvas, media) {
+            const self = this;
+
+            // time range (to be updated whenever the canvas is redrawn)
+            var range = {
+              begin : 0,
+              end   : media.duration,
+              dur   : media.duration
+            }
+            this.setRange = function(aBegin, aEnd) {
+              range = {
+                begin : aBegin,
+                end   : aEnd,
+                dur   : aEnd - aBegin
+              };
+            };
+
+            // should be called whenever the canvas is resized
+            this.getBoundingBox = function() {
+              var rect = canvas.getBoundingClientRect();
+              self.top    = rect.top;
+              self.right  = rect.right;
+              self.bottom = rect.bottom;
+              self.left   = rect.left;
+              self.height = rect.height;
+              self.width  = rect.width;
+            };
+
+            // private methods
+            function checkTime(time) {
+              time = Math.max(time, range.begin);
+              time = Math.min(time, range.end);
+              return time;
+            }
+            function checkDuration(dur) {
+              dur = Math.max(dur, 0);
+              dur = Math.min(dur, range.dur);
+              return dur;
+            }
+            function getTimePosition(event) {
+              return px2time(event.clientX - self.left)
+            }
+            function updateTimeCursor() {
+              self.dur = checkDuration(self.end - self.begin);
+              var left = time2percent(self.begin);
+              var width = dur2percent(self.dur);
+              if (!isNaN(left) && !isNaN(width)) {
+                timeSpan.style.left  = left  + "%";
+                timeSpan.style.width = width + "%";
+              }
+            };
+
+            // unit = px (ugly)
+            function dur2px(dur) {
+              return (canvas.width * dur / range.dur);
+            }
+            function time2px(time) {
+              return (canvas.width * (time - range.begin) / range.dur);
+            }
+            function px2time(x) {
+              return range.begin + (x * range.dur / self.width);
+            }
+
+            // unit = % (preferred)
+            function dur2percent(dur) {
+              return (100 * dur / range.dur);
+            }
+            function time2percent(time) {
+              return (100 * (time - range.begin) / range.dur);
+            }
+            function percent2time(x) {
+              return range.begin + (x * range.dur / 100);
+            }
+
+            // public properties
+            this.currentTime = 0;
+            this.setCurrentTime = function(time) {
+              self.currentTime = checkTime(time);
+              //timePos.style.left = time2px(self.currentTime) + "px";
+              var left = time2percent(self.currentTime);
+              if (!isNaN(left))
+                timePos.style.left = left + "%";
+            };
+            this.begin = 0;
+            this.setBegin = function(time) {
+              self.begin = checkTime(time);
+              updateTimeCursor();
+            };
+            this.end = 0;
+            this.setEnd = function(time) {
+              self.end = checkTime(time);
+              updateTimeCursor();
+            };
+            this.dur = 0;
+            this.clear = function(time) {
+              self.setCurrentTime(time);
+              self.begin = checkTime(time);
+              self.end   = checkTime(time);
+              updateTimeCursor();
+            };
+
+            // canvas/media event handlers
+            function onClick(event) {
+              self.getBoundingBox();
+              //if (event.button) return;
+              switch (event.button) {
+                case 0:
+                  var time = getTimePosition(event);
+                  self.setBegin(time);
+                  self.setEnd(time);
+                  media.currentTime = time;
+                  break;
+                case 1: // middle-click: new segment
+                  newSegment(); // XXX Spaghetti coding!
+                  break;
+                default:
+                  break;
+              }
+            }
+            function onDrag(event) {
+              if (event.button) return;
+              var begin = media.currentTime;
+              var end = getTimePosition(event);
+              //self.setDur(end - begin);
+              if (end > begin)
+                self.setEnd(end);
+              else
+                self.setBegin(end);
+            }
+            function onTimeUpdate(event) {
+              var time = media.currentTime;
+              self.setCurrentTime(time);
+              /*if ((time > waveform.end)*/
+              if ((time > range.end)
+                  || ((self.dur > 0.1) && (time > self.end))) {
+                media.pause();
+                media.currentTime = self.begin;
+              }
+            }
+            canvas.addEventListener("mousedown", function(event) {
+              onClick(event);
+              canvas.addEventListener("mousemove", onDrag, false);
+            }, false);
+            canvas.addEventListener("mouseup", function(event) {
+              canvas.removeEventListener("mousemove", onDrag, false);
+              media.currentTime = Math.min(self.begin, self.end);
+            }, false);
+            media.addEventListener("timeupdate", onTimeUpdate, false);
+          }
+
+          // pcmFile object constructor
+          function pcmFile(wavFile, duration) {
+            var iStream; // input stream handler
+            var bStream; // binary stream handler
+            var header;  // WAV header
+
+            /* We're expecting a PCM/8 file here, i.e. an 8-bit encoded WAV file.
+             * SoX can be used to get such a file from an OGG source:
+             *   sox audio.ogg -b 8 audio.wav
+             * to mix all channels into a mono file: (both commands are equivalent)
+             *   sox audio.ogg -b 8 audio.wav channels 1
+             *   sox audio.ogg -b 8 audio.wav remix -
+             * to reduce the sample rate:
+             *   sox audio.ogg -b 8 audio.wav rate 16k
+             */
+
+            this.draw = function(context, begin, end) {
+              //consoleLog("drawPCM: " + begin + " → " + end);
+              var height = context.canvas.height;
+              var width  = context.canvas.width;
+              var canvasWidth = parseInt(getComputedStyle(context.canvas, null).width, 10);
+              // gDialog.canvasWidth.value = canvasWidth;
+
+              // get a binary stream for the WAV file
+              iStream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+                                  .createInstance(Components.interfaces.nsIFileInputStream);
+              bStream = Components.classes["@mozilla.org/binaryinputstream;1"]
+                                  .createInstance(Components.interfaces.nsIBinaryInputStream);
+              iStream.init(wavFile, -1, -1, false);
+              bStream.setInputStream(iStream);
+
+              /* about nsISeekableStream, see:
+               * http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsISeekableStream.idl
+               * http://mxr.mozilla.org/mozilla-central/source/netwerk/test/unit/test_file_partial_inputstream.js
+               */
+              iStream.QueryInterface(Components.interfaces.nsISeekableStream);
+
+              // read the 44-byte header and compute chunkSize
+              header = bStream.readByteArray(44);
+              var length = bStream.available() - 44;
+              var offset = 44 + (begin / duration * length);
+              var ratio = (end - begin) / duration;
+              var segLength = (length / width) * ratio;
+              //var segLength = (length / canvasWidth) * ratio;
+              var chunkSize = length * kChunkDuration / (1000 * duration);
+              if ((chunkSize <= 0) || (chunkSize > segLength))
+                chunkSize = segLength;
+
+              // draw canvas segments
+              for (var i = 0; i < width; i++) {
+              //for (var i = 0; i < canvasWidth; i++) {
+                // jump to the next segment
+                iStream.seek(0, offset + i * segLength);
+                // get min/max amplitude values
+                let samples = bStream.readByteArray(chunkSize);
+                var min = Math.min.apply(Math, samples) * height / 256;
+                var max = Math.max.apply(Math, samples) * height / 256;
+                // draw enveloppe segment
+                context.beginPath();
+                context.moveTo(i + 0.5, min);
+                context.lineTo(i + 0.5, max);
+                context.stroke();
+              }
+
+              // close the WAV file
+              iStream.close();
+              bStream.close();
+            };
+          }
+
+          // pcmWaveform object constructor
+          function timeReport(time, msg) { // DEBUG
+            var str = (time / 1000) + "s";
+            if (msg && msg.length)
+              str = msg + ": " + str;
+            try {
+              gDialog.elapsedTime.value = str;
+            } catch(e) {}
+          }
+          function pcmWaveform(canvas, duration) {
+            const self = this;
+            const context = canvas.getContext("2d");
+            const pcmCanvasColor = "#000";
+            const oggCanvasColor = "#f00";
+
+            // XXX Spaghetti coding!
+            // used for zooming / unzooming, probably not necessary
+            var timeSelect = timeController.timeCursor;
+
+            this.begin = NaN; // visible area -- begin time
+            this.end   = NaN; // visible area -- end time
+
+            this.clear = function() {
+              context.strokeStyle = pcmCanvasColor;
+              context.clearRect(0, 0, canvas.width, canvas.height);
+              context.beginPath();
+              context.moveTo(0, canvas.height / 2);
+              context.lineTo(canvas.width, canvas.height / 2);
+              context.stroke();
+              context.strokeRect(0, 0, canvas.width, canvas.height);
+              context.lineWidth = 0.5;
+              context.strokeRect(0, canvas.height / 4 - 0.5, canvas.width, canvas.height / 2 + 1);
+            };
+
+            // draw PCM/8 data (= 8-bit encoded WAV files)
+            var wavFile;   // private pcmFile instance
+            var localFile; // private nsILocalFile instance
+            this.drawPCM = function(aLocalFile) {
+              redrawSegmentBlocks(0, duration); // XXX Spaghetti
+              var t1 = Date.now();
+              this.clear();
+              context.lineWidth = 0.7;
+              context.strokeStyle = pcmCanvasColor;
+              if (aLocalFile) localFile = aLocalFile;
+              wavFile = new pcmFile(localFile, duration);
+              wavFile.draw(context, 0, duration);
+              var t2 = Date.now();
+              this.begin = 0;
+              this.end = duration;
+              timeSelect.setRange(0, duration);
+              return (t2 - t1);
+            };
+            this.drawPartialPCM = function(begin, end) {
+              if (!wavFile) return NaN;
+              var t1 = Date.now();
+              this.clear();
+              context.lineWidth = 0.7;
+              context.strokeStyle = pcmCanvasColor;
+              wavFile.draw(context, begin, end);
+              var t2 = Date.now();
+              this.begin = begin;
+              this.end   = end;
+              timeSelect.setRange(begin, end);
+              return (t2 - t1);
+            };
+
+            // draw from media frameBuffer (audio API)
+            this.drawFrameBuffer = function(event) {
+              var time    = event.time;
+              var samples = event.frameBuffer;
+              //if (samples.length != event.target.mozFrameBufferLength)
+                //console.log("unexpected fbLength: " + samples.length);
+
+              // get min/max amplitude values
+              var min = Math.min.apply(Math, samples);
+              var max = Math.max.apply(Math, samples);
+              var y1 = (min + 1) * (canvas.height / 2);
+              var y2 = (max + 1) * (canvas.height / 2);
+              var x = (time - self.begin) * canvas.width / (self.end - self.begin);
+
+              // draw enveloppe segment
+              context.strokeStyle = oggCanvasColor;
+              context.beginPath();
+              context.moveTo(x, y1);
+              context.lineTo(x, y2);
+              context.stroke();
+            };
+
+            // zoom|unzoom current image (e.g. before a 'real' redraw)
+            this.zoomImage = function(offset, ratio) {
+              var begin = timeSelect.begin;
+              var end   = timeSelect.end;
+              let image = new Image();
+              image.src = canvas.toDataURL("image/png");
+              image.onload = function() {
+                redrawSegmentBlocks(begin, end); // XXX Spaghetti
+                self.clear();
+                timeSelect.clear();
+                context.drawImage(image,
+                  (0 - offset) * ratio, 0,
+                  canvas.width * ratio, canvas.height
+                );
+                setTimeout(function() {
+                  var time = self.drawPartialPCM(begin, end);
+                  timeReport(time, "zoom");
+                  timeSelect.clear((begin + end) / 2);
+                }, kZoomDelay);
+              };
+            };
+            this.unzoomImage = function(fit) {
+              var dur = self.end - self.begin;
+              var begin, end;
+              if (fit) { // redraw the whole waveform
+                begin = 0;
+                end = duration;
+              } else {
+                begin = Math.max(self.begin - dur/2, 0);
+                end   = Math.min(self.end + dur/2, duration);
+              }
+              //self.drawPartialPCM(begin, end);
+              var ratio = dur / (end - begin);
+              var offset = canvas.width * (self.begin - begin) / (end - begin);
+              let image = new Image();
+              image.src = canvas.toDataURL("image/png");
+              image.onload = function() {
+                redrawSegmentBlocks(begin, end); // XXX Spaghetti
+                self.clear();
+                timeSelect.clear();
+                context.drawImage(image,
+                  offset, 0,
+                  canvas.width * ratio, canvas.height
+                );
+                setTimeout(function() {
+                  var time = self.drawPartialPCM(begin, end);
+                  timeReport(time, "unzoom");
+                  timeSelect.clear((begin + end) / 2);
+                }, kZoomDelay);
+              };
+            };
+
+            // save as PNG image (untested)
+            this.saveAsPNG = function(filePath) {
+              // https://developer.mozilla.org/en/Code_snippets/Canvas
+              netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+
+              // convert string filePath to an nsIFile
+              var file = Components.classes["@mozilla.org/file/local;1"]
+                                   .createInstance(Components.interfaces.nsILocalFile);
+              file.initWithPath(filePath);
+
+              // create a data url from the canvas and then create URIs of the source and targets
+              var io = Components.classes["@mozilla.org/network/io-service;1"]
+                                 .getService(Components.interfaces.nsIIOService);
+              var source = io.newURI(canvas.toDataURL("image/png", ""), "UTF8", null);
+              var target = io.newFileURI(file)
+
+              // prepare to save the canvas data
+              const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+              var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                                      .createInstance(nsIWBP);
+              persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
+                                   | nsIWBP.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
+
+              /* displays a download dialog (remove these 3 lines for silent download)
+              var xfer = Components.classes["@mozilla.org/transfer;1"]
+                                   .createInstance(Components.interfaces.nsITransfer);
+              xfer.init(source, target, "", null, null, null, persist);
+              persist.progressListener = xfer;
+              */
+
+              // save the canvas data to the file
+              persist.saveURI(source, null, null, null, null, file);
+            };
+          }
+
+          // create the waveform graph when the media player is ready
+          this.waveform = null;
+          this.media.addEventListener("loadedmetadata", function() {
+            timeController.waveform = new pcmWaveform(
+              timeController.pcmGraph, timeController.media.duration);
+            timeController.waveform.clear();
+            // Audio API: update waveform graph as the media is played
+            timeController.media.addEventListener("MozAudioAvailable",
+              timeController.waveform.drawFrameBuffer, false);
+            //timeController.media.mozFrameBufferLength = 16384; // max = 16384, default = 1024 * nbChannels
+            /*alert('init ' + timeController.media.duration);*/
+          }, false);
+
+          this.timeCursor = new pcmCursor(timePos, timeSpan, this.pcmGraph, this.media);
+        ]]>
+      </constructor>
+
+      <!-- Media Player -->
+      <property name="src">
+        <getter>
+          <![CDATA[
+            return this.media.src;
+          ]]>
+        </getter>
+        <setter>
+          <![CDATA[
+            // TODO: select <audio|video> according to the MIME type
+            this.media.src = val;
+          ]]>
+        </setter>
+      </property>
+      <property name="currentTime">
+        <getter>
+          <![CDATA[
+            return this.media.currentTime;
+          ]]>
+        </getter>
+        <setter>
+          <![CDATA[
+            this.media.currentTime = val;
+          ]]>
+        </setter>
+      </property>
+      <property name="duration">
+        <getter>
+          <![CDATA[
+            return this.media.duration;
+          ]]>
+        </getter>
+      </property>
+      <method name="play">
+        <body>
+          <![CDATA[
+            this.media.play();
+          ]]>
+        </body>
+      </method>
+      <method name="pause">
+        <body>
+          <![CDATA[
+            this.media.pause();
+          ]]>
+        </body>
+      </method>
+
+      <!-- Waveform Graph -->
+      <property name="begin">
+        <!-- visible area - begin time -->
+        <getter>
+          <![CDATA[
+            return this.waveform.begin;
+          ]]>
+        </getter>
+      </property>
+      <property name="end">
+        <!-- visible area - end time -->
+        <getter>
+          <![CDATA[
+            return this.waveform.end;
+          ]]>
+        </getter>
+      </property>
+      <method name="draw">
+        <!-- load a PCM-8 file and draw it -->
+        <parameter name="aWaveformFile"/>
+        <body>
+          <![CDATA[
+            this.waveform.drawPCM(aWaveformFile);
+          ]]>
+        </body>
+      </method>
+      <method name="clear">
+        <body>
+          <![CDATA[
+            this.waveform.clear();
+            this.timeCursor.clear();
+          ]]>
+        </body>
+      </method>
+      <method name="zoom">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            var begin = Math.max(aBegin, 0);
+            var end   = Math.min(aEnd, this.duration);
+            this.waveform.drawPartialPCM(begin, end);
+            this.timeCursor.clear((begin + end) / 2);
+          ]]>
+        </body>
+      </method>
+      <method name="zoomIn">
+        <body>
+          <![CDATA[
+            var dur = this.waveform.end - this.waveform.begin;
+            var offset, ratio;
+            if (this.timeCursor.dur <= 0) {
+              var begin = Math.max(this.timeCursor.begin - (dur / 4), 0);
+              this.timeCursor.setBegin(begin);
+              this.timeCursor.setEnd(begin + dur / 2);
+            }
+            // offset = time2px(this.timeCursor.begin);
+            offset  = this.timeCursor.begin - this.waveform.begin;
+            offset *= this.pcmGraph.width / dur;
+            ratio   = dur / this.timeCursor.dur;
+            this.waveform.zoomImage(offset, ratio);
+          ]]>
+        </body>
+      </method>
+      <method name="zoomOut">
+        <body>
+          <![CDATA[
+            this.waveform.unzoomImage();
+          ]]>
+        </body>
+      </method>
+      <method name="zoomFit">
+        <body>
+          <![CDATA[
+            this.waveform.unzoomImage(true);
+          ]]>
+        </body>
+      </method>
+
+      <!-- Time Span -->
+      <method name="select">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            this.timeCursor.setBegin(Math.min(aBegin, aEnd));
+            this.timeCursor.setEnd  (Math.max(aBegin, aEnd));
+          ]]>
+        </body>
+      </method>
+      <property name="selection">
+        <getter>
+          <![CDATA[
+            return {
+              begin : this.timeCursor.begin,
+              end   : this.timeCursor.end
+            };
+          ]]>
+        </getter>
+      </property>
+
+      <!-- Properties
+        <property name="waveformGraph">
+          <getter>
+            <![CDATA[
+              return this.pcmGraph;
+            ]]>
+          </getter>
+        </property>
+        <property
+          name  = "begin"
+          onget = "return timeCursor.begin;"
+          onset = "timeCursor.setBegin(val);" />
+        <property
+          name  = "end"
+          onget = "return timeCursor.end;"
+          onset = "timeCursor.setEnd(val);" />
+        <property name="foo">
+          <getter>
+            <![CDATA[
+              alert("okcancel");
+            ]]>
+          </getter>
+        </property>
+      -->
+
+      <!-- Methods
+        <destructor>
+          <![CDATA[
+            // foo
+          ]]>
+        </destructor>
+        <method name="loadMedia">
+          <parameter name="aMediaSource"/>
+          <parameter name="aMediaWaveform"/>
+          <body>
+            <![CDATA[
+              // get a temp file for the local waveform data
+              var waveformFile = Components.classes["@mozilla.org/file/directory_service;1"]
+                                           .getService(Components.interfaces.nsIProperties)
+                                           .get("TmpD", Components.interfaces.nsIFile);
+              waveformFile.append(aMediaWaveform);
+
+              // load the remote media source in the HTML5 media player
+              this.media.src = aMediaSource;
+
+              // draw as soon as the media's metadata is ready
+              function draw() {
+                setTimeout(function() { // XXX why do we need a delay here?
+                  drawWaveform(waveformFile);
+                }, 500);
+              }
+
+              // if a temp file is already available, use it and exit
+              if (waveformFile.exists() && !aForceReload) {
+                consoleLog(waveformFile.path + " already cached.");
+                draw();
+                return;
+              }
+               
+              // get a URI for the remote waveform data
+              var mediaWaveformURI = Components.classes["@mozilla.org/network/io-service;1"]
+                                               .getService(Components.interfaces.nsIIOService)
+                                               .newURI(aMediaWaveform, null, null);
+
+              // download waveform data with nsIWebBrowserPersist
+              // https://developer.mozilla.org/en/Code_snippets/Downloading_Files
+              // XXX (nsIDownloadManager might be simpler for this)
+              const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+              var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                                      .createInstance(nsIWBP);
+              persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
+                                   | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+              persist.progressListener = {
+                onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
+                  gDialog.downloadProgress.value = 100 * aCurTotalProgress / aMaxTotalProgress;
+                },
+                onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+                  if (aStateFlags & 0x10) { // finished, failed or canceled
+                    gDialog.downloadProgress.style.visibility = "hidden";
+                    consoleLog(waveformFile.path + " downloaded.");
+                    draw();
+                  }
+                }
+              }
+              gDialog.downloadProgress.style.visibility = "visible";
+              persist.saveURI(mediaWaveformURI, null, null, null, "", waveformFile);
+            ]]>
+          </body>
+        </method>
+      -->
+      
+    </implementation>
+  </binding>
+
+</bindings>
+
