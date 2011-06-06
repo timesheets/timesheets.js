@@ -71,41 +71,16 @@ splitter vbox, splitter hbox {
   padding: 20px;
   overflow: hidden;
 }
-canvas {
-  position: absolute;
-  left: 0;
-  z-index: 2;
-  width: 100%;
-}
-canvas#waveformZoom {
-  top: 0;
-  height: 30px;
-}
-canvas#waveformGraph {
-  top: 30px;
-  height: 60px;
-}
-div#timePos, div#timeSpan {
-  position: absolute;
-  top: 30px;
-  left: 0;
-  height: 58px;
-  /*height: 100%;*/
-  width: 0;
-}
-div#timePos {
-  z-index: 1;
-  border-left: 1px solid navy;
-}
-div#timeSpan {
-  border: 1px solid brown;
-  background-color: #fcc;
-}
-span#time {
-  float: left;
-  color: brown;
+
+#mediaPlayer {
+  display: none;
 }
 
+#content {
+  overflow: auto;
+}
+
+/* to be moved to timeline.css */
 #timeSegments {
   position: relative;
   width: 100%;
@@ -152,15 +127,41 @@ span#time {
   cursor: e-resize;
 }
 
-#content {
-  overflow: auto;
-}
-
 /* XBL sandbox */
+
+waveform {
+  -moz-binding: url("chrome://timesheets/content/timeline.xml#waveform");
+  /*outline: 1px solid brown;*/
+  /*margin-bottom: 20px;*/
+}
 
 timeController {
   -moz-binding: url("chrome://timesheets/content/timeline.xml#timeController");
+  outline: 1px solid gray;
+  margin-bottom: 20px;
 }
 timeController #newSegment {
   list-style-image: url("chrome://timesheets/skin/24/gtk-new.png");
+}
+
+timeContainer {
+  -moz-binding: url("chrome://timesheets/content/timeline.xml#timeContainer");
+  outline: 1px solid gray;
+}
+
+dataform {
+  -moz-binding: url("chrome://timesheets/content/timeline.xml#dataform1");
+}
+
+slider {
+  /*-moz-binding: url("");*/
+  -moz-appearance: scrollbartrack-horizontal;
+  -moz-user-select: none;
+  display: block;
+  background-color: red !important;
+}
+thumb {
+  -moz-binding: url("chrome://global/content/bindings/scrollbar.xml#thumb");
+  -moz-appearance: scrollbarthumb-horizontal;
+  background-color: blue !important;
 }

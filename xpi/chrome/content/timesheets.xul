@@ -122,16 +122,43 @@
       <vbox id="timeline">
         <html:h1> Timeline </html:h1>
 
+        <!-- media player -->
+        <html:div id="mediaPlayer">
+          <html:audio id="audioPlayer" />
+          <html:video id="videoPlayer" />
+        </html:div>
+
+        <!-- standalone waveform -->
+        <waveform id="waveform" flex="1" style="margin-bottom: 20px;" />
+
         <!-- time controller -->
-        <timeController id="timeController" hidetoolbar="false" flex="1">
+        <timeController id="timeController" flex="1" hidetoolbar="false"
+                        media="#audioPlayer">
           <spacer flex="1" />
           <toolbarbutton id="newSegment" label="new" oncommand="newSegmentXBL()"/>
         </timeController>
 
+        <!--
+        <hbox style="overflow-x: scroll;" onscroll="consoleLog(this.scrollLeft);">
+          <html:img style="-moz-transform: scale(20, 0.000001);" src="chrome://timesheets/skin/16/gtk-new.png"/>
+        </hbox>
+        <scrollbar curpos="5" maxpos="50" orient="horizontal" />
+        <hbox flex="1" height="20">
+          <slider curpos="5" maxpos="50" orient="horizontal" sborient="horizontal" flex="1">
+            <thumb sbattr="scrollbar-thumb" orient="horizontal" sborient="horizontal" />
+          </slider>
+        </hbox>
+        -->
+
         <!-- time container -->
+        <timeContainer id="timeContainer" hidetoolbar="true" flex="1"
+                       controls="#timeController" />
+
         <hbox id="timeContainerProps" pack="begin" align="center">
-          <label value="timeContainer:" context="transition"/>
-          <menulist id="timeContainer" style="width: 100px;" onselect="computeTimeNodes()">
+          <button label="sort"  oncommand="sortSegments; computeTimeNodes()"/>
+          <spacer flex="1"/>
+          <label value="timeContainer:"/>
+          <menulist id="container" style="width: 100px;" onselect="computeTimeNodes()">
             <menupopup>
               <menuitem value="par"  label="par" selected="true"/>
               <menuitem value="seq"  label="seq" disabled="true"/>
@@ -151,8 +178,6 @@
               <menuitem label="carousel-y"   />
             </menupopup>
           </menulist>
-          <spacer flex="1"/>
-          <button label="sort"  oncommand="sortSegments; computeTimeNodes()"/>
         </hbox>
         <html:div id="timeSegments" />
       </vbox>
@@ -165,7 +190,10 @@
       </splitter>
 
       <!-- content / data -->
+
       <vbox id="content" flex="1">
+        <dataform flex="1" begin="1:49" end="3:41" data="test" />
+
         <groupbox id="segmentTemplate" hidden="true">
           <hbox align="center">
             <spacer flex="1"/>
