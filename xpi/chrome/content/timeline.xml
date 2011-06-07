@@ -51,9 +51,9 @@
 
           // decimals & increment
           this.decimals  = this.hasAttribute("decimals")
-                ? parseInt(this.getAttribute("decimals")) : 0;
+                ? parseInt(this.getAttribute("decimals"), 10) : 0;
           this.increment = this.hasAttribute("increment")
-                ? parseInt(this.getAttribute("increment")) : 1;
+                ? parseInt(this.getAttribute("increment"), 10) : 1;
 
           // min & max values
           this.min       = this.hasAttribute("min")
@@ -136,13 +136,13 @@
       </handler>
       <handler event="keypress" keycode="VK_UP">
         <![CDATA[
-          this.time += parseInt(this.getAttribute("increment"));
+          this.time += parseInt(this.getAttribute("increment"), 10);
           /*this.time += this.increment;*/
         ]]>
       </handler>
       <handler event="keypress" keycode="VK_DOWN">
         <![CDATA[
-          this.time -= parseInt(this.getAttribute("increment"));
+          this.time -= parseInt(this.getAttribute("increment"), 10);
           /*this.time -= this.increment;*/
         ]]>
       </handler>
@@ -374,6 +374,13 @@
           this.clear();
         ]]>
       </constructor>
+      <destructor>
+        <![CDATA[
+          if (this.pcmFile) {
+            this.pcmFile.close();
+          }
+        ]]>
+      </destructor>
 
       <!-- XXX these fields should be considered as read-only -->
       <field name="begin">    (NaN) </field> <!-- visible area: begin time -->
@@ -421,24 +428,21 @@
                 onget="return this.getAttribute('src');"
                 onset="this.setAttribute('src', val);" />
       <property name="duration"
-                onget="return parseFloat(this.getAttribute('duration'));"
-                onset="this.setAttribute('duration', val);" />
+                onget="return this.pcmFile ? this.pcmFile.getDuration() : 0;" />
       <method name="load">
-        <parameter name="aWaveformURL"/>
-        <parameter name="aDuration"/>
         <parameter name="aForceReload"/>
         <body>
           <![CDATA[
-            var self = this;
-            if (aWaveformURL) this.src = aWaveformURL;
-            if (aDuration) this.duration = aDuration;
+            const self = this;
 
             // pcmFile object constructor
             const kChunkDuration = this.kChunkDuration;
-            function pcmFile(wavFile, duration) {
-              var iStream; // input stream handler
-              var bStream; // binary stream handler
-              var header;  // WAV header
+            function pcmFile(wavFile) {
+              var iStream  = null; // input stream handler
+              var bStream  = null; // binary stream handler
+              var header   = {};   // WAV header
+              var duration = 0;    // duration (s)
+              var length   = 0;    // number of data bytes
 
               /* We're expecting a PCM/8 file here, i.e. an 8-bit encoded WAV file.
                * SoX can be used to get such a file from an OGG source:
@@ -450,11 +454,45 @@
                *   sox audio.ogg -b 8 audio.wav rate 16k
                */
 
-              this.draw = function(context, begin, end) {
-                var height = context.canvas.height;
-                var width  = context.canvas.width;
-                var canvasWidth = parseInt(getComputedStyle(context.canvas, null).width, 10);
+              // header block -- read-only properties
+              // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+              this.getHeader   = function() { return header;   };
+              this.getDuration = function() { return duration; };
+              function getHeaderBlock(data) {
+                function getHeaderString(offset, length) {
+                  var value = "";
+                  for (var i = 0; i < length; i++)
+                    value += String.fromCharCode(data[offset + i]);
+                  return value;
+                }
+                function getHeaderWord(offset, length) {
+                  var value = 0;
+                  for (var i = 0; i < length; i++)
+                    value += data[offset + i] << (8 * i);
+                  return value;
+                }
+                return {
+                  // RIFF header
+                  ChunkID       : getHeaderString(0, 4),  // should be 'RIFF'
+                  ChunkSize     : getHeaderWord(4, 4),
+                  Format        : getHeaderString(8, 4),  // should be 'WAVE'
+                  // fmt subchunk
+                  SubChunk1ID   : getHeaderString(12, 4), // should be 'fmt '
+                  SubChunk1Size : getHeaderWord(16, 2),   // should be 16 (PCM)
+                  AudioFormat   : getHeaderWord(20, 2),   // should be 1 (PCM)
+                  NumChannels   : getHeaderWord(22, 2),
+                  SampleRate    : getHeaderWord(24, 4),
+                  ByteRate      : getHeaderWord(28, 4),
+                  BlockAlign    : getHeaderWord(32, 2),
+                  BitsPerSample : getHeaderWord(34, 2),   // should be 8 (PCM/8)
+                  // data subchunk
+                  SubChunk2ID   : getHeaderString(36, 4), // should be 'data'
+                  SubChunk2Size : getHeaderWord(40, 2)    // = number of data bytes
+                };
+              };
 
+              // open the PCM/8 file, get the header / duration / length
+              this.open = function() {
                 // get a binary stream for the WAV file
                 iStream = Components.classes["@mozilla.org/network/file-input-stream;1"]
                                     .createInstance(Components.interfaces.nsIFileInputStream);
@@ -469,9 +507,25 @@
                  */
                 iStream.QueryInterface(Components.interfaces.nsISeekableStream);
 
-                // read the 44-byte header and compute chunkSize
-                header = bStream.readByteArray(44);
-                var length = bStream.available() - 44;
+                // check the 44-byte header
+                var data = bStream.readByteArray(44);
+                header = getHeaderBlock(data);
+                if (header.ChunkID != "RIFF"   || // little endian
+                    header.AudioFormat != 1    || // linear quantization (uncompressed)
+                    header.BitsPerSample != 8)
+                  throw wavFile.path + " is not a supported PCM/8 file.";
+
+                duration = (header.ChunkSize - 36) / header.ByteRate;
+                length = bStream.available() - 44;
+              };
+
+              // read the PCM/8 file, draw the canvas
+              this.draw = function(context, begin, end) {
+                var height = context.canvas.height;
+                var width  = context.canvas.width;
+                //var canvasWidth = parseInt(getComputedStyle(context.canvas, null).width, 10);
+
+                // compute chunkSize
                 var offset = 44 + (begin / duration * length);
                 var ratio = (end - begin) / duration;
                 var segLength = (length / width) * ratio;
@@ -481,8 +535,8 @@
                   chunkSize = segLength;
 
                 // draw canvas segments
-                for (var i = 0; i < width; i++) {
                 //for (var i = 0; i < canvasWidth; i++) {
+                for (var i = 0; i < width; i++) {
                   // jump to the next segment
                   iStream.seek(0, offset + i * segLength);
                   // get min/max amplitude values
@@ -495,8 +549,10 @@
                   context.lineTo(i + 0.5, max);
                   context.stroke();
                 }
+              };
 
-                // close the WAV file
+              // close the PCM/8 file
+              this.close = function() {
                 iStream.close();
                 bStream.close();
               };
@@ -505,7 +561,10 @@
             // draw as soon as the waveform is loaded
             var waveformFile;
             function draw() {
-              self.pcmFile = new pcmFile(waveformFile, self.duration);
+              self.pcmFile = new pcmFile(waveformFile);
+              self.pcmFile.open(); // updates self.duration
+              // TODO: fire a 'loadedmetadata' event here
+              consoleLog("duration = " + self.duration);
               self.draw(0, self.duration);
             }
 
@@ -517,11 +576,10 @@
             // use file URIs 'as is'
             if (waveformURI.schemeIs("file")) {
               waveformFile = waveformURI.QueryInterface(Components.interfaces.nsIFileURL).file;
-              if (file.exists()) {
+              if (file.exists())
                 draw();
-              } else {
+              else
                 throw file.path + " does not exist.";
-              }
               return;
             }
 
@@ -599,10 +657,12 @@
             // fire an "update" event
             // XXX we have to set the begin/end values before
             //     because event listener callbacks are expecting them
-            this.begin = begin;
-            this.end   = end;
+            /*this.begin = begin;*/
+            /*this.end   = end;*/
             var evtObject = document.createEvent("Event");
             evtObject.initEvent("update", false, false);
+            evtObject.begin = begin;
+            evtObject.end   = end;
             this.dispatchEvent(evtObject);
 
             // draw PCM/8 file
@@ -822,8 +882,8 @@
           media.addEventListener("loadedmetadata", function() {
             mediaTime.min = 0;
             mediaTime.max = media.duration;
-            waveform.duration = media.duration;
-            waveform.cursor.setRange(0, media.duration);
+            /*waveform.duration = media.duration;*/
+            /*waveform.cursor.setRange(0, media.duration);*/
           }, false);
 
           // 'timeupdate' event listeners for media, mediaTime, waveform

@@ -50,7 +50,7 @@ function startup() {
   gWaveform = document.getElementById("waveform");
 
   gTimeController = document.getElementById("timeController");
-  gTimeController.addEventListener("update",  redrawSegmentBlocks, false);
+  gTimeController.addEventListener("update", redrawSegmentBlocks, false);
   gTimeController.addEventListener("middleclick", newSegmentXBL, false);
 
   gTimeContainer = document.getElementById("timeContainer");
@@ -161,19 +161,17 @@ function getWaveformFile() {
 } */
 
 // load media source and waveform
-var gForceReload = false;
-function drawPCM() {
-  var waveform = gTimeController.waveform;
-  var duration = gTimeController.media.duration;
-  var url = gDialog.mediaBaseURI.value + gDialog.mediaWaveform.value;
-  gWaveform.load(url, duration, gForceReload);
-  waveform.load (url, duration, gForceReload);
-}
 function loadMediaFiles(aForceReload) {
-  gForceReload = aForceReload;
-  gTimeController.media.removeEventListener ("loadedmetadata", drawPCM, false);
-  gTimeController.media.addEventListener    ("loadedmetadata", drawPCM, false);
-  gTimeController.media.src = gDialog.mediaBaseURI.value + gDialog.mediaSource.value;
+  var baseURL = gDialog.mediaBaseURI.value;
+
+  // <timeController>
+  gTimeController.media.src    = baseURL + gDialog.mediaSource.value;
+  gTimeController.waveform.src = baseURL + gDialog.mediaWaveform.value;
+  gTimeController.waveform.load(aForceReload);
+
+  // <waveform>
+  gWaveform.src = baseURL + gDialog.mediaWaveform.value;
+  gWaveform.load(aForceReload);
 }
 
 // load media source and waveform, dirty way
@@ -295,8 +293,10 @@ function sortSegments() {
 // redraw time blocks
 function redrawSegmentBlocks(event) {
   consoleLog("redraw " + event.target.nodeName);
-  var begin = event.target.begin; // == gTimeController.begin
-  var end   = event.target.end;   // == gTimeController.end
+  //var begin = event.target.begin; // == gTimeController.begin
+  //var end   = event.target.end;   // == gTimeController.end
+  var begin = event.begin; // == waveform.begin
+  var end   = event.end;   // == waveform.end
   for (var i = 0; i < gTimeSegments.length; i++) {
     gTimeSegments[i].block.draw(begin, end);
   }
