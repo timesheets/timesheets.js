@@ -163,15 +163,13 @@ function getWaveformFile() {
 // load media source and waveform
 function loadMediaFiles(aForceReload) {
   var baseURL = gDialog.mediaBaseURI.value;
-
-  // <timeController>
   gTimeController.media.src    = baseURL + gDialog.mediaSource.value;
   gTimeController.waveform.src = baseURL + gDialog.mediaWaveform.value;
-  gTimeController.waveform.load(aForceReload);
-
-  // <waveform>
-  gWaveform.src = baseURL + gDialog.mediaWaveform.value;
-  gWaveform.load(aForceReload);
+  gWaveform.src                = baseURL + gDialog.mediaWaveform.value;
+  if (aForceReload) {
+    gTimeController.waveform.load();
+    gWaveform.load();
+  }
 }
 
 // load media source and waveform, dirty way
@@ -191,15 +189,13 @@ function loadMediaFiles_old(aForceReload) {
   // load the remote media source in the HTML5 media player
   //gMediaPlayer.src = mediaSource;
   gTimeController.media.src = mediaSource;
-  gWaveform.load(mediaWaveform, 244, true);
 
   // draw as soon as the media's metadata is ready
   function draw() {
-    setTimeout(function() { // XXX why do we need a delay here?
+    //setTimeout(function() { // XXX why do we need a delay here?
       //drawWaveform(waveformFile);
       gTimeController.draw(waveformFile);
-      //gWaveform.drawPCM(waveformFile, gTimeController.media.duration);
-    }, 1500);
+    //}, 1500);
   }
 
   // if a temp file is already available, use it and exit
@@ -297,6 +293,7 @@ function redrawSegmentBlocks(event) {
   //var end   = event.target.end;   // == gTimeController.end
   var begin = event.begin; // == waveform.begin
   var end   = event.end;   // == waveform.end
+  consoleLog(begin + " → " + end);
   for (var i = 0; i < gTimeSegments.length; i++) {
     gTimeSegments[i].block.draw(begin, end);
   }

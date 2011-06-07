@@ -42,7 +42,19 @@
     xmlns:xul  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     xmlns:html = "http://www.w3.org/1999/xhtml">
 
-  <!-- time picker -->
+  <!-- Time Picker (extends <textbox>)
+     -
+     -  Properties:
+     -    decimals             number of decimals (int)        default = 0
+     -    increment            time increment (int)            default = 1
+     -    max                  max time value (float)          default = Infinity
+     -    min                  min time value (float)          default = 0
+     -    time                 time value (float)
+     -    value                text value
+     -
+     -  Events:
+     -    timeupdate           the 'time' property has changed
+     -->
   <binding id="timebox" extends="chrome://global/content/bindings/textbox.xml#textbox">
     <implementation>
       <constructor>
@@ -149,7 +161,32 @@
     </handlers>
   </binding>
 
-  <!-- PCM/8 waveform graph -->
+  <!-- PCM/8 Waveform Graph
+     -
+     -  Properties:
+     -    begin                visible area: begin time        (read-only)
+     -    currentTime          cursor position
+     -    duration             waveform duration               (read-only)
+     -    end                  visible area: end time          (read-only)
+     -    selection            current time span               (read-only)
+     -    src                  waveform source URL
+     -
+     -  Methods:
+     -    clear                resets the waveform graph
+     -    draw                 draw the waveform section
+     -    drawFrameBuffer      reload the current sourceb
+     -    load                 reload the current source
+     -    saveAsPNG            save current waveform as PNG
+     -    select               selects a time span
+     -    zoomIn               zoom current waveform image
+     -    zoomOut              unzoom current waveform image
+     -
+     -  Events:
+     -    change               user selection (time span)
+     -    loadedmedata         waveform is loaded
+     -    middleclick          middle-click on the waveform
+     -    update               waveform redrawn
+     -->
   <binding id="waveform">
     <resources>
       <stylesheet src="chrome://timesheets/skin/timeline.css" />
@@ -426,16 +463,27 @@
       <field name="pcmFile">(null)</field>
       <property name="src"
                 onget="return this.getAttribute('src');"
-                onset="this.setAttribute('src', val);" />
+                onset="this.setAttribute('src', val); this.load(true);" />
       <property name="duration"
                 onget="return this.pcmFile ? this.pcmFile.getDuration() : 0;" />
       <method name="load">
-        <parameter name="aForceReload"/>
+        <parameter name="aUseCache"/>
         <body>
           <![CDATA[
             const self = this;
+            var fromCache = false;
 
-            // pcmFile object constructor
+            /** pcmFile object constructor
+              * We're expecting a PCM/8 file here, i.e. an 8-bit encoded WAV file.
+              *
+              * SoX can be used to get such a file from an OGG source:
+              *   sox audio.ogg -b 8 audio.wav
+              * to mix all channels into a mono file: (both commands are equivalent)
+              *   sox audio.ogg -b 8 audio.wav channels 1
+              *   sox audio.ogg -b 8 audio.wav remix -
+              * to reduce the sample rate:
+              *   sox audio.ogg -b 8 audio.wav rate 16k
+              */
             const kChunkDuration = this.kChunkDuration;
             function pcmFile(wavFile) {
               var iStream  = null; // input stream handler
@@ -443,16 +491,6 @@
               var header   = {};   // WAV header
               var duration = 0;    // duration (s)
               var length   = 0;    // number of data bytes
-
-              /* We're expecting a PCM/8 file here, i.e. an 8-bit encoded WAV file.
-               * SoX can be used to get such a file from an OGG source:
-               *   sox audio.ogg -b 8 audio.wav
-               * to mix all channels into a mono file: (both commands are equivalent)
-               *   sox audio.ogg -b 8 audio.wav channels 1
-               *   sox audio.ogg -b 8 audio.wav remix -
-               * to reduce the sample rate:
-               *   sox audio.ogg -b 8 audio.wav rate 16k
-               */
 
               // header block -- read-only properties
               // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
@@ -558,13 +596,21 @@
               };
             }
 
-            // draw as soon as the waveform is loaded
+            // create a pcmFile instance on the local waveform file when ready
             var waveformFile;
             function draw() {
+              if (self.pcmFile) self.pcmFile.close();
               self.pcmFile = new pcmFile(waveformFile);
               self.pcmFile.open(); // updates self.duration
-              // TODO: fire a 'loadedmetadata' event here
-              consoleLog("duration = " + self.duration);
+
+              // fire a "loadedmetadata" event with header/fromCache properties
+              var evtObject = document.createEvent("Event");
+              evtObject.initEvent("loadedmetadata", false, false);
+              evtObject.header = self.pcmFile.getHeader();
+              evtObject.fromCache = fromCache;
+              self.dispatchEvent(evtObject);
+
+              // draw the whole waveform
               self.draw(0, self.duration);
             }
 
@@ -590,7 +636,8 @@
             waveformFile.append(this.src.replace(/^.*\//, ""));
 
             // if a temp file is already available, use it and exit
-            if (waveformFile.exists() && !aForceReload) {
+            if (waveformFile.exists() && aUseCache) {
+              fromCache = true;
               consoleLog(waveformFile.leafName + " already cached.");
               draw();
               return;
@@ -654,7 +701,7 @@
             var end   = Math.min(Math.max(aBegin, aEnd), this.duration);
             var time  = NaN; // elapsed time
 
-            // fire an "update" event
+            // fire an "update" event with begin/end properties
             // XXX we have to set the begin/end values before
             //     because event listener callbacks are expecting them
             /*this.begin = begin;*/
@@ -831,7 +878,19 @@
     </implementation>
   </binding>
 
-  <!-- media player + toolbar + waveform graph -->
+  <!-- Time Controller: toolbar + media player + waveform graph
+     -
+     -  Properties:
+     -    begin                visible area: begin time        (read-only)
+     -    currentTime          cursor position
+     -    end                  visible area: end time          (read-only)
+     -    selection            current time span               (read-only)
+     -
+     -  Methods:
+     -    select               selects a time span
+     -    zoomIn               zoom current waveform image
+     -    zoomOut              unzoom current waveform image
+     -->
   <binding id="timeController">
     <resources>
       <stylesheet src="chrome://timesheets/skin/timeline.css" />
@@ -944,13 +1003,11 @@
           ]]>
         </setter>
       </property>
-      <property name="selection">
-        <getter>
-          <![CDATA[
-            return this.waveform.selection;
-          ]]>
-        </getter>
-      </property>
+
+      <!-- Waveform API, required by <timeContainer> elements -->
+      <property name="begin"     onget="return this.waveform.begin;" />
+      <property name="end"       onget="return this.waveform.end;" />
+      <property name="selection" onget="return this.waveform.selection;" />
       <method name="select">
         <parameter name="aBegin"/>
         <parameter name="aEnd"/>
@@ -961,28 +1018,7 @@
         </body>
       </method>
 
-      <!-- Waveform Graph
-        <method name="load">
-          <parameter name="aWaveformURL"/>
-          <body>
-            <![CDATA[
-              this.waveform.load(aWaveformURL, this.media.duration);
-              /*this.waveform.drawPCM(aWaveformFile, this.media.duration);*/
-              /*this.waveform.cursor.setRange(0,     this.media.duration);*/
-            ]]>
-          </body>
-        </method>
-        <method name="draw">
-          <parameter name="aWaveformFile"/>
-          <body>
-            <![CDATA[
-              /*this.waveform.load(aWaveformFile, this.media.duration);*/
-              this.waveform.drawPCM(aWaveformFile, this.media.duration);
-              /*this.waveform.cursor.setRange(0,     this.media.duration);*/
-            ]]>
-          </body>
-        </method>
-      -->
+      <!-- Waveform Zoom -->
       <method name="zoomIn">
         <body>
           <![CDATA[
@@ -1073,17 +1109,6 @@
           <html:div    anonid="timePos"  />
           <html:div    anonid="timeSpan" />
         </html:div>
-
-        <!-- scrollbar
-        <xul:hbox flex="1">
-          <xul:slider flex="1" orient="horizontal" sborient="horizontal">
-            <xul:button value="10" collapsed="false" />
-          </xul:slider>
-        </xul:hbox>
-        <xul:hbox style="overflow-x: scroll;" onscroll="consoleLog(this.scrollLeft);">
-          <html:img style="-moz-transform: scale(20, 0.000001);" src="chrome://timesheets/skin/16/gtk-new.png"/>
-        </xul:hbox>
-        -->
 
       </xul:vbox>
     </content>
@@ -1665,72 +1690,6 @@
           ]]>
         </getter>
       </property>
-
-      <!-- Methods
-        <destructor>
-          <![CDATA[
-            // foo
-          ]]>
-        </destructor>
-        <method name="loadMedia">
-          <parameter name="aMediaSource"/>
-          <parameter name="aMediaWaveform"/>
-          <body>
-            <![CDATA[
-              // get a temp file for the local waveform data
-              var waveformFile = Components.classes["@mozilla.org/file/directory_service;1"]
-                                           .getService(Components.interfaces.nsIProperties)
-                                           .get("TmpD", Components.interfaces.nsIFile);
-              waveformFile.append(aMediaWaveform);
-
-              // load the remote media source in the HTML5 media player
-              this.media.src = aMediaSource;
-
-              // draw as soon as the media's metadata is ready
-              function draw() {
-                setTimeout(function() { // XXX why do we need a delay here?
-                  drawWaveform(waveformFile);
-                }, 500);
-              }
-
-              // if a temp file is already available, use it and exit
-              if (waveformFile.exists() && !aForceReload) {
-                consoleLog(waveformFile.path + " already cached.");
-                draw();
-                return;
-              }
-               
-              // get a URI for the remote waveform data
-              var mediaWaveformURI = Components.classes["@mozilla.org/network/io-service;1"]
-                                               .getService(Components.interfaces.nsIIOService)
-                                               .newURI(aMediaWaveform, null, null);
-
-              // download waveform data with nsIWebBrowserPersist
-              // https://developer.mozilla.org/en/Code_snippets/Downloading_Files
-              // XXX (nsIDownloadManager might be simpler for this)
-              const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
-              var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
-                                      .createInstance(nsIWBP);
-              persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
-                                   | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
-              persist.progressListener = {
-                onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
-                  gDialog.downloadProgress.value = 100 * aCurTotalProgress / aMaxTotalProgress;
-                },
-                onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-                  if (aStateFlags & 0x10) { // finished, failed or canceled
-                    gDialog.downloadProgress.style.visibility = "hidden";
-                    consoleLog(waveformFile.path + " downloaded.");
-                    draw();
-                  }
-                }
-              }
-              gDialog.downloadProgress.style.visibility = "visible";
-              persist.saveURI(mediaWaveformURI, null, null, null, "", waveformFile);
-            ]]>
-          </body>
-        </method>
-      -->
     </implementation>
   </binding>
 
@@ -1821,21 +1780,22 @@
               if (!SCENARI)
                 this.main.setAttribute("context", "transition");
 
+              var style = this.main.style;
               this.draw = function (aWaveformBegin, aWaveformEnd) {
                 var left  = Math.max(parent.time_in,  aWaveformBegin);
                 var right = Math.min(parent.time_out, aWaveformEnd);
 
                 if (left >= right) {
-                  self.main.style.display = "none";
+                  style.display = "none";
                 } else {
                   var duration = aWaveformEnd - aWaveformBegin;
                   var ratio = (right - left) / duration;
                   var offset = (left - aWaveformBegin) / duration;
-                  //self.main.style.left  = (offset * gTimeCursor.width) + "px";
-                  //self.main.style.width = (ratio  * gTimeCursor.width) + "px";
-                  self.main.style.left  = (offset * 100) + "%";
-                  self.main.style.width = (ratio  * 100) + "%";
-                  self.main.style.display = "block";
+                  //style.left  = (offset * gTimeCursor.width) + "px";
+                  //style.width = (ratio  * gTimeCursor.width) + "px";
+                  style.left  = (offset * 100) + "%";
+                  style.width = (ratio  * 100) + "%";
+                  style.display = "block";
                 }
               };
               this.update = function () {
@@ -1870,7 +1830,7 @@
               }, false);
             }
 
-            // main 'timeSegment' object
+            // main 'timeSegment' object constructor
             function timeSegment(begin, end) {
               consoleLog(begin + " → " + end);
 
