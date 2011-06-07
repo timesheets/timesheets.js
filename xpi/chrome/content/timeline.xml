@@ -176,6 +176,10 @@
           <html:img style="-moz-transform: scale(20, 0.000001);" src="chrome://timesheets/skin/16/gtk-new.png"/>
         </xul:hbox>
         -->
+        <xul:deck>
+          <xul:label value="scrollbar" />
+          <xul:progressmeter anonid="progress" mode="determined" value="0" />
+        </xul:deck>
 
       </xul:vbox>
     </content>
@@ -195,7 +199,7 @@
           const timeSpan = document.getAnonymousElementByAttribute(this, "anonid", "timeSpan");
 
           /** pcmCursor object constructor
-            * This could be defined as a 'pcmCursor' binding
+            * This could be defined as a separate 'pcmCursor' binding
             * but linking it to the 'waveform' binding would be painful.
             */
           function pcmCursor(timePos, timeSpan, canvas) {
@@ -411,35 +415,23 @@
         </getter>
       </property>
 
-      <!-- Waveform Graph -->
-      <method name="clear">
-        <body>
-          <![CDATA[
-            var width  = this.context.canvas.width;
-            var height = this.context.canvas.height;
-            this.context.strokeStyle = this.pcmCanvasColor;
-            this.context.clearRect(0, 0, width, height);
-            this.context.beginPath();
-            this.context.moveTo(0, height / 2);
-            this.context.lineTo(width, height / 2);
-            this.context.stroke();
-            this.context.strokeRect(0, 0, width, height);
-            this.context.lineWidth = 0.5;
-            this.context.strokeRect(0, height / 4 - 0.5, width, height / 2 + 1);
-            // update time cursor
-            this.cursor.clear();
-          ]]>
-        </body>
-      </method>
-      <method name="drawPCM">
-        <!-- load a local PCM/8 file and draw it -->
-        <parameter name="aWaveformFile"/>
+      <!-- Waveform Source -->
+      <field name="pcmFile">(null)</field>
+      <property name="src"
+                onget="return this.getAttribute('src');"
+                onset="this.setAttribute('src', val);" />
+      <property name="duration"
+                onget="return parseFloat(this.getAttribute('duration'));"
+                onset="this.setAttribute('duration', val);" />
+      <method name="load">
+        <parameter name="aWaveformURL"/>
         <parameter name="aDuration"/>
+        <parameter name="aForceReload"/>
         <body>
           <![CDATA[
-            this.clear();
-            this.duration = aDuration;
-            //delete(this.pcmFile);
+            var self = this;
+            if (aWaveformURL) this.src = aWaveformURL;
+            if (aDuration) this.duration = aDuration;
 
             // pcmFile object constructor
             const kChunkDuration = this.kChunkDuration;
@@ -510,27 +502,92 @@
               };
             }
 
-            // draw PCM/8 file
-            var t1 = Date.now();
-            this.context.lineWidth = 0.7;
-            this.context.strokeStyle = this.pcmCanvasColor;
-            //if (aLocalFile) localFile = aLocalFile;
-            this.pcmFile = new pcmFile(aWaveformFile, aDuration);
-            this.pcmFile.draw(this.context, 0, aDuration);
-            var t2 = Date.now();
+            // draw as soon as the waveform is loaded
+            var waveformFile;
+            function draw() {
+              self.pcmFile = new pcmFile(waveformFile, self.duration);
+              self.draw(0, self.duration);
+            }
 
-            // update time range
-            this.begin = 0;
-            this.end = aDuration;
-            this.cursor.setRange(0, aDuration);
+            // get a URI for the remote waveform data ('src' attribute)
+            var waveformURI = Components.classes["@mozilla.org/network/io-service;1"]
+                                        .getService(Components.interfaces.nsIIOService)
+                                        .newURI(this.src, null, null);
 
-            // return elapsed time
-            return (t2 - t1);
+            // use file URIs 'as is'
+            if (waveformURI.schemeIs("file")) {
+              waveformFile = waveformURI.QueryInterface(Components.interfaces.nsIFileURL).file;
+              if (file.exists()) {
+                draw();
+              } else {
+                throw file.path + " does not exist.";
+              }
+              return;
+            }
+
+            // get a temp file for the local waveform data
+            waveformFile = Components.classes["@mozilla.org/file/directory_service;1"]
+                                     .getService(Components.interfaces.nsIProperties)
+                                     .get("TmpD", Components.interfaces.nsIFile);
+            waveformFile.append(this.src.replace(/^.*\//, ""));
+
+            // if a temp file is already available, use it and exit
+            if (waveformFile.exists() && !aForceReload) {
+              consoleLog(waveformFile.leafName + " already cached.");
+              draw();
+              return;
+            }
+             
+            // download waveform data with nsIWebBrowserPersist
+            // https://developer.mozilla.org/en/Code_snippets/Downloading_Files
+            // XXX (nsIDownloadManager might be simpler for this)
+            const progress = document.getAnonymousElementByAttribute(this, "anonid", "progress");
+            const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+            var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                                    .createInstance(nsIWBP);
+            persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
+                                 | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+            persist.progressListener = {
+              onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
+                progress.value = 100 * aCurTotalProgress / aMaxTotalProgress;
+              },
+              onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+                if (aStateFlags & 0x10) { // finished, failed or canceled
+                  progress.parentNode.selectedIndex = 0;
+                  consoleLog(waveformFile.leafName + " downloaded.");
+                  draw();
+                }
+              }
+            }
+            progress.parentNode.selectedIndex = 1;
+            persist.saveURI(waveformURI, null, null, null, "", waveformFile);
           ]]>
         </body>
       </method>
-      <method name="drawPartialPCM">
-        <!-- redraw the current PCM/8 file -->
+
+      <!-- Waveform Graph -->
+      <method name="clear">
+        <!-- reset the canvas and draw the axis -->
+        <body>
+          <![CDATA[
+            var width  = this.context.canvas.width;
+            var height = this.context.canvas.height;
+            this.context.strokeStyle = this.pcmCanvasColor;
+            this.context.clearRect(0, 0, width, height);
+            this.context.beginPath();
+            this.context.moveTo(0, height / 2);
+            this.context.lineTo(width, height / 2);
+            this.context.stroke();
+            this.context.strokeRect(0, 0, width, height);
+            this.context.lineWidth = 0.5;
+            this.context.strokeRect(0, height / 4 - 0.5, width, height / 2 + 1);
+            // update time cursor
+            this.cursor.clear();
+          ]]>
+        </body>
+      </method>
+      <method name="draw">
+        <!-- draw the current PCM/8 file -->
         <parameter name="aBegin"/>
         <parameter name="aEnd"/>
         <body>
@@ -538,6 +595,15 @@
             var begin = Math.max(Math.min(aBegin, aEnd), 0);
             var end   = Math.min(Math.max(aBegin, aEnd), this.duration);
             var time  = NaN; // elapsed time
+
+            // fire an "update" event
+            // XXX we have to set the begin/end values before
+            //     because event listener callbacks are expecting them
+            this.begin = begin;
+            this.end   = end;
+            var evtObject = document.createEvent("Event");
+            evtObject.initEvent("update", false, false);
+            this.dispatchEvent(evtObject);
 
             // draw PCM/8 file
             if (this.pcmFile) {
@@ -551,6 +617,7 @@
             }
 
             // update time range
+            // XXX already set before
             this.begin = begin;
             this.end   = end;
             this.cursor.setRange(begin, end);
@@ -629,33 +696,8 @@
         </body>
       </method>
 
-      <!-- Waveform Zoom -->
-      <method name="zoom">
-        <parameter name="aBegin"/>
-        <parameter name="aEnd"/>
-        <body>
-          <![CDATA[
-            var begin = Math.max(Math.min(aBegin, aEnd), 0);
-            var end   = Math.min(Math.max(aBegin, aEnd), this.duration);
-
-            // fire an "update" event
-            // XXX we have to set the begin/end values before
-            //     because event listener callbacks are expecting them
-            this.begin = begin;
-            this.end   = end;
-            var evtObject = document.createEvent("Event");
-            evtObject.initEvent("update", false, false);
-            this.dispatchEvent(evtObject);
-
-            // draw
-            this.drawPartialPCM(begin, end);
-            /*this.timeCursor.clear((begin + end) / 2);*/
-            /*this.timeCursor.setRange(begin, end);*/
-
-          ]]>
-        </body>
-      </method>
-      <!-- zoom|unzoom current image (e.g. before a 'real' redraw)
+      <!-- Waveform Zoom
+           zoom|unzoom current image (e.g. before a 'real' redraw)
            use beforeZoom|afterZoom callbacks to trigger custom actions -->
       <method name="zoomIn">
         <parameter name="aBegin"/>
@@ -684,9 +726,9 @@
                 (0 - offset) * ratio, 0,
                 canvas.width * ratio, canvas.height
               );
-              if (aAfterZoom) setTimeout(function() {
+              if (aAfterZoom) // setTimeout(function() {
                 aAfterZoom(begin, end);
-              }, self.kZoomDelay);
+              // }, self.kZoomDelay);
             };
           ]]>
         </body>
@@ -718,74 +760,14 @@
                 offset, 0,
                 canvas.width * ratio, canvas.height
               );
-              if (aAfterZoom) setTimeout(function() {
+              if (aAfterZoom) // setTimeout(function() {
                 aAfterZoom(begin, end);
-              }, self.kZoomDelay);
+              // }, self.kZoomDelay);
             };
           ]]>
         </body>
       </method>
 
-      <!-- Methods
-        <method name="loadMedia">
-          <parameter name="aMediaSource"/>
-          <parameter name="aMediaWaveform"/>
-          <body>
-            <![CDATA[
-              // get a temp file for the local waveform data
-              var waveformFile = Components.classes["@mozilla.org/file/directory_service;1"]
-                                           .getService(Components.interfaces.nsIProperties)
-                                           .get("TmpD", Components.interfaces.nsIFile);
-              waveformFile.append(aMediaWaveform);
-
-              // load the remote media source in the HTML5 media player
-              this.media.src = aMediaSource;
-
-              // draw as soon as the media's metadata is ready
-              function draw() {
-                setTimeout(function() { // XXX why do we need a delay here?
-                  drawWaveform(waveformFile);
-                }, 500);
-              }
-
-              // if a temp file is already available, use it and exit
-              if (waveformFile.exists() && !aForceReload) {
-                consoleLog(waveformFile.path + " already cached.");
-                draw();
-                return;
-              }
-               
-              // get a URI for the remote waveform data
-              var mediaWaveformURI = Components.classes["@mozilla.org/network/io-service;1"]
-                                               .getService(Components.interfaces.nsIIOService)
-                                               .newURI(aMediaWaveform, null, null);
-
-              // download waveform data with nsIWebBrowserPersist
-              // https://developer.mozilla.org/en/Code_snippets/Downloading_Files
-              // XXX (nsIDownloadManager might be simpler for this)
-              const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
-              var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
-                                      .createInstance(nsIWBP);
-              persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
-                                   | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
-              persist.progressListener = {
-                onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
-                  gDialog.downloadProgress.value = 100 * aCurTotalProgress / aMaxTotalProgress;
-                },
-                onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-                  if (aStateFlags & 0x10) { // finished, failed or canceled
-                    gDialog.downloadProgress.style.visibility = "hidden";
-                    consoleLog(waveformFile.path + " downloaded.");
-                    draw();
-                  }
-                }
-              }
-              gDialog.downloadProgress.style.visibility = "visible";
-              persist.saveURI(mediaWaveformURI, null, null, null, "", waveformFile);
-            ]]>
-          </body>
-        </method>
-      -->
     </implementation>
   </binding>
 
@@ -826,12 +808,21 @@
           const toolbar   = document.getAnonymousElementByAttribute(this, "anonid", "toolbar");
           const waveform  = document.getAnonymousElementByAttribute(this, "anonid", "waveform");
           const mediaTime = document.getAnonymousElementByAttribute(this, "anonid", "mediaTime");
-          const media     = document.querySelector(this.getAttribute("media"));
+
+          // parse the 'media' attribute and get the related <audio|video> element
+          try {
+            const media = document.querySelector(this.getAttribute("media"));
+          } catch(e) {
+            throw "the timeContainer element requires a valid 'media' attribute.";
+          }
+          if (!media || !(/(audio|video)$/i).test(media.nodeName))
+            throw "the timeContainer's 'media' attribute does not refer to a valid <audio|video> element.";
 
           // attach event listeners when the media player is ready
           media.addEventListener("loadedmetadata", function() {
             mediaTime.min = 0;
             mediaTime.max = media.duration;
+            waveform.duration = media.duration;
             waveform.cursor.setRange(0, media.duration);
           }, false);
 
@@ -870,7 +861,7 @@
           media.addEventListener("pause",   function() { toolbar.className = "pause";   }, false);
 
           // expose 'media' and 'waveform'
-          // XXX these two properties should be considered as read-only
+          // XXX these two properties should be considered as read-only
           this.media    = media;
           this.waveform = waveform;
         ]]>
@@ -910,16 +901,28 @@
         </body>
       </method>
 
-      <!-- Waveform Graph -->
-      <method name="draw">
-        <parameter name="aWaveformFile"/>
-        <body>
-          <![CDATA[
-            this.waveform.drawPCM(aWaveformFile, this.media.duration);
-            /*this.waveform.cursor.setRange(0,     this.media.duration);*/
-          ]]>
-        </body>
-      </method>
+      <!-- Waveform Graph
+        <method name="load">
+          <parameter name="aWaveformURL"/>
+          <body>
+            <![CDATA[
+              this.waveform.load(aWaveformURL, this.media.duration);
+              /*this.waveform.drawPCM(aWaveformFile, this.media.duration);*/
+              /*this.waveform.cursor.setRange(0,     this.media.duration);*/
+            ]]>
+          </body>
+        </method>
+        <method name="draw">
+          <parameter name="aWaveformFile"/>
+          <body>
+            <![CDATA[
+              /*this.waveform.load(aWaveformFile, this.media.duration);*/
+              this.waveform.drawPCM(aWaveformFile, this.media.duration);
+              /*this.waveform.cursor.setRange(0,     this.media.duration);*/
+            ]]>
+          </body>
+        </method>
+      -->
       <method name="zoomIn">
         <body>
           <![CDATA[
@@ -942,7 +945,7 @@
             function afterZoom(begin, end) {
               /*waveform.cursor.setRange(begin, end);*/
               waveform.cursor.clear(pos);
-              waveform.zoom(begin, end);
+              waveform.draw(begin, end);
             }
             waveform.zoomIn(begin, end, beforeZoom, afterZoom);
           ]]>
@@ -969,7 +972,7 @@
             function afterZoom(begin, end) {
               /*waveform.cursor.setRange(begin, end);*/
               waveform.cursor.clear(pos);
-              waveform.zoom(begin, end);
+              waveform.draw(begin, end);
             }
             waveform.zoomOut(begin, end, beforeZoom, afterZoom);
           ]]>

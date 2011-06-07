@@ -160,7 +160,25 @@ function getWaveformFile() {
   });
 } */
 
+// load media source and waveform
+var gForceReload = false;
+function drawPCM() {
+  var waveform = gTimeController.waveform;
+  var duration = gTimeController.media.duration;
+  var url = gDialog.mediaBaseURI.value + gDialog.mediaWaveform.value;
+  gWaveform.load(url, duration, gForceReload);
+  waveform.load (url, duration, gForceReload);
+}
 function loadMediaFiles(aForceReload) {
+  gForceReload = aForceReload;
+  gTimeController.media.removeEventListener ("loadedmetadata", drawPCM, false);
+  gTimeController.media.addEventListener    ("loadedmetadata", drawPCM, false);
+  gTimeController.media.src = gDialog.mediaBaseURI.value + gDialog.mediaSource.value;
+}
+
+// load media source and waveform, dirty way
+// (to be used with the [unmaintained] #timeController_old binding)
+function loadMediaFiles_old(aForceReload) {
   // get media URLs
   var baseURL = gDialog.mediaBaseURI.value;
   var mediaSource   = baseURL + gDialog.mediaSource.value;
@@ -175,13 +193,14 @@ function loadMediaFiles(aForceReload) {
   // load the remote media source in the HTML5 media player
   //gMediaPlayer.src = mediaSource;
   gTimeController.media.src = mediaSource;
+  gWaveform.load(mediaWaveform, 244, true);
 
   // draw as soon as the media's metadata is ready
   function draw() {
     setTimeout(function() { // XXX why do we need a delay here?
       //drawWaveform(waveformFile);
       gTimeController.draw(waveformFile);
-      gWaveform.drawPCM(waveformFile, gTimeController.media.duration);
+      //gWaveform.drawPCM(waveformFile, gTimeController.media.duration);
     }, 1500);
   }
 

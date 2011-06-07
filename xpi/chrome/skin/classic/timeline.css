@@ -48,7 +48,8 @@ waveform {
 /* timeline */
 [anonid="timeline"] {
   position: relative;
-  height: 80px;
+  height: 80px; /* apply if the scrollbar is in the <div> block */
+  height: 60px;
 }
 canvas {
   position: absolute;
