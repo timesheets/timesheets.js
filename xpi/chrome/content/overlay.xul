@@ -44,5 +44,5 @@
       insertbefore = "sanitizeSeparator"
       oncommand    = "openTimesheetComposer();"/>
   </menupopup>
-  
+
 </overlay>

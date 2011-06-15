@@ -44,9 +44,13 @@
 
   <!-- Time Picker (extends <textbox>)
      -
+     -  Attributes (parsed only when the object is created):
+     -    decimals             number of decimals (int)        default = 0
+     -    max                  max time value (float)          default = Infinity
+     -    min                  min time value (float)          default = 0
+     -
      -  Properties:
      -    decimals             number of decimals (int)        default = 0
-     -    increment            time increment (int)            default = 1
      -    max                  max time value (float)          default = Infinity
      -    min                  min time value (float)          default = 0
      -    time                 time value (float)
@@ -61,42 +65,46 @@
         <![CDATA[
           const self = this;
 
-          // decimals & increment
-          this.decimals  = this.hasAttribute("decimals")
-                ? parseInt(this.getAttribute("decimals"), 10) : 0;
-          this.increment = this.hasAttribute("increment")
-                ? parseInt(this.getAttribute("increment"), 10) : 1;
-
-          // min & max values
+          // min|max|decimals values
           this.min       = this.hasAttribute("min")
               ? parseFloat(this.getAttribute("min")) : 0;
           this.max       = this.hasAttribute("max")
               ? parseFloat(this.getAttribute("max")) : Infinity;
+          this.decimals  = this.hasAttribute("decimals")
+                ? parseInt(this.getAttribute("decimals"), 10) : 0;
 
           // convert seconds (float) to a time string (0:00 or 0:00:00)
           this._time2hms = function(time) {
+            var str = "";
             time = Math.max(time, self.min);
             time = Math.min(time, self.max);
             /*if (isNaN(time) || time >= Infinity || time == 0)*/
             if (isNaN(time) || time >= Infinity)
               return "";
-            var pow = Math.pow(10, self.decimals);
-            seconds = Math.floor(time * pow) / pow;
-            /*seconds = Math.round(time * 100) / 100;*/
+            // seconds
+            var seconds = Math.floor(time);
+            if (self.decimals) {
+              var pow = Math.pow(10, self.decimals);
+              var dec = Math.floor((time - seconds) * pow);
+              str = dec;
+              for (var i = 1; i < self.decimals; i++) {
+                if (dec < Math.pow(10, i)) str = "0" + str;
+              }
+              str = "." + str;
+            }
             var sec = seconds % 60;
-            /*sec = Math.round(sec * 100) / 100;*/
-            sec = Math.round(sec * pow) / pow;
-            var str = sec;
-            if (sec < 10)
-              str = "0" + str;
+            str = sec + str;
+            if (sec < 10) str = "0" + str;
+            // minutes
             var minutes = Math.floor(seconds / 60);
-            min = minutes % 60;
+            var min = minutes % 60;
             str = min + ":" + str;
-            if (self.max < 3600) return str;
-            if (min < 10)
-              str = "0" + str;
-            var h = Math.floor(minutes / 60);
-            str = h + ":" + str;
+            // hours
+            if (self.max >= 3600) {
+              if (min < 10) str = "0" + str;
+              var hours = Math.floor(minutes / 60);
+              str = hours + ":" + str;
+            }
             return str;
           }
 
@@ -113,14 +121,13 @@
 
           // set internal time value
           this._time = this._hms2time(this.value);
-          //this.value = this._time2hms(this._time);
+          this.value = this._time2hms(this._time);
         ]]>
       </constructor>
 
       <property name="time">
         <getter>
           <![CDATA[
-            /*return this._hms2time(this.value);*/
             return this._time;
           ]]>
         </getter>
@@ -148,20 +155,40 @@
       </handler>
       <handler event="keypress" keycode="VK_UP">
         <![CDATA[
-          this.time += parseInt(this.getAttribute("increment"), 10);
-          /*this.time += this.increment;*/
+          // this.time += 1;
+          this.time = Math.floor(this.time + 1);
         ]]>
       </handler>
       <handler event="keypress" keycode="VK_DOWN">
         <![CDATA[
-          this.time -= parseInt(this.getAttribute("increment"), 10);
-          /*this.time -= this.increment;*/
+          // this.time -= 1;
+          var time = this.time;
+          var seconds = Math.floor(time);
+          this.time = (time > seconds) ? seconds : seconds - 1;
+        ]]>
+      </handler>
+      <handler event="keypress" keycode="VK_PAGE_UP">
+        <![CDATA[
+          // this.time += 60;
+          this.time = Math.floor((this.time + 60) / 60) * 60;
+        ]]>
+      </handler>
+      <handler event="keypress" keycode="VK_PAGE_DOWN">
+        <![CDATA[
+          // this.time -= 60;
+          var time = this.time;
+          var seconds = time % 60;
+          var minutes = Math.floor(time / 60);
+          this.time = (seconds ? minutes : minutes - 1) * 60;
         ]]>
       </handler>
     </handlers>
   </binding>
 
   <!-- PCM/8 Waveform Graph
+     -
+     -  Attributes:
+     -    src                  waveform source URL
      -
      -  Properties:
      -    begin                visible area: begin time        (read-only)
@@ -397,18 +424,17 @@
           this.pcmFile = null; // created by the 'draw' method
           this.context = pcmGraph.getContext("2d");
 
-          // fields (probably useless)
-          this.begin    = NaN; // visible area -- begin time
-          this.end      = NaN; // visible area -- end time
-          this.duration = NaN; // duration of the media track
-
           // expose constants
           this.pcmCanvasColor = pcmCanvasColor;
           this.oggCanvasColor = oggCanvasColor;
           this.kChunkDuration = kChunkDuration;
           this.kZoomDelay     = kZoomDelay;
 
-          this.clear();
+          // draw <canvas> content
+          if (this.src)
+            this.load(true); // load waveform (use the cached file if available)
+          else
+            this.clear();    // start with a clean canvas
         ]]>
       </constructor>
       <destructor>
@@ -419,10 +445,10 @@
         ]]>
       </destructor>
 
-      <!-- XXX these fields should be considered as read-only -->
-      <field name="begin">    (NaN) </field> <!-- visible area: begin time -->
-      <field name="end">      (NaN) </field> <!-- visible area: end time -->
-      <field name="duration"> (NaN) </field> <!-- media duration -->
+      <!-- visible area: begin/end time 
+           XXX these fields should be considered as read-only -->
+      <field name="begin"> (NaN) </field>
+      <field name="end">   (NaN) </field>
 
       <!-- Time Cursor -->
       <property name="currentTime">
@@ -638,7 +664,7 @@
             // if a temp file is already available, use it and exit
             if (waveformFile.exists() && aUseCache) {
               fromCache = true;
-              consoleLog(waveformFile.leafName + " already cached.");
+              dump(waveformFile.leafName + " already cached.");
               draw();
               return;
             }
@@ -659,7 +685,7 @@
               onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
                 if (aStateFlags & 0x10) { // finished, failed or canceled
                   progress.parentNode.selectedIndex = 0;
-                  consoleLog(waveformFile.leafName + " downloaded.");
+                  dump(waveformFile.leafName + " downloaded.");
                   draw();
                 }
               }
@@ -880,11 +906,17 @@
 
   <!-- Time Controller: toolbar + media player + waveform graph
      -
+     -  Attributes:
+     -    hidetoolbar          hides the toolbar ^^
+     -    media                CSS selector of an <audio> or <video> element
+     -
      -  Properties:
      -    begin                visible area: begin time        (read-only)
      -    currentTime          cursor position
      -    end                  visible area: end time          (read-only)
+     -    media                outer <audio|video> object      (read-only)
      -    selection            current time span               (read-only)
+     -    waveform             inner <waveform> object         (read-only)
      -
      -  Methods:
      -    select               selects a time span
@@ -905,7 +937,7 @@
           <xul:toolbarbutton anonid="mediaPlay"  tooltiptext="Play"  oncommand="media.play();"/>
           <xul:toolbarbutton anonid="mediaPause" tooltiptext="Pause" oncommand="media.pause();"/>
           <xul:vbox>
-            <xul:textbox anonid="mediaTime" type="time" value="0:00" decimals="0"/>
+            <xul:textbox anonid="mediaTime" type="time" value="0" decimals="0" max="3599"/>
           </xul:vbox>
           <xul:spacer flex="1" />
           <xul:toolbarbutton anonid="zoomFit" tooltiptext="Fit"      oncommand="zoomOut(true);"/>
@@ -1093,7 +1125,7 @@
           <xul:toolbarbutton anonid="mediaPlay"  label="Play"  oncommand="media.play();"/>
           <xul:toolbarbutton anonid="mediaPause" label="Pause" oncommand="media.pause();"/>
           <xul:vbox>
-            <xul:textbox anonid="mediaTime" type="time" value="0:00" increment="1"/>
+            <xul:textbox anonid="mediaTime" type="time" value="0:00"/>
           </xul:vbox>
           <xul:spacer flex="1" />
           <xul:toolbarbutton anonid="zoomFit" label="Fit"      oncommand="zoomOut(true);"/>
@@ -1693,7 +1725,51 @@
     </implementation>
   </binding>
 
-  <!-- time container toolbar + HTML timeline -->
+  <!-- time node (must be a child of a <timeContainer> element) -->
+  <binding id="timeNode">
+    <resources>
+      <stylesheet src="chrome://timesheets/skin/timeline.css" />
+    </resources>
+
+    <content>
+      <xul:hbox xbl:inherits="context">
+        <html:div anonid="handle-left" />
+        <html:div anonid="handle-right" />
+      </xul:hbox>
+    </content>
+
+    <implementation>
+      <constructor>
+        <![CDATA[
+          // UI elements
+          const main  = document.getAnonymousElementByAttribute(this, "anonid", "main");
+          const begin = document.getAnonymousElementByAttribute(this, "anonid", "begin");
+          const end   = document.getAnonymousElementByAttribute(this, "anonid", "end");
+
+          // timeController
+          this.controls = document.querySelector(this.getAttribute("controls"));
+          /*this.dataform = document.querySelector(this.getAttribute("dataform"));*/
+          this.timeNodes = [];
+        ]]>
+      </constructor>
+      <method name="draw">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            /*var begin = this.controls.begin;*/
+            /*var end   = this.controls.end;*/
+            var begin = Math.min(aBegin, aEnd);
+            var end   = Math.max(aBegin, aEnd);
+            for (var i = 0; i < this.timeNodes.length; i++) {
+              this.timeNodes[i].block.draw(begin, end);
+            }
+          ]]>
+        </body>
+      </method>
+    </implementation>
+  </binding>
+
   <binding id="timeContainer">
     <resources>
       <stylesheet src="chrome://timesheets/skin/timeline.css" />
@@ -1740,9 +1816,9 @@
       <constructor>
         <![CDATA[
           // UI elements
-          const toolbar     = document.getAnonymousElementByAttribute(this, "anonid", "toolbar"    );
-          const container   = document.getAnonymousElementByAttribute(this, "anonid", "container"  );
-          const segments    = document.getAnonymousElementByAttribute(this, "anonid", "segments"   );
+          const toolbar     = document.getAnonymousElementByAttribute(this, "anonid", "toolbar"  );
+          const container   = document.getAnonymousElementByAttribute(this, "anonid", "container");
+          const segments    = document.getAnonymousElementByAttribute(this, "anonid", "segments" );
 
           // timeController
           this.controls = document.querySelector(this.getAttribute("controls"));
@@ -1753,6 +1829,7 @@
 
       <field name="timeNodes" />
 
+      <!-- add/remove time nodes -->
       <method name="add">
         <!--
         <parameter name="aBegin"/>
@@ -1793,6 +1870,7 @@
                   var offset = (left - aWaveformBegin) / duration;
                   //style.left  = (offset * gTimeCursor.width) + "px";
                   //style.width = (ratio  * gTimeCursor.width) + "px";
+                  //consoleLog("draw (xbl): " + aWaveformBegin + " → " + aWaveformEnd);
                   style.left  = (offset * 100) + "%";
                   style.width = (ratio  * 100) + "%";
                   style.display = "block";
@@ -1832,7 +1910,7 @@
 
             // main 'timeSegment' object constructor
             function timeSegment(begin, end) {
-              consoleLog(begin + " → " + end);
+              //consoleLog("new (xbl): " + begin + " → " + end);
 
               const self = this;
               this.begin = begin;
@@ -2008,10 +2086,14 @@
 
       <!-- visual timeline -->
       <method name="draw">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
         <body>
           <![CDATA[
-            var begin = this.controls.begin;
-            var end   = this.controls.end;
+            /*var begin = this.controls.begin;*/
+            /*var end   = this.controls.end;*/
+            var begin = Math.min(aBegin, aEnd);
+            var end   = Math.max(aBegin, aEnd);
             for (var i = 0; i < this.timeNodes.length; i++) {
               this.timeNodes[i].block.draw(begin, end);
             }

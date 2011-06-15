@@ -45,6 +45,7 @@ var gTimeCursor;        // div#timePos|div#timeSpan elements and methods
 var gWaveform;          // <canvas> element and methods
 var gTimeSegments = []; // time segment array
 var gTimeController;
+var gTimeContainer;
 
 function startup() {
   gWaveform = document.getElementById("waveform");
@@ -63,8 +64,6 @@ function startup() {
   gDialog.mediaWaveform    = document.getElementById("mediaWaveform");
 
   // params
-  //gDialog.waveformFilePath = document.getElementById("waveformFilePath");
-  //gDialog.mediaFilePath    = document.getElementById("mediaFilePath");
   //gDialog.chunkDuration    = document.getElementById("chunkDuration");
   //gDialog.zoomDelay        = document.getElementById("zoomDelay");
   gDialog.downloadButton   = document.getElementById("downloadButton");
@@ -100,26 +99,6 @@ function startup() {
     }
   }
 
-  /*
-  // create the waveform graph when the media player is ready
-  gMediaPlayer.addEventListener("loadedmetadata", function() {
-    gWaveform = new pcmWaveformGraph(gDialog.waveformGraph, gMediaPlayer.duration);
-    gWaveform.clear();
-    // Audio API: update waveform graph as the media is played
-    gMediaPlayer.addEventListener("MozAudioAvailable", gWaveform.drawFrameBuffer, false);
-    //gMediaPlayer.mozFrameBufferLength = 16384; // max = 16384, default = 1024 * nbChannels
-    gTimeCursor.setWaveform(gWaveform);
-  }, false);
-
-  // canvas event handlers
-  gTimeCursor = new timeCursor(
-    gDialog.timePos,
-    gDialog.timeSpan,
-    gDialog.waveformGraph,
-    gMediaPlayer
-  );
-  */
-
   // Load default media files
   loadMediaFiles();
 }
@@ -128,47 +107,15 @@ function consoleLog(message) {
   gDialog.console.value += message + "\n" ;
 }
 
-/* testing: get the document folder and the default audio track+waveform
-function getFilePicker(aTitle, aFileExt, aFallback) {
-  const nsIFilePicker = Components.interfaces.nsIFilePicker;
-  var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
-  fp.init(window, aTitle, nsIFilePicker.modeOpen);
-  fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
-
-  var rv = fp.show();
-  if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
-    aFallback(fp);
-  }
-}
-function getMediaFile() {
-  getFilePicker("Choose media file", "", function(fp) {
-    gDialog.mediaFilePath.value = fp.file.leafName;
-    try {
-      console.log(fp.file.path);
-      console.log(fp.fileURL.spec);
-      gDialog.audioPlayer.src = fp.fileURL.spec;
-    } catch(e) {
-      console.log(e);
-    }
-  });
-}
-function getWaveformFile() {
-  getFilePicker("Choose waveform file", "", function(fp) {
-    gDialog.waveformFilePath.value = fp.file.path;
-    console.log(fp.file.path);
-    drawWaveform();
-  });
-} */
-
 // load media source and waveform
 function loadMediaFiles(aForceReload) {
   var baseURL = gDialog.mediaBaseURI.value;
   gTimeController.media.src    = baseURL + gDialog.mediaSource.value;
   gTimeController.waveform.src = baseURL + gDialog.mediaWaveform.value;
-  gWaveform.src                = baseURL + gDialog.mediaWaveform.value;
+  //gWaveform.src                = baseURL + gDialog.mediaWaveform.value;
   if (aForceReload) {
     gTimeController.waveform.load();
-    gWaveform.load();
+    //gWaveform.load();
   }
 }
 
@@ -288,16 +235,16 @@ function sortSegments() {
 
 // redraw time blocks
 function redrawSegmentBlocks(event) {
-  consoleLog("redraw " + event.target.nodeName);
+  consoleLog("<" + event.target.nodeName + "> redraw");
   //var begin = event.target.begin; // == gTimeController.begin
   //var end   = event.target.end;   // == gTimeController.end
   var begin = event.begin; // == waveform.begin
   var end   = event.end;   // == waveform.end
-  consoleLog(begin + " → " + end);
+  //consoleLog(begin + " → " + end);
   for (var i = 0; i < gTimeSegments.length; i++) {
     gTimeSegments[i].block.draw(begin, end);
   }
-  gTimeContainer.draw();
+  gTimeContainer.draw(begin, end);
 }
 function computeTimeNodes() { // XXX
   sortSegments();
@@ -323,7 +270,7 @@ function computeTimeNodes() { // XXX
 
 // main 'timeSegment' object
 function timeSegment(begin, end) {
-  consoleLog(begin + " → " + end);
+  consoleLog("new: " + begin + " → " + end);
   const self = this;
 
   this.begin = begin;

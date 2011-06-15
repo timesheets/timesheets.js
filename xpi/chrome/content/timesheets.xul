@@ -117,7 +117,7 @@
 
       <!-- editable timeline, see timeline.xml for the relevant bindings -->
       <vbox id="timeline">
-        <html:h1> Timeline </html:h1>
+        <html:h1 style="display: none;"> Timeline </html:h1>
 
         <!-- media player -->
         <html:div id="mediaPlayer">
@@ -125,10 +125,15 @@
           <html:video id="videoPlayer" />
         </html:div>
 
-        <!-- standalone waveform -->
-        <waveform id="waveform" flex="1" style="margin-bottom: 20px;" />
+        <!-- standalone waveform
+        <html:h2> waveform </html:h2>
+        <waveform id="waveform" flex="1" style="margin-bottom: 20px;"
+                  src="http://wam.inrialpes.fr/timesheets/media/composer/audio-16k.wav"
+                  hidden="false" />
+        -->
 
         <!-- time controller -->
+        <html:h2> timeController </html:h2>
         <timeController id="timeController" flex="1" hidetoolbar="false"
                         media="#audioPlayer">
           <spacer flex="1" />
@@ -148,7 +153,8 @@
         -->
 
         <!-- time container -->
-        <timeContainer id="timeContainer" hidetoolbar="true" flex="1"
+        <html:h2> timeContainer </html:h2>
+        <timeContainer id="timeContainer" hidetoolbar="false" flex="1"
                        controls="#timeController" />
 
         <hbox id="timeContainerProps" pack="begin" align="center">
@@ -189,6 +195,7 @@
       <!-- content / data -->
 
       <vbox id="content" flex="1">
+        <html:h2> data forms </html:h2>
         <dataform flex="1" begin="1:49" end="3:41" data="test" />
 
         <groupbox id="segmentTemplate" hidden="true">

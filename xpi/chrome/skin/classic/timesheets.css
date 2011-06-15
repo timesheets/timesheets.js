@@ -146,7 +146,7 @@ timeController #newSegment {
 
 timeContainer {
   -moz-binding: url("chrome://timesheets/content/timeline.xml#timeContainer");
-  outline: 1px solid gray;
+  /*outline: 1px solid red;*/
 }
 
 dataform {
