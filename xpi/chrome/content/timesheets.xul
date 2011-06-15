@@ -251,7 +251,7 @@
       <button id="downloadButton" label="download" oncommand="loadMediaFiles(true)" />
       <progressmeter id="downloadProgress" mode="determined" value="0"
       style="visibility: hidden;" />
-      
+
       <!--
       <html:h2>
         Parameters

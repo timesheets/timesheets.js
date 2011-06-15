@@ -445,7 +445,7 @@
         ]]>
       </destructor>
 
-      <!-- visible area: begin/end time 
+      <!-- visible area: begin/end time
            XXX these fields should be considered as read-only -->
       <field name="begin"> (NaN) </field>
       <field name="end">   (NaN) </field>
@@ -668,7 +668,7 @@
               draw();
               return;
             }
-             
+
             // download waveform data with nsIWebBrowserPersist
             // https://developer.mozilla.org/en/Code_snippets/Downloading_Files
             // XXX (nsIDownloadManager might be simpler for this)
@@ -1169,7 +1169,7 @@
             * The good thing is, outside this constructor the rest of the XBL
             * code is very compact and rather straight-forward.
             */
-           
+
           // pcmCursor object constructor
           function pcmCursor(timePos, timeSpan, canvas, media) {
             const self = this;

@@ -151,7 +151,7 @@ function loadMediaFiles_old(aForceReload) {
     draw();
     return;
   }
-   
+
   // get a URI for the remote waveform data
   var mediaWaveformURI = Components.classes["@mozilla.org/network/io-service;1"]
                                    .getService(Components.interfaces.nsIIOService)

@@ -107,7 +107,7 @@ thumb {
   min-width: 0;
 }
 thumb:active,
-scrollbarbutton:hover:active, 
+scrollbarbutton:hover:active,
 scrollbarbutton[active="true"] {
   -moz-border-top-colors:    ThreeDDarkShadow ThreeDShadow;
   -moz-border-right-colors:  ThreeDHighlight  ThreeDHighlight;
