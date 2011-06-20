@@ -1,0 +1,41 @@
+#slideshow {
+  box-shadow         : 0px 1px 10px #552;
+  -o-box-shadow      : 0px 1px 10px #552;
+  -moz-box-shadow    : 0px 1px 10px #552;
+  -webkit-box-shadow : 0px 1px 10px #552;
+  /*background-color: #f2f2f2;*/
+}
+#slideshow, div.smil-toc {
+  background-color: #ffc;
+}
+.smil-controlBar {
+  /*background-color: #faf4a3;*/
+  background-color: #fe8;
+  color: #c00 !important;
+}
+.smil-timeSegments a span {
+  background-color: transparent;
+  margin-top: 0;
+  padding: 0;
+}
+.smil-timeSegments a:hover span, div.smil-toc ul a {
+  color: #c00 !important;
+}
+button,
+.smil-controlBar button,
+.smil-timeSegments a,
+.smil-timeSegments a {
+  background-color: #fc3;
+  border-color: #f93;
+  color: #c00 !important;
+}
+video, button:hover,
+.smil-timeSlider,
+.smil-controlBar button:hover,
+.smil-timeSegments a:hover,
+.smil-timeSegments a.current {
+  background-color: #f93;
+}
+.smil-timeCursor {
+  background-image: url(../../../style/timecontroller/cursor-pink.png);
+}

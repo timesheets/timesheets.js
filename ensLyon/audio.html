@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title> Le changement climatique vu par les végétaux </title>
+  <link rel="timesheet" type="application/smil+xml" href="timesheet.smil">
+  <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/theme-brown.css">
+  <style type="text/css">
+    #swap {
+      display: none;
+    }
+    div.smil-toc {
+      top: 60px;
+      height: 450px;
+    }
+    footer {
+      padding-top: 0;
+    }
+  </style>
+  <link rel="alternate stylesheet" type="text/css" title="compact"  href="style/handheld.css">
+  <link rel="alternate stylesheet" type="text/css" title="handheld" href="style/handheld-light.css">
+  <!--[if lt IE 9]>
+    <link rel="stylesheet" type="text/css" href="style/layout-oldie.css">
+    <script type="text/javascript" src="../3rd-part/html5.js"></script>
+    <script type="text/javascript" src="../3rd-part/mediaelement.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="../timesheets.js"></script>
+  <script type="text/javascript" src="../timesheets-controls.js"></script>
+  <script type="text/javascript" src="../timesheets-navigation.js"></script>
+  <script type="text/javascript">
+    // <![CDATA[
+    function setStyleSheet(select) {
+      var i, a, title = select.options[select.selectedIndex].text;
+      for (i = 0; (a = document.getElementsByTagName("link")[i]); i++)
+        if (/style/.test(a.getAttribute("rel")) && a.getAttribute("title"))
+          a.disabled = (a.getAttribute("title") != title);
+      document.redrawTimelines(); // cf. timesheets-controls.js
+    }
+    // ]]>
+  </script>
+</head>
+<body>
+  <header>
+    <div style="float: right;">
+      <select onchange="setStyleSheet(this)">
+        <option> desktop </option>
+        <option> compact </option>
+        <option> handheld </option>
+      </select>
+      <span style="margin-left: 20px;">
+        audio <a href="./">vidéo</a>
+      </span>
+    </div>
+    <h1> Le changement climatique vu par les végétaux </h1>
+    <p> Bernard Seguin, Institut National de Recherche Agronomique. </p>
+  </header>
+
+  <div id="slideshow" class="cross-fade">
+    <button id="swap"><span>⤢</span></button>
+
+    <div id="images">
+      <img id="diapo01"  src="images/img1.png">
+      <img id="diapo02"  src="images/img2.png">
+      <img id="diapo03"  src="images/img3.png">
+      <img id="diapo04"  src="images/img4.png">
+      <img id="diapo05"  src="images/img5.png">
+      <img id="diapo06"  src="images/img6.png">
+      <img id="diapo07"  src="images/img7.png">
+      <img id="diapo08"  src="images/img8.png">
+      <img id="diapo09"  src="images/img9.png">
+      <img id="diapo10"  src="images/img10.png">
+      <img id="diapo11"  src="images/img11.png">
+      <img id="diapo12"  src="images/img12.png">
+      <img id="diapo13"  src="images/img13.png">
+      <img id="diapo14"  src="images/img14.png">
+      <img id="diapo15"  src="images/img15.png">
+      <img id="diapo16"  src="images/img16.png">
+      <img id="diapo17"  src="images/img17.png">
+      <img id="diapo18"  src="images/img18.png">
+      <img id="diapo19"  src="images/img19.png">
+      <img id="diapo20"  src="images/img20.png">
+      <img id="diapo21"  src="images/img21.png">
+      <img id="diapo22"  src="images/img22.png">
+      <img id="diapo23"  src="images/img23.png">
+      <img id="diapo24"  src="images/img24.png">
+      <img id="diapo25"  src="images/img25.png">
+      <img id="diapo26"  src="images/img26.png">
+      <img id="diapo27"  src="images/img27.png">
+      <img id="diapo28"  src="images/img28.png">
+      <img id="diapo29"  src="images/img29.png">
+      <img id="diapo30"  src="images/img30.png">
+      <img id="diapo31"  src="images/img31.png">
+      <img id="diapo32"  src="images/img32.png">
+      <img id="diapo33"  src="images/img33.png">
+      <img id="diapo34"  src="images/img34.png">
+      <img id="diapo35"  src="images/img35.png">
+      <img id="diapo36"  src="images/img36.png">
+      <img id="diapo37"  src="images/img37.png">
+    </div>
+
+    <!-- to extract an audio track from a video file with FFMPEG:
+      -    ffmpeg -i video.mp4 -acodec copy -vn audio.aac
+      -    ffmpeg -i video.ogv -acodec copy -vn audio.ogg
+      -->
+    <audio id="talk" autoplay>
+      <source type="audio/ogg" src="http://wam.inrialpes.fr/timesheets/media/BSeguin.ogg" />
+      <source type="audio/mp4" src="http://wam.inrialpes.fr/timesheets/media/BSeguin.m4a" />
+      <source type="audio/mp3" src="http://wam.inrialpes.fr/timesheets/media/BSeguin.mp3" />
+    </audio>
+
+    <nav id="timeController">
+      <!-- Table of Contents -->
+      <div class="smil-toc">
+        <ul class="smil-tocList">
+          <li><a href="#diapo01">Introduction</a></li>
+          <li><a href="#diapo02">1- Impacts sur la production végétale</a>
+            <ul>
+              <li><a href="#diapo03">CO2 et photosynthèse</a></li>
+              <li><a href="#diapo06">Cultures annuelles</a></li>
+              <li><a href="#diapo08">Arbres fruitiers / Vigne</a></li>
+            </ul>
+          </li>
+          <li><a href="#diapo10">2- Adaptation des sytèmes de culture</a>
+            <ul>
+              <li><a href="#diapo13">La vigne</a></li>
+              <li><a href="#diapo18">La forêt</a></li>
+            </ul>
+          </li>
+          <li><a href="#diapo25">3- Maladies et insectes</a></li>
+          <li><a href="#diapo27">4- Écosystèmes naturels</a></li>
+          <li><a href="#diapo30">5- Scénarios climatiques : limites actuelles</a></li>
+          <li><a href="#diapo37">Conclusion</a></li>
+        </ul>
+      </div>
+
+      <!-- timeline + control buttons -->
+      <div class="smil-controlBar">
+        <div class="smil-left">
+          <button class="smil-first"><span>|«</span></button>
+          <button class="smil-prev"><span>«</span></button>
+          <button class="smil-play"><span>▶||</span></button>
+          <button class="smil-next"><span>»</span></button>
+          <button class="smil-last"><span>»|</span></button>
+        </div>
+        <div class="smil-timeline">
+          <div class="smil-timeSlider"></div>
+          <div class="smil-timeSegments"></div>
+          <div class="smil-timeCursor"></div>
+        </div>
+        <div class="smil-right smil-currentTime">0:00:00</div>
+      </div>
+      <div class="smil-tocDisplay"></div>
+    </nav>
+  </div>
+  ´
+  <footer>
+    <p>
+      Conférence <a href="http://www.formaterre.fr/">Formaterre</a> du 26 octobre 2007
+    </p>
+    <p>
+      Post-production : Gérard Vidal
+      — Synchronisation : <a href="http://wam.inrialpes.fr/timesheets/">HTML Timing</a>
+      — © 2007 <a href="http://www.ens-lyon.eu/">ENS-Lyon</a>
+    </p>
+  </footer>
+</body>
+</html>

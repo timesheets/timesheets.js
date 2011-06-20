@@ -1,0 +1,25 @@
+/* import this stylesheet for IE6/IE7/IE8 */
+#slideshow {
+  /*filter: progid:DXImageTransform.Microsoft.Shadow(color='#444', Direction=35, Strength=04);*/
+  /*filter: progid:DXImageTransform.Microsoft.Glow(Color='#888888', Strength=10);*/
+  /*margin-left: -10px;*/
+  /*zoom: 1; */
+}
+
+div#images img {
+  visibility: hidden;
+}
+div#images img#diapo01 {
+  visibility: visible;
+}
+#swap {
+  display: none;
+}
+div.smil-toc {
+  font-family: sans-serif;
+}
+div.smil-toc ul {
+  padding: 0;
+  margin-left: 25px;
+}
+

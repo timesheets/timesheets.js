@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- slideshow -->
+  <excl timeAction="intrinsic" dur="1:04:28"
+        mediaSync="#talk" controls="#timeController" navigation="arrows; hash">
+    <item select="#diapo01" begin="0:00:00"/>
+    <item select="#diapo02" begin="0:03:30"/>
+    <item select="#diapo03" begin="0:10:50"/>
+    <item select="#diapo04" begin="0:12:39"/>
+    <item select="#diapo05" begin="0:17:17"/>
+    <item select="#diapo06" begin="0:21:23"/>
+    <item select="#diapo07" begin="0:25:24"/>
+    <item select="#diapo08" begin="0:27:34"/>
+    <item select="#diapo09" begin="0:32:10"/>
+    <item select="#diapo10" begin="0:35:46"/>
+    <item select="#diapo11" begin="0:37:42"/>
+    <item select="#diapo12" begin="0:40:27"/>
+    <item select="#diapo13" begin="0:40:47"/>
+    <item select="#diapo14" begin="0:41:57"/>
+    <item select="#diapo15" begin="0:42:57"/>
+    <item select="#diapo16" begin="0:43:34"/>
+    <item select="#diapo17" begin="0:44:54"/>
+    <item select="#diapo18" begin="0:46:32"/>
+    <item select="#diapo19" begin="0:47:28"/>
+    <item select="#diapo20" begin="0:47:34"/>
+    <item select="#diapo21" begin="0:47:37"/>
+    <item select="#diapo22" begin="0:47:54"/>
+    <item select="#diapo23" begin="0:48:53"/>
+    <item select="#diapo24" begin="0:49:10"/>
+    <item select="#diapo25" begin="0:49:45"/>
+    <item select="#diapo26" begin="0:51:19"/>
+    <item select="#diapo27" begin="0:51:27"/>
+    <item select="#diapo28" begin="0:53:04"/>
+    <item select="#diapo29" begin="0:53:29"/>
+    <item select="#diapo30" begin="0:53:51"/>
+    <item select="#diapo31" begin="0:54:40"/>
+    <item select="#diapo32" begin="0:55:01"/>
+    <item select="#diapo33" begin="0:55:39"/>
+    <item select="#diapo34" begin="0:56:12"/>
+    <item select="#diapo35" begin="0:56:20"/>
+    <item select="#diapo36" begin="0:56:23"/>
+    <item select="#diapo37" begin="0:56:51"/>
+    <!-- recall these two images at the end of the slideshow -->
+    <item select="#diapo11" begin="1:00:45"/>
+    <item select="#diapo01" begin="1:02:00"/>
+  </excl>
+
+  <!-- swap video and slideshow -->
+  <par timeAction="class:swapped">
+    <item select="body" begin="swap.click" end="swap.click"/>
+  </par>
+
+</timesheet>

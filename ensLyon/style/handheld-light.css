@@ -1,0 +1,55 @@
+@import url(handheld.css);
+
+/* ajustement des dimensions */
+body {
+  width: 980px;
+  margin: auto;
+}
+header, footer {
+  display: none;
+}
+#slideshow {
+  background-color: transparent;
+  box-shadow         : none;
+  -o-box-shadow      : none;
+  -moz-box-shadow    : none;
+  -webkit-box-shadow : none;
+}
+div#images, div.smil-toc, .smil-tocDisplay, .smil-controlBar {
+  left: 170px;
+  width: 640px;
+}
+
+/* boutons de navigation */
+button.smil-play {
+  left: 3px;
+}
+.smil-prev, .smil-next {
+  width: 150px !important;
+  font-size: 128px !important;
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+}
+.smil-prev {
+  left: -150px;
+  border-top-left-radius         : 50px;
+  -o-border-top-left-radius      : 50px;
+  -moz-border-radius-topleft     : 50px;
+  -webkit-border-top-left-radius : 50px;
+  border-bottom-left-radius         : 50px;
+  -o-border-bottom-left-radius      : 50px;
+  -moz-border-radius-bottomleft     : 50px;
+  -webkit-border-bottom-left-radius : 50px;
+}
+.smil-next {
+  right: -150px;
+  border-top-right-radius         : 50px;
+  -o-border-top-right-radius      : 50px;
+  -moz-border-radius-topright     : 50px;
+  -webkit-border-top-right-radius : 50px;
+  border-bottom-right-radius         : 50px;
+  -o-border-bottom-right-radius      : 50px;
+  -moz-border-radius-bottomright     : 50px;
+  -webkit-border-bottom-right-radius : 50px;
+}
+

@@ -1,0 +1,37 @@
+#slideshow {
+  box-shadow         : 0px 1px 10px #242;
+  -o-box-shadow      : 0px 1px 10px #242;
+  -moz-box-shadow    : 0px 1px 10px #242;
+  -webkit-box-shadow : 0px 1px 10px #242;
+}
+#slideshow, div.smil-toc {
+  background-color: #aca;
+}
+.smil-controlBar {
+  background-color: #030;
+}
+.smil-timeSegments a span {
+  background-color: transparent;
+  margin-top: 0;
+  padding: 0;
+}
+.smil-timeSegments a:hover span, div.smil-toc ul a {
+  color: white !important;
+}
+button,
+.smil-controlBar button,
+.smil-timeSegments a {
+  background-color: #6a6;
+  border-color: #686;
+  color: white !important;
+}
+video, button:hover,
+.smil-timeSlider,
+.smil-controlBar button:hover,
+.smil-timeSegments a:hover,
+.smil-timeSegments a.current {
+  background-color: #6d6;
+}
+div.smil-toc li.current > a {
+  color: brown !important;
+}
