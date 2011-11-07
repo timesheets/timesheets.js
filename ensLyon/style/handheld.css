@@ -1,121 +1,55 @@
+@import url(handheld.css);
+
+/* ajustement des dimensions */
 body {
-  width: 880px;
-  margin: 20px auto;
-  overflow: auto;
+  width: 980px;
+  margin: auto;
 }
-div#images {
-  left: 120px;
-  border: none;
-}
-#swap {
+header, footer {
   display: none;
+}
+#slideshow {
+  background-color: transparent;
+  box-shadow         : none;
+  -o-box-shadow      : none;
+  -moz-box-shadow    : none;
+  -webkit-box-shadow : none;
+}
+div#images, div.smil-toc, .smil-tocDisplay, .smil-controlBar {
+  left: 170px;
+  width: 640px;
 }
 
-/* contrôles utilisateur : ligne de temps */
-.smil-controlBar {
-  left: 20px;
-  width: 840px;
-  height: 32px;
-  z-index: 2;
-}
-.smil-timeSegments, .smil-timeCursor {
-  display: none;
-}
-.smil-timeSlider {
-  display: block;
-}
-.smil-timeline, .smil-timeSlider {
-  border-radius         : 10px;
-  -o-border-radius      : 10px;
-  -moz-border-radius    : 10px;
-  -webkit-border-radius : 10px;
-}
-.smil-timeline {
-  height: 24px;
-  margin-top: 4px;
-  background-color: #944; /* XXX */
-  overflow: hidden;       /* XXX */
-}
-.smil-currentTime {
-  font-size: 16px;
-  font-weight: bold;
-  font-family: sans-serif;
-}
-
-/* contrôles utilisateur : boutons de navigation */
-.smil-first, .smil-last {
-  display: none;
-}
-.smil-play, .smil-prev, .smil-next {
-  position: absolute;
-  top: -498px;
-  height: 480px;
-  margin: 0;
-  padding: 0;
-  width: 100px !important;
-  font-size: 64px !important;
-}
+/* boutons de navigation */
 button.smil-play {
-  width: 640px !important;
-  height: 480px;
-  left: 103px;
-  border: none;
-  border-radius         : 1px !important;
-  -o-border-radius      : 1px !important;
-  -moz-border-radius    : 1px !important;
-  -webkit-border-radius : 1px !important;
+  left: 3px;
+}
+.smil-prev, .smil-next {
+  width: 150px !important;
+  font-size: 128px !important;
   opacity: 0.5;
   filter: alpha(opacity=50);
-  background-image: url(progress44.gif);
-}
-.playing button.smil-play {
-  background-color: transparent;
-  background-image: none;
-}
-.paused button.smil-play {
-  background-color: transparent;
-  background-image: url(play128.png);
 }
 .smil-prev {
-  left: 2px;
+  left: -150px;
+  border-top-left-radius         : 50px;
+  -o-border-top-left-radius      : 50px;
+  -moz-border-radius-topleft     : 50px;
+  -webkit-border-top-left-radius : 50px;
+  border-bottom-left-radius         : 50px;
+  -o-border-bottom-left-radius      : 50px;
+  -moz-border-radius-bottomleft     : 50px;
+  -webkit-border-bottom-left-radius : 50px;
 }
 .smil-next {
-  right: 2px;
+  right: -150px;
+  border-top-right-radius         : 50px;
+  -o-border-top-right-radius      : 50px;
+  -moz-border-radius-topright     : 50px;
+  -webkit-border-top-right-radius : 50px;
+  border-bottom-right-radius         : 50px;
+  -o-border-bottom-right-radius      : 50px;
+  -moz-border-radius-bottomright     : 50px;
+  -webkit-border-bottom-right-radius : 50px;
 }
 
-/* contrôles utilisateur : table des matières */
-div.smil-toc {
-  top: inherit;
-  bottom: 10px;
-  right: 20px;
-  z-index: 3;
-  width: 840px;
-  border-radius          : 8px;
-  -o-border-radius       : 8px;
-  -moz-border-radius     : 8px;
-  -webkit-border-radius  : 8px;
-  opacity: 0.9;
-  filter: alpha(opacity=90);
-  /* transition */
-  transition         : height 0.5s;
-  -o-transition      : height 0.5s;
-  -moz-transition    : height 0.5s;
-  -webkit-transition : height 0.5s;
-  height: 0;
-  overflow: hidden;
-  font-size: 32px !important;
-}
-div.smil-toc.active, .active {
-  height: 530px;
-}
-/* bouton transparent par-dessus la ligne de temps */
-.smil-tocDisplay {
-  position: absolute;
-  bottom: 10px;
-  left: 20px;
-  width: 840px;
-  height: 40px;
-  opacity: 0.5;
-  filter: alpha(opacity=50);
-  z-index: 4;
-}

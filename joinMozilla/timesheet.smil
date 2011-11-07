@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <timesheet xmlns="http://www.w3.org/ns/SMIL">
   <excl timeAction="intrinsic" dur="13:29"
-      mediaSync="#talk" controls="#timeController" navigation="arrows; click; hash">
+      mediaSync="#talk" controls="#timeController" navigation="arrows; click;">
     <item select="#slide01" begin="00:00"/>
     <item select="#slide02" begin="00:09"/>
     <item select="#slide03" begin="00:50"/>

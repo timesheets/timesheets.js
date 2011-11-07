@@ -1,0 +1,1299 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
+   -
+   - The contents of this file are subject to the Mozilla Public License Version
+   - 1.1 (the "License"); you may not use this file except in compliance with
+   - the License. You may obtain a copy of the License at
+   - http://www.mozilla.org/MPL/
+   -
+   - Software distributed under the License is distributed on an "AS IS" basis,
+   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+   - for the specific language governing rights and limitations under the
+   - License.
+   -
+   - The Original Code is Timesheet Composer.
+   -
+   - The Initial Developer of the Original Code is INRIA.
+   - Portions created by the Initial Developer are Copyright (C) 2010-2011
+   - the Initial Developer. All Rights Reserved.
+   -
+   - Contributor(s):
+   -    Fabien Cazenave <fabien@cazenave.cc>
+   -
+   - Alternatively, the contents of this file may be used under the terms of
+   - either the GNU General Public License Version 2 or later (the "GPL"), or
+   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+   - in which case the provisions of the GPL or the LGPL are applicable instead
+   - of those above. If you wish to allow use of your version of this file only
+   - under the terms of either the GPL or the LGPL, and not to allow others to
+   - use your version of this file under the terms of the MPL, indicate your
+   - decision by deleting the provisions above and replace them with the notice
+   - and other provisions required by the LGPL or the GPL. If you do not delete
+   - the provisions above, a recipient may use your version of this file under
+   - the terms of any one of the MPL, the GPL or the LGPL.
+   -
+   - ***** END LICENSE BLOCK ***** -->
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<bindings id="timelineBindings"
+    xmlns      = "http://www.mozilla.org/xbl"
+    xmlns:xbl  = "http://www.mozilla.org/xbl"
+    xmlns:xul  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    xmlns:html = "http://www.w3.org/1999/xhtml">
+
+  <!-- Time Picker (extends <textbox>)
+     -
+     -  Attributes (parsed only when the object is created):
+     -    decimals             number of decimals (int)        default = 0
+     -    max                  max time value (float)          default = Infinity
+     -    min                  min time value (float)          default = 0
+     -
+     -  Properties:
+     -    decimals             number of decimals (int)        default = 0
+     -    max                  max time value (float)          default = Infinity
+     -    min                  min time value (float)          default = 0
+     -    time                 time value (float)
+     -    value                text value
+     -
+     -  Events:
+     -    timeupdate           the 'time' property has changed
+     -->
+  <binding id="timebox" extends="chrome://global/content/bindings/textbox.xml#textbox">
+    <implementation>
+      <constructor>
+        <![CDATA[
+          const self = this;
+
+          // min|max|decimals values
+          this.min       = this.hasAttribute("min")
+              ? parseFloat(this.getAttribute("min")) : 0;
+          this.max       = this.hasAttribute("max")
+              ? parseFloat(this.getAttribute("max")) : Infinity;
+          this.decimals  = this.hasAttribute("decimals")
+                ? parseInt(this.getAttribute("decimals"), 10) : 0;
+
+          // convert seconds (float) to a time string (0:00 or 0:00:00)
+          this._time2hms = function(time) {
+            var str = "";
+            time = Math.max(time, self.min);
+            time = Math.min(time, self.max);
+            /*if (isNaN(time) || time >= Infinity || time == 0)*/
+            if (isNaN(time) || time >= Infinity)
+              return "";
+            // seconds
+            var seconds = Math.floor(time);
+            if (self.decimals) {
+              var pow = Math.pow(10, self.decimals);
+              var dec = Math.floor((time - seconds) * pow);
+              str = dec;
+              for (var i = 1; i < self.decimals; i++) {
+                if (dec < Math.pow(10, i)) str = "0" + str;
+              }
+              str = "." + str;
+            }
+            var sec = seconds % 60;
+            str = sec + str;
+            if (sec < 10) str = "0" + str;
+            // minutes
+            var minutes = Math.floor(seconds / 60);
+            var min = minutes % 60;
+            str = min + ":" + str;
+            // hours
+            if (self.max >= 3600) {
+              if (min < 10) str = "0" + str;
+              var hours = Math.floor(minutes / 60);
+              str = hours + ":" + str;
+            }
+            return str;
+          }
+
+          // convert a time string (0:00 or 0:00:00) to seconds (float)
+          this._hms2time = function(hms) {
+            var seconds = 0;
+            var tmp = hms.split(":");
+            for (var i = 0; i < tmp.length; i++)
+              seconds = (seconds * 60) + parseFloat(tmp[i]);
+            seconds = Math.max(seconds, self.min);
+            seconds = Math.min(seconds, self.max);
+            return seconds;
+          }
+
+          // set internal time value
+          this._time = this._hms2time(this.value);
+          this.value = this._time2hms(this._time);
+        ]]>
+      </constructor>
+
+      <property name="time">
+        <getter>
+          <![CDATA[
+            return this._time;
+          ]]>
+        </getter>
+        <setter>
+          <![CDATA[
+            this._time = val;
+            var value = this._time2hms(val);
+            if (value != this.value) {
+              this.value = value;
+              // fire a "timeupdate" event
+              var evtObject = document.createEvent("Event");
+              evtObject.initEvent("timeupdate", false, false);
+              this.dispatchEvent(evtObject);
+            }
+          ]]>
+        </setter>
+      </property>
+    </implementation>
+
+    <handlers>
+      <handler event="change">
+        <![CDATA[
+          this.time = this._hms2time(this.value);
+        ]]>
+      </handler>
+      <handler event="keypress" keycode="VK_UP">
+        <![CDATA[
+          // this.time += 1;
+          this.time = Math.floor(this.time + 1);
+        ]]>
+      </handler>
+      <handler event="keypress" keycode="VK_DOWN">
+        <![CDATA[
+          // this.time -= 1;
+          var time = this.time;
+          var seconds = Math.floor(time);
+          this.time = (time > seconds) ? seconds : seconds - 1;
+        ]]>
+      </handler>
+      <handler event="keypress" keycode="VK_PAGE_UP">
+        <![CDATA[
+          // this.time += 60;
+          this.time = Math.floor((this.time + 60) / 60) * 60;
+        ]]>
+      </handler>
+      <handler event="keypress" keycode="VK_PAGE_DOWN">
+        <![CDATA[
+          // this.time -= 60;
+          var time = this.time;
+          var seconds = time % 60;
+          var minutes = Math.floor(time / 60);
+          this.time = (seconds ? minutes : minutes - 1) * 60;
+        ]]>
+      </handler>
+    </handlers>
+  </binding>
+
+  <!-- PCM/8 Waveform Graph
+     -
+     -  Attributes:
+     -    src                  waveform source URL
+     -
+     -  Properties:
+     -    begin                visible area: begin time        (read-only)
+     -    currentTime          cursor position
+     -    duration             waveform duration               (read-only)
+     -    end                  visible area: end time          (read-only)
+     -    selection            current time span               (read-only)
+     -    src                  waveform source URL
+     -
+     -  Methods:
+     -    clear                resets the waveform graph
+     -    draw                 draw the waveform section
+     -    drawFrameBuffer      reload the current sourceb
+     -    load                 reload the current source
+     -    saveAsPNG            save current waveform as PNG
+     -    select               selects a time span
+     -    zoomIn               zoom current waveform image
+     -    zoomOut              unzoom current waveform image
+     -
+     -  Events:
+     -    change               user selection (time span)
+     -    loadedmedata         waveform is loaded
+     -    middleclick          middle-click on the waveform
+     -    update               waveform redrawn
+     -->
+  <binding id="waveform">
+    <resources>
+      <stylesheet src="timeline.css" />
+    </resources>
+
+    <content>
+      <xul:vbox xbl:inherits="flex">
+
+        <!-- timeline -->
+        <html:div anonid="timeline">
+          <html:canvas anonid="pcmGraph" width="512" height="60" />
+          <html:canvas anonid="pcmZoom"  width="512" height="20" />
+          <html:div    anonid="timePos"  />
+          <html:div    anonid="timeSpan" />
+          <children />
+        </html:div>
+
+        <!-- scrollbar
+        <xul:hbox flex="1">
+          <xul:slider flex="1" orient="horizontal" sborient="horizontal">
+            <xul:button value="10" collapsed="false" />
+          </xul:slider>
+        </xul:hbox>
+        <xul:hbox style="overflow-x: scroll;" onscroll="consoleLog(this.scrollLeft);">
+          <html:img style="-moz-transform: scale(20, 0.000001);" src="chrome://timesheets/skin/16/gtk-new.png"/>
+        </xul:hbox>
+        -->
+        <xul:deck>
+          <xul:label value="scrollbar" />
+          <xul:progressmeter anonid="progress" mode="determined" value="0" />
+        </xul:deck>
+
+      </xul:vbox>
+    </content>
+
+    <implementation>
+      <constructor>
+        <![CDATA[
+          const pcmCanvasColor = "#000";
+          const oggCanvasColor = "#f00";
+          const kChunkDuration = 0; // leave 0 to parse the whole PCM/8 file
+          const kZoomDelay     = 0; // set a significant delay to debug the redraw
+
+          // UI elements
+          const pcmZoom  = document.getAnonymousElementByAttribute(this, "anonid", "pcmZoom" );
+          const pcmGraph = document.getAnonymousElementByAttribute(this, "anonid", "pcmGraph");
+          const timePos  = document.getAnonymousElementByAttribute(this, "anonid", "timePos" );
+          const timeSpan = document.getAnonymousElementByAttribute(this, "anonid", "timeSpan");
+
+          /** pcmCursor object constructor
+            * This could be defined as a separate 'pcmCursor' binding
+            * but linking it to the 'waveform' binding would be painful.
+            */
+          function pcmCursor(timePos, timeSpan, canvas) {
+            const self = this;
+
+            // time range (to be updated whenever the canvas is redrawn)
+            var range = {
+              begin : 0,
+              end   : 0,
+              dur   : 0
+            }
+            this.setRange = function(aBegin, aEnd) {
+              range = {
+                begin : aBegin,
+                end   : aEnd,
+                dur   : aEnd - aBegin
+              };
+            };
+
+            // should be called whenever the canvas is resized
+            this.getBoundingBox = function() {
+              var rect = canvas.getBoundingClientRect();
+              self.top    = rect.top;
+              self.right  = rect.right;
+              self.bottom = rect.bottom;
+              self.left   = rect.left;
+              self.height = rect.height;
+              self.width  = rect.width;
+            };
+
+            // private methods
+            function checkTime(time) {
+              time = Math.max(time, range.begin);
+              time = Math.min(time, range.end);
+              return time;
+            }
+            function checkDuration(dur) {
+              dur = Math.max(dur, 0);
+              dur = Math.min(dur, range.dur);
+              return dur;
+            }
+            function getTimePosition(event) {
+              return px2time(event.clientX - self.left)
+            }
+            function updateTimeCursor() {
+              self.dur = checkDuration(self.end - self.begin);
+              var left = time2percent(self.begin);
+              var width = dur2percent(self.dur);
+              if (!isNaN(left) && !isNaN(width)) {
+                timeSpan.style.left  = left  + "%";
+                timeSpan.style.width = width + "%";
+              }
+            };
+
+            // unit = px (ugly)
+            function dur2px(dur) {
+              return (canvas.width * dur / range.dur);
+            }
+            function time2px(time) {
+              return (canvas.width * (time - range.begin) / range.dur);
+            }
+            function px2time(x) {
+              return range.begin + (x * range.dur / self.width);
+            }
+
+            // unit = % (preferred)
+            function dur2percent(dur) {
+              return (100 * dur / range.dur);
+            }
+            function time2percent(time) {
+              return (100 * (time - range.begin) / range.dur);
+            }
+            function percent2time(x) {
+              return range.begin + (x * range.dur / 100);
+            }
+
+            // public properties
+            this.currentTime = 0;
+            this.setCurrentTime = function(time) {
+              self.currentTime = checkTime(time);
+              //timePos.style.left = time2px(self.currentTime) + "px";
+              var left = time2percent(self.currentTime);
+              if (!isNaN(left))
+                timePos.style.left = left + "%";
+              /* fire a "timeupdate" event
+              var evtObject = document.createEvent("Event");
+              evtObject.initEvent("timeupdate", false, false);
+              canvas.dispatchEvent(evtObject);
+              */
+            };
+            this.begin = 0;
+            this.setBegin = function(time) {
+              self.begin = checkTime(time);
+              updateTimeCursor();
+            };
+            this.end = 0;
+            this.setEnd = function(time) {
+              self.end = checkTime(time);
+              updateTimeCursor();
+            };
+            this.dur = 0;
+            this.clear = function(time) {
+              if (!time)
+                time = self.currentTime;
+              else
+                self.setCurrentTime(time);
+              self.begin = checkTime(time);
+              self.end   = checkTime(time);
+              updateTimeCursor();
+            };
+
+            // canvas click / drag'n'drop event handlers
+            function onClick(event) {
+              self.getBoundingBox();
+              //if (event.button) return;
+              switch (event.button) {
+                case 0: // left click: set cursor position
+                  var time = getTimePosition(event);
+                  self.setBegin(time);
+                  self.setEnd(time);
+                  self.setCurrentTime(time);
+                  //media.currentTime = time;
+                  break;
+                case 1: // middle click: fire a "middleclick" event
+                  var evtObject = document.createEvent("Event");
+                  evtObject.initEvent("middleclick", false, false);
+                  canvas.dispatchEvent(evtObject);
+                  break;
+                default:
+                  break;
+              }
+            }
+            function onDrag(event) {
+              if (event.button) return;
+              //var begin = media.currentTime;
+              var begin = self.currentTime;
+              var end = getTimePosition(event);
+              //self.setDur(end - begin);
+              if (end > begin)
+                self.setEnd(end);
+              else
+                self.setBegin(end);
+            }
+            canvas.addEventListener("mousedown", function(event) {
+              onClick(event);
+              canvas.addEventListener("mousemove", onDrag, false);
+            }, false);
+            canvas.addEventListener("mouseup", function(event) {
+              canvas.removeEventListener("mousemove", onDrag, false);
+              self.setCurrentTime(Math.min(self.begin, self.end));
+              // fire a "change" event
+              var evtObject = document.createEvent("Event");
+              evtObject.initEvent("change", false, false);
+              canvas.dispatchEvent(evtObject);
+            }, false);
+          }
+          this.cursor  = new pcmCursor(timePos, timeSpan, pcmGraph);
+          this.pcmFile = null; // created by the 'draw' method
+          this.context = pcmGraph.getContext("2d");
+
+          // expose constants
+          this.pcmCanvasColor = pcmCanvasColor;
+          this.oggCanvasColor = oggCanvasColor;
+          this.kChunkDuration = kChunkDuration;
+          this.kZoomDelay     = kZoomDelay;
+
+          // draw <canvas> content
+          if (this.src)
+            this.load(true); // load waveform (use the cached file if available)
+          else
+            this.clear();    // start with a clean canvas
+        ]]>
+      </constructor>
+      <destructor>
+        <![CDATA[
+          if (this.pcmFile) {
+            this.pcmFile.close();
+          }
+        ]]>
+      </destructor>
+
+      <!-- visible area: begin/end time
+           XXX these fields should be considered as read-only -->
+      <field name="begin"> (NaN) </field>
+      <field name="end">   (NaN) </field>
+
+      <!-- Time Cursor -->
+      <property name="currentTime">
+        <getter>
+          <![CDATA[
+            return this.cursor.currentTime;
+          ]]>
+        </getter>
+        <setter>
+          <![CDATA[
+            this.cursor.setCurrentTime(val);
+          ]]>
+        </setter>
+      </property>
+      <method name="select">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            this.cursor.setBegin(Math.min(aBegin, aEnd));
+            this.cursor.setEnd  (Math.max(aBegin, aEnd));
+          ]]>
+        </body>
+      </method>
+      <property name="selection">
+        <getter>
+          <![CDATA[
+            return {
+              begin : this.cursor.begin,
+              end   : this.cursor.end,
+              dur   : this.cursor.end - this.cursor.begin
+            };
+          ]]>
+        </getter>
+      </property>
+
+      <!-- Waveform Source -->
+      <field name="pcmFile">(null)</field>
+      <property name="src"
+                onget="return this.getAttribute('src');"
+                onset="this.setAttribute('src', val); this.load(true);" />
+      <property name="duration"
+                onget="return this.pcmFile ? this.pcmFile.getDuration() : 0;" />
+      <method name="load">
+        <parameter name="aUseCache"/>
+        <body>
+          <![CDATA[
+            const self = this;
+            var fromCache = false;
+
+            /** pcmFile object constructor
+              * We're expecting a PCM/8 file here, i.e. an 8-bit encoded WAV file.
+              *
+              * SoX can be used to get such a file from an OGG source:
+              *   sox audio.ogg -b 8 audio.wav
+              * to mix all channels into a mono file: (both commands are equivalent)
+              *   sox audio.ogg -b 8 audio.wav channels 1
+              *   sox audio.ogg -b 8 audio.wav remix -
+              * to reduce the sample rate:
+              *   sox audio.ogg -b 8 audio.wav rate 16k
+              */
+            const kChunkDuration = this.kChunkDuration;
+            function pcmFile(wavFile) {
+              var iStream  = null; // input stream handler
+              var bStream  = null; // binary stream handler
+              var header   = {};   // WAV header
+              var duration = 0;    // duration (s)
+              var length   = 0;    // number of data bytes
+
+              // header block -- read-only properties
+              // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+              this.getHeader   = function() { return header;   };
+              this.getDuration = function() { return duration; };
+              function getHeaderBlock(data) {
+                function getHeaderString(offset, length) {
+                  var value = "";
+                  for (var i = 0; i < length; i++)
+                    value += String.fromCharCode(data[offset + i]);
+                  return value;
+                }
+                function getHeaderWord(offset, length) {
+                  var value = 0;
+                  for (var i = 0; i < length; i++)
+                    value += data[offset + i] << (8 * i);
+                  return value;
+                }
+                return {
+                  // RIFF header
+                  ChunkID       : getHeaderString(0, 4),  // should be 'RIFF'
+                  ChunkSize     : getHeaderWord(4, 4),
+                  Format        : getHeaderString(8, 4),  // should be 'WAVE'
+                  // fmt subchunk
+                  SubChunk1ID   : getHeaderString(12, 4), // should be 'fmt '
+                  SubChunk1Size : getHeaderWord(16, 2),   // should be 16 (PCM)
+                  AudioFormat   : getHeaderWord(20, 2),   // should be 1 (PCM)
+                  NumChannels   : getHeaderWord(22, 2),
+                  SampleRate    : getHeaderWord(24, 4),
+                  ByteRate      : getHeaderWord(28, 4),
+                  BlockAlign    : getHeaderWord(32, 2),
+                  BitsPerSample : getHeaderWord(34, 2),   // should be 8 (PCM/8)
+                  // data subchunk
+                  SubChunk2ID   : getHeaderString(36, 4), // should be 'data'
+                  SubChunk2Size : getHeaderWord(40, 2)    // = number of data bytes
+                };
+              };
+
+              // open the PCM/8 file, get the header / duration / length
+              this.open = function() {
+                // get a binary stream for the WAV file
+                iStream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+                                    .createInstance(Components.interfaces.nsIFileInputStream);
+                bStream = Components.classes["@mozilla.org/binaryinputstream;1"]
+                                    .createInstance(Components.interfaces.nsIBinaryInputStream);
+                iStream.init(wavFile, -1, -1, false);
+                bStream.setInputStream(iStream);
+
+                /* about nsISeekableStream, see:
+                 * http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsISeekableStream.idl
+                 * http://mxr.mozilla.org/mozilla-central/source/netwerk/test/unit/test_file_partial_inputstream.js
+                 */
+                iStream.QueryInterface(Components.interfaces.nsISeekableStream);
+
+                // check the 44-byte header
+                var data = bStream.readByteArray(44);
+                header = getHeaderBlock(data);
+                if (header.ChunkID != "RIFF"   || // little endian
+                    header.AudioFormat != 1    || // linear quantization (uncompressed)
+                    header.BitsPerSample != 8)
+                  throw wavFile.path + " is not a supported PCM/8 file.";
+
+                duration = (header.ChunkSize - 36) / header.ByteRate;
+                length = bStream.available() - 44;
+              };
+
+              // read the PCM/8 file, draw the canvas
+              this.draw = function(context, begin, end) {
+                var height = context.canvas.height;
+                var width  = context.canvas.width;
+                //var canvasWidth = parseInt(getComputedStyle(context.canvas, null).width, 10);
+
+                // compute chunkSize
+                var offset = 44 + (begin / duration * length);
+                var ratio = (end - begin) / duration;
+                var segLength = (length / width) * ratio;
+                //var segLength = (length / canvasWidth) * ratio;
+                var chunkSize = length * kChunkDuration / (1000 * duration);
+                if ((chunkSize <= 0) || (chunkSize > segLength))
+                  chunkSize = segLength;
+
+                // draw canvas segments
+                //for (var i = 0; i < canvasWidth; i++) {
+                for (var i = 0; i < width; i++) {
+                  // jump to the next segment
+                  iStream.seek(0, offset + i * segLength);
+                  // get min/max amplitude values
+                  let samples = bStream.readByteArray(chunkSize);
+                  var min = Math.min.apply(Math, samples) * height / 256;
+                  var max = Math.max.apply(Math, samples) * height / 256;
+                  // draw enveloppe segment
+                  context.beginPath();
+                  context.moveTo(i + 0.5, min);
+                  context.lineTo(i + 0.5, max);
+                  context.stroke();
+                }
+              };
+
+              // close the PCM/8 file
+              this.close = function() {
+                iStream.close();
+                bStream.close();
+              };
+            }
+
+            // create a pcmFile instance on the local waveform file when ready
+            var waveformFile;
+            function draw() {
+              if (self.pcmFile) self.pcmFile.close();
+              self.pcmFile = new pcmFile(waveformFile);
+              self.pcmFile.open(); // updates self.duration
+
+              // fire a "loadedmetadata" event with header/fromCache properties
+              var evtObject = document.createEvent("Event");
+              evtObject.initEvent("loadedmetadata", false, false);
+              evtObject.header = self.pcmFile.getHeader();
+              evtObject.fromCache = fromCache;
+              self.dispatchEvent(evtObject);
+
+              // draw the whole waveform
+              self.draw(0, self.duration);
+            }
+
+            // get a URI for the remote waveform data ('src' attribute)
+            var waveformURI = Components.classes["@mozilla.org/network/io-service;1"]
+                                        .getService(Components.interfaces.nsIIOService)
+                                        .newURI(this.src, null, null);
+
+            // use file URIs 'as is'
+            if (waveformURI.schemeIs("file")) {
+              waveformFile = waveformURI.QueryInterface(Components.interfaces.nsIFileURL).file;
+              if (waveformFile.exists())
+                draw();
+              else
+                throw file.path + " does not exist.";
+              return;
+            }
+
+            // get a temp file for the local waveform data
+            waveformFile = Components.classes["@mozilla.org/file/directory_service;1"]
+                                     .getService(Components.interfaces.nsIProperties)
+                                     .get("TmpD", Components.interfaces.nsIFile);
+            waveformFile.append(this.src.replace(/^.*\//, ""));
+
+            // if a temp file is already available, use it and exit
+            if (waveformFile.exists() && aUseCache) {
+              fromCache = true;
+              dump(waveformFile.leafName + " already cached.");
+              draw();
+              return;
+            }
+
+            // download waveform data with nsIWebBrowserPersist
+            // https://developer.mozilla.org/en/Code_snippets/Downloading_Files
+            // XXX (nsIDownloadManager might be simpler for this)
+            const progress = document.getAnonymousElementByAttribute(this, "anonid", "progress");
+            const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+            var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                                    .createInstance(nsIWBP);
+            persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
+                                 | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+            persist.progressListener = {
+              onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) {
+                progress.value = 100 * aCurTotalProgress / aMaxTotalProgress;
+              },
+              onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+                if (aStateFlags & 0x10) { // finished, failed or canceled
+                  progress.parentNode.selectedIndex = 0;
+                  dump(waveformFile.leafName + " downloaded.");
+                  draw();
+                }
+              }
+            }
+            progress.parentNode.selectedIndex = 1;
+            persist.saveURI(waveformURI, null, null, null, "", waveformFile);
+          ]]>
+        </body>
+      </method>
+
+      <!-- Waveform Graph -->
+      <method name="clear">
+        <!-- reset the canvas and draw the axis -->
+        <body>
+          <![CDATA[
+            var width  = this.context.canvas.width;
+            var height = this.context.canvas.height;
+            this.context.strokeStyle = this.pcmCanvasColor;
+            this.context.clearRect(0, 0, width, height);
+            this.context.beginPath();
+            this.context.moveTo(0, height / 2);
+            this.context.lineTo(width, height / 2);
+            this.context.stroke();
+            this.context.strokeRect(0, 0, width, height);
+            this.context.lineWidth = 0.5;
+            this.context.strokeRect(0, height / 4 - 0.5, width, height / 2 + 1);
+            // update time cursor
+            this.cursor.clear();
+          ]]>
+        </body>
+      </method>
+      <method name="draw">
+        <!-- draw the current PCM/8 file -->
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            var begin = Math.max(Math.min(aBegin, aEnd), 0);
+            var end   = Math.min(Math.max(aBegin, aEnd), this.duration);
+            var time  = NaN; // elapsed time
+
+            // fire an "update" event with begin/end properties
+            // XXX we have to set the begin/end values before
+            //     because event listener callbacks are expecting them
+            /*this.begin = begin;*/
+            /*this.end   = end;*/
+            var evtObject = document.createEvent("Event");
+            evtObject.initEvent("update", false, false);
+            evtObject.begin = begin;
+            evtObject.end   = end;
+            this.dispatchEvent(evtObject);
+
+            // draw PCM/8 file
+            if (this.pcmFile) {
+              var t1 = Date.now();
+              this.clear();
+              this.context.lineWidth = 0.7;
+              this.context.strokeStyle = this.pcmCanvasColor;
+              this.pcmFile.draw(this.context, begin, end);
+              var t2 = Date.now();
+              time = t2 - t1;
+            }
+
+            // update time range
+            // XXX already set before
+            this.begin = begin;
+            this.end   = end;
+            this.cursor.setRange(begin, end);
+
+            // return elapsed time
+            return time;
+          ]]>
+        </body>
+      </method>
+      <method name="drawFrameBuffer">
+        <!-- draw from media frameBuffer (audio API) -->
+        <parameter name="aTime"/>
+        <parameter name="aFrameBuffer"/>
+        <body>
+          <![CDATA[
+            /*var time    = aEvent.time;*/
+            /*var samples = aEvent.frameBuffer;*/
+            //if (samples.length != event.target.mozFrameBufferLength)
+              //console.log("unexpected fbLength: " + samples.length);
+
+            // get min/max amplitude values
+            const width  = this.context.canvas.width;
+            const height = this.context.canvas.height;
+            var min = Math.min.apply(Math, aFrameBuffer);
+            var max = Math.max.apply(Math, aFrameBuffer);
+            var y1 = (min + 1) * (height / 2);
+            var y2 = (max + 1) * (height / 2);
+            var x = (aTime - this.begin) * width / (this.end - this.begin);
+
+            // draw enveloppe segment
+            this.context.strokeStyle = this.oggCanvasColor;
+            this.context.beginPath();
+            this.context.moveTo(x, y1);
+            this.context.lineTo(x, y2);
+            this.context.stroke();
+          ]]>
+        </body>
+      </method>
+      <method name="saveAsPNG">
+        <!-- save current canvas content as PNG image (untested) -->
+        <parameter name="aFilePath"/>
+        <body>
+          <![CDATA[
+            // https://developer.mozilla.org/en/Code_snippets/Canvas
+            netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+
+            // convert string aFilePath to an nsIFile
+            var file = Components.classes["@mozilla.org/file/local;1"]
+                                 .createInstance(Components.interfaces.nsILocalFile);
+            file.initWithPath(aFilePath);
+
+            // create a data url from the canvas and then create URIs of the source and targets
+            const canvas = this.context.canvas;
+            var io = Components.classes["@mozilla.org/network/io-service;1"]
+                               .getService(Components.interfaces.nsIIOService);
+            var source = io.newURI(canvas.toDataURL("image/png", ""), "UTF8", null);
+            var target = io.newFileURI(file)
+
+            // prepare to save the canvas data
+            const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+            var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+                                    .createInstance(nsIWBP);
+            persist.persistFlags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES
+                                 | nsIWBP.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
+
+            /* displays a download dialog (remove these 3 lines for silent download)
+            var xfer = Components.classes["@mozilla.org/transfer;1"]
+                                 .createInstance(Components.interfaces.nsITransfer);
+            xfer.init(source, target, "", null, null, null, persist);
+            persist.progressListener = xfer;
+            */
+
+            // save the canvas data to the file
+            persist.saveURI(source, null, null, null, null, file);
+          ]]>
+        </body>
+      </method>
+
+      <!-- Waveform Zoom
+           zoom|unzoom current image (e.g. before a 'real' redraw)
+           use beforeZoom|afterZoom callbacks to trigger custom actions -->
+      <method name="zoomIn">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <parameter name="aBeforeZoom"/>
+        <parameter name="aAfterZoom"/>
+        <body>
+          <![CDATA[
+            var begin = Math.max(Math.min(aBegin, aEnd), 0);
+            var end   = Math.min(Math.max(aBegin, aEnd), this.duration);
+
+            // offset & ratio
+            const canvas = this.context.canvas;
+            var dur = this.end - this.begin;
+            var offset = (begin - this.begin) * canvas.width / dur;
+            var ratio = dur / (end - begin);
+
+            // zoom image
+            const self = this;
+            let image = new Image();
+            image.src = canvas.toDataURL("image/png");
+            image.onload = function() {
+              if (aBeforeZoom) aBeforeZoom(begin, end);
+              self.clear();
+              self.context.drawImage(image,
+                (0 - offset) * ratio, 0,
+                canvas.width * ratio, canvas.height
+              );
+              if (aAfterZoom) // setTimeout(function() {
+                aAfterZoom(begin, end);
+              // }, self.kZoomDelay);
+            };
+          ]]>
+        </body>
+      </method>
+      <method name="zoomOut">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <parameter name="aBeforeZoom"/>
+        <parameter name="aAfterZoom"/>
+        <body>
+          <![CDATA[
+            var begin = Math.max(Math.min(aBegin, aEnd), 0);
+            var end   = Math.min(Math.max(aBegin, aEnd), this.duration);
+
+            // offset & ratio
+            const canvas = this.context.canvas;
+            var dur = this.end - this.begin;
+            var ratio = dur / (end - begin);
+            var offset = canvas.width * (this.begin - begin) / (end - begin);
+
+            // unzoom image
+            const self = this;
+            let image = new Image();
+            image.src = canvas.toDataURL("image/png");
+            image.onload = function() {
+              if (aBeforeZoom) aBeforeZoom(begin, end);
+              self.clear();
+              self.context.drawImage(image,
+                offset, 0,
+                canvas.width * ratio, canvas.height
+              );
+              if (aAfterZoom) // setTimeout(function() {
+                aAfterZoom(begin, end);
+              // }, self.kZoomDelay);
+            };
+          ]]>
+        </body>
+      </method>
+
+    </implementation>
+  </binding>
+
+  <!-- time node (must be a child of a <timeContainer> element) -->
+  <binding id="timeNode">
+    <resources>
+      <stylesheet src="timeline.css" />
+    </resources>
+
+    <content>
+      <xul:hbox xbl:inherits="context">
+        <html:div anonid="handle-left" />
+        <html:div anonid="handle-right" />
+      </xul:hbox>
+    </content>
+
+    <implementation>
+      <constructor>
+        <![CDATA[
+          // UI elements
+          const main  = document.getAnonymousElementByAttribute(this, "anonid", "main");
+          const begin = document.getAnonymousElementByAttribute(this, "anonid", "begin");
+          const end   = document.getAnonymousElementByAttribute(this, "anonid", "end");
+
+          // timeController
+          this.controls = document.querySelector(this.getAttribute("controls"));
+          /*this.dataform = document.querySelector(this.getAttribute("dataform"));*/
+          this.timeNodes = [];
+        ]]>
+      </constructor>
+      <method name="draw">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            /*var begin = this.controls.begin;*/
+            /*var end   = this.controls.end;*/
+            var begin = Math.min(aBegin, aEnd);
+            var end   = Math.max(aBegin, aEnd);
+            for (var i = 0; i < this.timeNodes.length; i++) {
+              this.timeNodes[i].block.draw(begin, end);
+            }
+          ]]>
+        </body>
+      </method>
+    </implementation>
+  </binding>
+
+  <!-- time container -->
+  <binding id="timeContainer">
+    <resources>
+      <stylesheet src="timeline.css" />
+    </resources>
+
+    <content>
+      <xul:vbox xbl:inherits="flex,controls,dataform">
+
+        <!-- toolbar
+        <xul:toolbar anonid="toolbar" class="chromeclass-toolbar" pack="begin" align="center"
+                     xbl:inherits="hidden=hidetoolbar">
+          <xul:toolbarbutton anonid="sort" label="sort" oncommand="computeTimeNodes()"/>
+          <xul:spacer flex="1"/>
+          <xul:label value="timeContainer:"/>
+          <xul:menulist anonid="container" style="width: 100px;" onselect="computeTimeNodes()">
+            <xul:menupopup>
+              <xul:menuitem value="par"  label="par" selected="true"/>
+              <xul:menuitem value="seq"  label="seq" disabled="true"/>
+              <xul:menuitem value="excl" label="excl"/>
+            </xul:menupopup>
+          </xul:menulist>
+          <xul:label value="transition:"/>
+          <xul:menulist style="width: 200px;">
+            <xul:menupopup>
+              <xul:menuitem label="none"/>
+              <xul:menuseparator />
+              <xul:menuitem label="cross-fade"   />
+              <xul:menuitem label="fade-through" />
+              <xul:menuitem label="slide-x"      />
+              <xul:menuitem label="slide-y"      />
+              <xul:menuitem label="carousel-x"   />
+              <xul:menuitem label="carousel-y"   />
+            </xul:menupopup>
+          </xul:menulist>
+        </xul:toolbar>
+        -->
+
+        <!-- time segments (filled dynamically) -->
+        <html:div anonid="segments" />
+
+      </xul:vbox>
+    </content>
+
+    <implementation>
+      <constructor>
+        <![CDATA[
+          this.timeNodes = [];
+        ]]>
+      </constructor>
+
+      <field name="timeNodes" />
+      <property name="type">
+        <getter>
+          <![CDATA[
+            if (/^(par|seq|excl)$/i.test(this.nodeName))
+              return this.nodeName.toLowerCase();
+            else
+              return this.getAttribute("type");
+          ]]>
+        </getter>
+        <setter>
+          <![CDATA[
+            const RE = (/^(par|seq|excl)$/i);
+            if (RE.test(this.nodeName))
+              throw "cannot change timeContainer type.";
+            if (!RE.test(val))
+              throw val + " is not a valid timeContainer type.";
+            this.setAttribute("type", val.toLowerCase());
+          ]]>
+        </setter>
+      </property>
+
+      <!-- add/remove time nodes -->
+      <method name="add">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            const timeCont = this;
+            const segments = document.getAnonymousElementByAttribute(this, "anonid", "segments");
+
+            // <hbox> block for the #timeSegments container
+            function segmentBlock(parent, begin, end) {
+              var self = this;
+
+              // note: the 'main' element could be an <html:div> block
+              // but the contextual menu wouldn't work (see 'context' attribute)
+              this.main  = document.createElementNS(xulNS, "hbox"); // main block
+              this.begin = document.createElementNS(htmlNS, "div"); // left handle
+              this.end   = document.createElementNS(htmlNS, "div"); // right handle
+
+              this.begin.className = "handle-left";
+              this.end.className   = "handle-right";
+              this.main.appendChild(this.begin);
+              this.main.appendChild(this.end);
+              if (!SCENARI)
+                this.main.setAttribute("context", "transition");
+
+              var style = this.main.style;
+              this.draw = function (aWaveformBegin, aWaveformEnd) {
+                var left  = Math.max(parent.time_in,  aWaveformBegin);
+                var right = Math.min(parent.time_out, aWaveformEnd);
+
+                if (left >= right) {
+                  style.display = "none";
+                } else {
+                  var duration = aWaveformEnd - aWaveformBegin;
+                  var ratio = (right - left) / duration;
+                  var offset = (left - aWaveformBegin) / duration;
+                  //style.left  = (offset * gTimeCursor.width) + "px";
+                  //style.width = (ratio  * gTimeCursor.width) + "px";
+                  //consoleLog("draw (xbl): " + aWaveformBegin + " → " + aWaveformEnd);
+                  style.left  = (offset * 100) + "%";
+                  style.width = (ratio  * 100) + "%";
+                  style.display = "block";
+                }
+              };
+              this.update = function () {
+                self.draw(gTimeController.begin, gTimeController.end);
+              };
+              this.update();
+
+              this.focus = function () {
+                self.main.className = "active";
+              };
+              this.blur = function () {
+                self.main.removeAttribute("class");
+              };
+
+              // Event listeners: begin/end drag
+              function onClick(event) {
+              }
+              function onResize(event) {
+                return; // XXX
+                if (event.button) return;
+                var begin = mediaPlayer.currentTime;
+                var end = getTimePosition(event);
+                //self.setDur(end - begin);
+                if (end > begin)
+                  self.setEnd(end);
+                else
+                  self.setBegin(end);
+              }
+              this.begin.addEventListener("mousedown", function(event) {
+                onClick(event);
+                self.begin.addEventListener("mousemove", onResize, false);
+              }, false);
+            }
+
+            // main 'timeSegment' object constructor
+            function timeSegment(begin, end) {
+              //consoleLog("new (xbl): " + begin + " → " + end);
+
+              const self = this;
+              this.begin = begin;
+              this.end   = end;
+
+              this.time_in  = begin;
+              this.time_out = end;
+
+              // append an HTML segment in #timeSegments
+              var block = new segmentBlock(this, begin, end);
+              //gDialog.timeSegments.appendChild(block.main);
+              segments.appendChild(block.main);
+
+              /* append a XUL groupbox in #content
+              var controls = new segmentControls(this, begin, end);
+              gDialog.content.appendChild(controls.main);
+              */
+
+              /* append a thumbnail in #sidebar-left
+              var thumb = new segmentThumb(this, begin, end);
+              gDialog.sidebarLeft.appendChild(thumb.main);
+              */
+
+              this.update = function(aBegin, aEnd) {
+                self.begin = aBegin;
+                self.end   = aEnd;
+                block.update();
+                computeTimeNodes();
+                updateCursor();
+              };
+
+              // event handlers
+              function updateCursor() {
+                timeCont.controls.select(self.time_in, self.time_out);
+                timeCont.controls.currentTime = self.time_in;
+              }
+
+              // event handlers :: segmentBlock
+              block.begin.onclick = function() {
+                // TODO
+              };
+              block.end.onclick = function() {
+                // TODO
+              };
+              block.main.addEventListener("mouseup", function(event) {
+                switch (event.button) {
+                  case 0:
+                    //controls.focus();
+                    //thumb.focus();
+                    updateCursor();
+                    break;
+                  case 1:
+                    consoleLog("delete current time node");
+                    timeCont.remove(self);
+                    break;
+                }
+              }, false);
+              block.main.addEventListener("dblclick", function(event) {
+                consoleLog("select current time node");
+                updateCursor();
+                timeCont.controls.zoomIn();
+              }, false);
+
+              /* event handlers :: segmentControls
+              controls.begin.oninput = function() {
+                var value = hms2time(this.value);
+                consoleLog("update: " + value);
+                self.update(value, self.end);
+              };
+              controls.end.oninput = function() {
+                var value = hms2time(this.value);
+                consoleLog("update: " + value);
+                self.update(self.begin, value);
+              };
+              controls.data.onfocus = function() {
+                block.focus();
+                updateCursor();
+              };
+              controls.data.onblur = function() {
+                block.blur();
+              }; */
+
+              // focus the new time node
+              // controls.data.focus();
+              // controls.data.select();
+
+              // expose 'controls' and 'block'
+              // this.controls = controls;
+              this.block    = block;
+            }
+
+            var begin = Math.min(aBegin, aEnd);
+            var end   = Math.max(aBegin, aEnd);
+            if (begin == end)
+              end = Infinity;
+            this.timeNodes.push(new timeSegment(begin, end));
+            consoleLog(this.timeNodes.length + " time node(s)");
+          ]]>
+        </body>
+      </method>
+      <method name="remove">
+        <parameter name="timeSegment"/>
+        <body>
+          <![CDATA[
+            var i = this.timeNodes.indexOf(timeSegment);
+            if (i >= 0) {
+              //var ctrl = this.timeNodes[i].controls;
+              var blck = this.timeNodes[i].block;
+              //ctrl.main.parentNode.removeChild(ctrl.main);
+              blck.main.parentNode.removeChild(blck.main);
+              this.timeNodes.splice(i, 1);
+            }
+          ]]>
+        </body>
+      </method>
+
+      <!-- sort/copute time nodes -->
+      <method name="sort">
+        <body>
+          <![CDATA[
+            if (!this.timeNodes) return; // XXX wtf?
+            const segments = document.getAnonymousElementByAttribute(this, "anonid", "segments");
+            var swap, data1, data2;
+            do { // there are few items, we can do a lazy bubble sort
+              swap = false;
+              for (var i = 0; i < this.timeNodes.length - 1; i++) {
+                //consoleLog("order #" + i);
+                var curr = this.timeNodes[i];
+                var next = this.timeNodes[i+1];
+                if (curr.begin > next.begin) { // swap these two items
+                  consoleLog("swap #" + i);
+                  //data1 = curr.controls.data.value;
+                  //data2 = next.controls.data.value;
+                  //gDialog.content.insertBefore(next.controls.main, curr.controls.main);
+                  //gDialog.timeSegments.insertBefore(next.block.main, curr.block.main);
+                  //curr.controls.data.value = data1;
+                  //next.controls.data.value = data2;
+                  segments.insertBefore(next.block.main, curr.block.main);
+                  this.timeNodes[i]   = next;
+                  this.timeNodes[i+1] = curr;
+                  swap = true;
+                }
+              }
+            } while(swap);
+          ]]>
+        </body>
+      </method>
+      <method name="computeTimeNodes">
+        <body>
+          <![CDATA[
+            if (!this.timeNodes) return; // XXX wtf?
+            this.sort();
+            var timeContainer = document.getAnonymousElementByAttribute(this, "anonid", "container").value;
+            /*consoleLog(timeContainer);*/
+            for (var i = 0; i < this.timeNodes.length - 1; i++) {
+              var out;
+              var end = this.timeNodes[i].end;
+              //if (!end.length) end = Infinity;
+              //consoleLog("end = " + end);
+              if ((timeContainer == "par") || (end < this.timeNodes[i+1].begin))
+                out = this.timeNodes[i].end;
+              else
+                out = this.timeNodes[i+1].begin;
+              this.timeNodes[i].time_in = this.timeNodes[i].begin;
+              this.timeNodes[i].time_out = out;
+              this.timeNodes[i].block.update();
+            }
+            this.draw();
+          ]]>
+        </body>
+      </method>
+
+      <!-- visual timeline -->
+      <method name="draw">
+        <parameter name="aBegin"/>
+        <parameter name="aEnd"/>
+        <body>
+          <![CDATA[
+            /*var begin = this.controls.begin;*/
+            /*var end   = this.controls.end;*/
+            var begin = Math.min(aBegin, aEnd);
+            var end   = Math.max(aBegin, aEnd);
+            for (var i = 0; i < this.timeNodes.length; i++) {
+              this.timeNodes[i].block.draw(begin, end);
+            }
+          ]]>
+        </body>
+      </method>
+
+    </implementation>
+  </binding>
+
+</bindings>
+
