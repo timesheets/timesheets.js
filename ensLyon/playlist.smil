@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- slideshow -->
+  <seq>
+
+    <excl timeAction="intrinsic"
+          controls="#timeController" navigation="arrows; hash"
+          mediaSync="video" clipEnd="18:00">
+      <item select="#diapo01" begin="0:00:00"/>
+      <item select="#diapo02" begin="0:03:30"/>
+      <item select="#diapo03" begin="0:10:50"/>
+      <item select="#diapo04" begin="0:12:39"/>
+      <item select="#diapo05" begin="0:17:17"/>
+    </excl>
+
+    <excl timeAction="intrinsic" dur="1:04:28"
+          mediaSync="audio">
+      <item select="#diapo06" begin="0:00:00"/>
+      <item select="#diapo07" begin="0:03:30"/>
+      <item select="#diapo08" begin="0:10:50"/>
+      <item select="#diapo09" begin="0:12:39"/>
+      <item select="#diapo10" begin="0:17:17"/>
+    </excl>
+
+  </seq>
+
+  <!-- swap video and slideshow -->
+  <par timeAction="class:swapped">
+    <item select="body" begin="swap.click" end="swap.click"/>
+  </par>
+
+</timesheet>
