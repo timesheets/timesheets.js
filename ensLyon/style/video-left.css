@@ -1,0 +1,28 @@
+@import url(../../timeline/style.css);
+@import url(layout.css);
+@import url(theme-gray.css);
+
+/* hide inactive sublists */
+.smil-toc li ul {
+  display: none;
+}
+.smil-toc li.current ul {
+  display: block;
+}
+
+/* put the video+ToC on the left */
+#swap {
+  left: 330px;
+  background-image: url(swap-reverse.png);
+}
+div#images {
+  left: 360px;
+}
+div.smil-toc {
+  right: auto;
+  left: 0;
+}
+video {
+  left: 25px;
+}
+

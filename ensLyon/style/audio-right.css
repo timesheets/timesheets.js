@@ -1,0 +1,14 @@
+@import url(../../timeline/style.css);
+@import url(theme-gray.css);
+@import url(layout.css);
+@import url(layout-touch.css) all and (max-width: 1024px);
+@media all and (min-width: 1025px) {
+  div.smil-toc {
+    top: 60px;
+    height: 450px;
+  }
+}
+
+#swap {
+  display: none;
+}

@@ -1,0 +1,11 @@
+@import url(../../timeline/style.css);
+@import url(layout.css);
+@import url(theme-gray.css);
+
+/* hide inactive sublists */
+.smil-toc li ul {
+  display: none;
+}
+.smil-toc li.current ul {
+  display: block;
+}

@@ -1,0 +1,162 @@
+/* resize UI for smaller screens */
+body {
+  width: 980px;
+  margin: auto;
+  overflow: auto;
+}
+header, footer {
+  display: none;
+}
+#slideshow {
+  background-color: transparent !important;
+  box-shadow         : none !important;
+  -o-box-shadow      : none !important;
+  -moz-box-shadow    : none !important;
+  -webkit-box-shadow : none !important;
+}
+div#images {
+  border: none;
+}
+div#images, div.smil-toc, .smil-tocDisplay, .smil-controlBar {
+  left: 170px;
+  width: 640px;
+}
+
+/* user controls: timeline */
+.smil-controlBar {
+  width: 640px;
+  height: 32px;
+  z-index: 2;
+}
+.smil-timeSegments, .smil-timeCursor {
+  display: none;
+}
+.smil-timeSlider {
+  display: block;
+}
+.smil-timeline, .smil-timeSlider {
+  border-radius         : 10px;
+  -o-border-radius      : 10px;
+  -moz-border-radius    : 10px;
+  -webkit-border-radius : 10px;
+}
+.smil-timeline {
+  height: 24px;
+  margin-top: 4px;
+  overflow: hidden; /* XXX */
+}
+.smil-currentTime {
+  font-size: 16px;
+  font-weight: bold;
+  font-family: sans-serif;
+}
+
+/* user controls: navigation buttons */
+.smil-first, .smil-last {
+  display: none;
+}
+.smil-prev, .smil-next {
+  position: absolute;
+  top: -498px;
+  height: 480px;
+  margin: 0;
+  padding: 0;
+  width: 150px !important;
+  font-size: 128px !important;
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+}
+.smil-prev {
+  left: -150px;
+  border-top-left-radius         : 50px;
+  -o-border-top-left-radius      : 50px;
+  -moz-border-radius-topleft     : 50px;
+  -webkit-border-top-left-radius : 50px;
+  border-bottom-left-radius         : 50px;
+  -o-border-bottom-left-radius      : 50px;
+  -moz-border-radius-bottomleft     : 50px;
+  -webkit-border-bottom-left-radius : 50px;
+}
+.smil-next {
+  right: -150px;
+  border-top-right-radius         : 50px;
+  -o-border-top-right-radius      : 50px;
+  -moz-border-radius-topright     : 50px;
+  -webkit-border-top-right-radius : 50px;
+  border-bottom-right-radius         : 50px;
+  -o-border-bottom-right-radius      : 50px;
+  -moz-border-radius-bottomright     : 50px;
+  -webkit-border-bottom-right-radius : 50px;
+}
+button.smil-play {
+  position: absolute;
+  top: -498px;
+  left: 3px;
+  width: 640px !important;
+  height: 480px;
+  border: none;
+  border-radius         : 1px !important;
+  -o-border-radius      : 1px !important;
+  -moz-border-radius    : 1px !important;
+  -webkit-border-radius : 1px !important;
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+  background-image: url(progress44.gif);
+  background-color: transparent !important;
+}
+.playing button.smil-play {
+  background-color: transparent;
+  background-image: none;
+}
+.paused button.smil-play {
+  background-color: transparent;
+  background-image: url(play128.png);
+}
+
+/* user controls: table of contents */
+div.smil-toc {
+  top: inherit;
+  bottom: 10px;
+  right: 20px;
+  z-index: 3;
+  border-radius          : 8px;
+  -o-border-radius       : 8px;
+  -moz-border-radius     : 8px;
+  -webkit-border-radius  : 8px;
+  opacity: 0.9;
+  filter: alpha(opacity=90);
+  /* transition */
+  transition         : height 0.5s;
+  -o-transition      : height 0.5s;
+  -moz-transition    : height 0.5s;
+  -webkit-transition : height 0.5s;
+  height: 0;
+  overflow: hidden;
+  /*font-size: 24px !important;*/
+  font-size: 32px !important;
+  font-family: sans-serif !important;
+}
+div.smil-toc.active, .active {
+  height: 530px;
+}
+
+/* hide inactive sublists */
+.smil-toc li ul {
+  display: none;
+}
+.smil-toc li.current ul {
+  display: block;
+}
+
+/* transparent button over the timeline */
+.smil-tocDisplay {
+  position: absolute;
+  bottom: 10px;
+  left: 20px;
+  width: 840px;
+  height: 40px;
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+  z-index: 4;
+}
+
