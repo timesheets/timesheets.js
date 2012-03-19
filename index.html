@@ -5,7 +5,12 @@
   <title> timesheets.js </title>
   <style type="text/css">
     html {
-      background: white;
+      background-color: #ddd; /* Opera 10.x doesn't support CSS gradients */
+      background:      linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
+      background:   -o-linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
+      background: -moz-linear-gradient(top, black 0%, #eaeaea 50%, white 100%);
+      background: -webkit-gradient(linear, left top, left bottom, from(black), to(white), color-stop(50%, #eaeaea));
+      min-height: 100%;
       color: black;
     }
     body {
@@ -13,13 +18,16 @@
       margin: auto;
     }
     body > dl {
-      margin-top: 15%;
-      font-size: 1.1em;
-      font-family: serif;
+      margin-top: 10%;
+      font-size: 1.2em;
+      font-family: sans-serif;
       line-height: 1.5;
+      padding: 2em;
+      border-radius: 1em;
+      background-color: rgba(255, 255, 255, 0.3);
     }
     a {
-      color: white;
+      color: brown;
       font-weight: bold;
     }
   </style>
