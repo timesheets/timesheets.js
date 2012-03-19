@@ -1,0 +1,61 @@
+#slideshow, #slideshow p, #slideshow li {
+  font-size: 18px;
+}
+#slideshow code {
+  font-style: italic;
+  color: brown;
+}
+li {
+  list-style-type: disc;
+}
+li li {
+  list-style-type: square !important;
+}
+#slideshow .slide {
+  overflow: auto;
+}
+#slideshow .slide div {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 0;
+  height: 0;
+}
+#slideshow pre {
+  font-size: smaller;
+  font-size: 12px;
+  color: brown;
+}
+
+/* collapsable lists */
+.outline   li,
+.accordion li {
+  cursor: pointer;
+  list-style-type: circle;
+}
+.outline   li:hover,
+.accordion li:hover {
+  /*text-decoration: underline;*/
+}
+.outline   li ol,
+.outline   li ul,
+.accordion li ol,
+.accordion li ul {
+  display: none;
+}
+.outline li.expand.active ol,
+.outline li.expand.active ul {
+  display: none;
+}
+.outline   li.active ol,
+.outline   li.active ul,
+.accordion li.active ol,
+.accordion li.active ul {
+  display: block;
+}
+.outline li.expand ol,
+.outline li.expand ul {
+  display: block;
+}
+

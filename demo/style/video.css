@@ -1,0 +1,52 @@
+div#media {
+  position: relative;
+  overflow: none;
+  width: 640px;
+  height: 385px;
+  padding: 0.5em 1.5em;
+  margin: 0 auto;
+  text-align: center;
+}
+div#media p {
+  position: absolute;
+  bottom: 3em;
+  height: 2em;
+  width: 620px;
+  padding: 0.25em 10px;
+  margin: 0;
+  color: white;
+  background: rgba(0,0,0,0.2);
+  text-shadow: black 1px 1px 3px;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+  /* see timeAction="display" */
+  /*display: none;*/
+  /*
+   * ugly hack to align the text vertically:
+   * the line height is set to 2em by default, and it’s set manually to 1em
+   * in the paragraph blocks (w/ inline style) that are known to use 2 lines.
+   */
+  line-height: 2em;
+}
+div#media p.twolines {
+  line-height: 1em;
+}
+div#media p.top {
+  bottom: 7em;
+}
+div#media p a {
+  /*color: #f88;*/
+  color: orange;
+}
+div#media p a:hover {
+  color: white;
+}
+div#mediaController {
+  position: absolute;
+  top: 0;
+  left: 1.5em;
+  width: 640px;
+  height: 385px;
+}
+

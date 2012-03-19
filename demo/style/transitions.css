@@ -1,0 +1,178 @@
+#demo {
+  overflow: hidden;
+}
+
+/*****************************************************************************\
+|                                                                             |
+|  CSS3 Transitions                                                           |
+|                                                                             |
+|*****************************************************************************|
+|                                                                             |
+|  'transform' and 'transition' rules are supported by these browsers:        |
+|    Firefox 4+                                                               |
+|    Chrome 5+                                                                |
+|    Safari 4+                                                                |
+|    Opera 10.6+                                                              |
+|                                                                             |
+|  => on other browsers, only the 'opacity' rule would apply                  |
+|                                                                             |
+\*****************************************************************************/
+
+/*#slideshow > *,*/
+/*#slideshow .transition * {*/
+  /*transition         : all 0.5s;*/
+  /*-o-transition      : all 0.5s;*/
+  /*-moz-transition    : all 0.5s;*/
+  /*-webkit-transition : all 0.5s;*/
+/*}*/
+#slideshow * {
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+  /*transition         : opacity 1s,         transform 1s;*/
+  /*-o-transition      : opacity 1s,      -o-transform 1s;*/
+  /*-moz-transition    : opacity 1s,    -moz-transform 1s;*/
+  /*-webkit-transition : opacity 1s, -webkit-transform 1s;*/
+}
+
+/* cross-fade effect */
+.crossfade #slideshow > *[smil=idle],
+.crossfade #slideshow > .transition *[smil=idle],
+#slideshow > .crossfade *[smil=idle] {
+  opacity: 0;
+}
+.crossfade #slideshow > *[smil=done],
+.crossfade #slideshow > .transition *[smil=done],
+#slideshow > .crossfade *[smil=done] {
+  opacity: 0;
+}
+.crossfade #slideshow > *[smil=active],
+.crossfade #slideshow > .transition *[smil=active],
+#slideshow > .crossfade *[smil=active] {
+  opacity: 1;
+  z-index: 1;
+}
+
+
+/* carousel effect */
+.carousel #slideshow > *[smil=idle],
+.carousel #slideshow > .transition *[smil=idle] {
+  opacity: 0;
+  transform         : scale(0.3) translate(+220%);
+  -o-transform      : scale(0.3) translate(+220%);
+  -moz-transform    : scale(0.3) translate(+220%);
+  -webkit-transform : scale(0.3) translate(+220%);
+}
+.carousel #slideshow > *[smil=done],
+.carousel #slideshow > .transition *[smil=done] {
+  opacity: 0;
+  transform         : scale(0.3) translate(-220%);
+  -o-transform      : scale(0.3) translate(-220%);
+  -moz-transform    : scale(0.3) translate(-220%);
+  -webkit-transform : scale(0.3) translate(-220%);
+}
+.carousel #slideshow > *[smil=active],
+.carousel #slideshow > .transition *[smil=active] {
+  opacity: 1;
+}
+
+
+/* fade-through effect */
+.fadethrough #slideshow > *[smil=idle] {
+  opacity: 0;
+}
+.fadethrough #slideshow > *[smil=done] {
+  opacity: 0;
+  transform         : scale(1.5) translate(0, -10%);
+  -o-transform      : scale(1.5) translate(0, -10%);
+  -moz-transform    : scale(1.5) translate(0, -10%);
+  -webkit-transform : scale(1.5) translate(0, -10%);
+}
+.fadethrough #slideshow > *[smil=active] {
+  opacity: 1;
+  z-index: 1;
+}
+
+
+/* slide-in effect */
+.slide #slideshow > *[smil=idle] {
+  transform         : translate(+120% ,0);
+  -o-transform      : translate(+120% ,0);
+  -moz-transform    : translate(+120% ,0);
+  -webkit-transform : translate(+120% ,0);
+}
+.slide #slideshow > *[smil=done] {
+  transform         : translate(-120% ,0);
+  -o-transform      : translate(-120% ,0);
+  -moz-transform    : translate(-120% ,0);
+  -webkit-transform : translate(-120% ,0);
+}
+
+
+/* toss effect */
+.toss #slideshow > *[smil=done] {
+  opacity: 0;
+}
+.toss #slideshow > *[smil=idle] {
+  opacity: 0;
+  transform         : rotate(-30deg) translate(-80px, -240px);
+  -o-transform      : rotate(-30deg) translate(-80px, -240px);
+  -moz-transform    : rotate(-30deg) translate(-80px, -240px);
+  -webkit-transform : rotate(-30deg) translate(-80px, -240px);
+}
+.toss #slideshow > *[smil=active] {
+  opacity: 1;
+}
+
+
+/* disable all transitions */
+.none #slideshow > * {
+  visibility: hidden;
+  transition         : none;
+  -o-transition      : none;
+  -moz-transition    : none;
+  -webkit-transition : none;
+}
+.none #slideshow > *[smil=active] {
+  visibility: visible;
+}
+
+
+/*****************************************************************************\
+|                                                                             |
+|  Transition Selector                                                        |
+|                                                                             |
+\*****************************************************************************/
+
+#transitionSelector {
+  width: 640px;
+  margin: 0 auto;
+  padding-right: 2em;
+  text-align: right;
+  font-size: 0.8em;
+  user-select         : none;
+  -o-user-select      : none;
+  -moz-user-select    : none;
+  -webkit-user-select : none;
+}
+#transitionSelector button {
+  cursor: pointer;
+  color: navy;
+  border: none;
+  background: none;
+  padding: 0;
+}
+#transitionSelector button:hover {
+  text-decoration: underline;
+}
+.none        button.none,
+.crossfade   button.crossfade,
+.carousel    button.carousel,
+.fadethrough button.fadethrough,
+.slide       button.slide,
+.toss        button.toss {
+  text-decoration: underline;
+  color: brown !important;
+}
+

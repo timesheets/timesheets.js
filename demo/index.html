@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> timesheets.js </title>
+  <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/intro.css">
+  <link rel="stylesheet" type="text/css" href="style/transitions.css">
+  <!--[if lt IE 9]>
+    <style type="text/css">
+    #slide1 > p { /* this won't work with IE6, unfortunately */
+      margin-top: 1em;
+    }
+    </style>
+  <![endif]-->
+  <script type="text/javascript" src="../timesheets.js"></script>
+</head>
+<body class="carousel">
+  <div id="demo">
+
+    <div id="slideshow"
+         data-timecontainer = "seq"
+         data-timeaction    = "intrinsic"
+         data-first         = "restart.click"
+         data-last          = "slide1.click">
+
+      <div id="slide1" class="crossfade" data-timecontainer="par" data-dur="12s">
+        <!--[if lt IE 7]><p><br></p><![endif]-->
+        <p> Ever wanted to… </p>
+        <ul data-timecontainer="par">
+          <li data-begin="0:02">
+            create your own slideshow in HTML?
+          </li>
+          <li data-begin="0:04">
+            synchronize HTML content with multimedia streams?
+            <small>(subtitles, transcriptions, annotations…)</small>
+          </li>
+          <li data-begin="0:06">
+            animate HTML elements?
+          </li>
+        </ul>
+        <h2 data-begin="0:08">
+          …without writing any single line of JavaScript?
+        </h2>
+      </div>
+
+      <div id="slide2" class="crossfade" data-timecontainer="par" data-dur="12s">
+        <p> </p>
+        <span data-begin="0:00"> It’s possible. </span>
+        <span data-begin="0:01.5"> It’s <strong>easy</strong>. </span>
+        <p data-begin="0:03">
+          It’s based on declarative W3C standards.
+        </p>
+        <p data-begin="0:05">
+          It works with HTML, SVG and XML.
+        </p>
+        <h2 data-begin="0:07">
+          Discover SMIL Timesheets
+        </h2>
+        <p data-begin="0:07" style="text-align: center;">
+          with the following demos!
+        </p>
+      </div>
+
+      <div id="slide3" class="crossfade" data-timecontainer="par">
+        <dl data-timecontainer="par">
+          <dt data-begin="0:01">
+            <a href="video.html">HTML Subtitles</a>
+          </dt>
+          <dd data-begin="0:01">
+            synchronizing rich subtitles with a video stream
+          </dd>
+          <dt data-begin="0:02">
+            <a href="audio.html">Annotated Audio</a>
+          </dt>
+          <dd data-begin="0:02">
+            synchronizing textual descriptions of musical sections
+            and introducing declarative user interaction
+          </dd>
+          <dt data-begin="0:03">
+            <a href="slideshow.html">Slideshow Engine</a>
+          </dt>
+          <dd data-begin="0:03">
+            nesting time containers to create a highly flexible slideshow engine
+          </dd>
+          <dt data-begin="0:04">
+            <a href="slidy.html">Slidy Timesheet</a>
+          </dt>
+          <dd data-begin="0:04">
+            implementing the HTML Slidy micro-format with a single timesheet!
+          </dd>
+        </dl>
+        <p data-begin="0:05" class="menu">
+          <a id="about" href="http://wam.inrialpes.fr/about/">Learn more…</a>
+          <button id="restart">Restart</button>
+          <a href="../timesheets.js">Download!</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

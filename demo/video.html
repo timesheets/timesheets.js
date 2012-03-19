@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> HTML Timing :: HTML Subtitles </title>
+  <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/video.css">
+  <!--[if lt IE 9]>
+    <style type="text/css">
+      div#media p {
+        left: 1.5em;
+      }
+      div#mediaController {
+        background-color: white;
+        filter: alpha(opacity=0);
+      }
+    </style>
+    <script type="text/javascript" src="../3rd-part/html5.js"></script>
+    <script type="text/javascript" src="../3rd-part/mediaelement.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="../timesheets.js"></script>
+  <script type="text/javascript">
+    EVENTS.onSMILReady(function() {
+      var mediaContainer  = document.getElementById("media");
+      var mediaController = document.getElementById("mediaController");
+      var mediaPlayer = mediaContainer.timing.mediaSyncNode;
+
+      if (mediaPlayer && mediaPlayer.mediaAPI) {
+        // the video is displayed in a Flash/Silverlight element
+        mediaPlayer = mediaPlayer.mediaAPI;
+        mediaContainer.onclick = function() { // single click = play/pause
+          if (mediaPlayer.paused)
+            mediaPlayer.play();
+          else
+            mediaPlayer.pause();
+        };
+        mediaContainer.ondblclick = function() { // double click = restart
+          mediaPlayer.setCurrentTime(0);
+          mediaPlayer.play();
+        };
+      }
+      else {
+        // the video is displayed in a native HTML element
+        mediaController.style.display = "none";
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="demo">
+    <div id="media" class="highlight" data-timecontainer="excl" data-timeaction="display">
+
+      <video data-syncmaster="true" data-timeaction="none"
+          width="640" height="385" controls autoplay preload="auto">
+        <source type="video/webm" src="http://wam.inrialpes.fr/timesheets/media/Firefox_4_beta.webm"/>
+        <source type="video/ogg"  src="http://wam.inrialpes.fr/timesheets/media/Firefox_4_beta.ogv" />
+        <source type="video/mp4"  src="http://wam.inrialpes.fr/timesheets/media/Firefox_4_beta.mp4" />
+        <br>
+        This page requires <strong>&lt;video&gt;</strong> support:<br>
+        best viewed with Firefox 3.5+, Safari 4+, Chrome 5+, Opera 10.60+ or IE9.<br>
+        <br>
+        Internet Explorer users, please enable Flash or Silverlight.
+      </video>
+
+      <div id="mediaController" data-timeaction="none">
+        <!-- this empty div is used as a transparent button by the Flash fallback -->
+      </div>
+
+      <p data-begin="0:00.00" class="twolines">
+        As an open source project and community, <br>
+        <a href="http://mozilla.com/firefox/beta/feedback/">we need your feedback</a>
+        to make the <a href="http://mozilla.com/firefox/beta/">next generation browser</a>.
+      </p>
+      <p data-begin="0:04.93" data-end="0:10" class="twolines">
+        Meet some of the team that has been hard at work <br>
+        on the Firefox 4 project.
+      </p>
+      <p data-begin="0:11.14" class="top">
+        I work on Web Standards like HTML 5, File APIs and IndexedDB.
+      </p>
+      <p data-begin="0:15.57">
+        We’re going to make the best and most secure browser out there!
+      </p>
+      <p data-begin="0:18.32" class="twolines top">
+        We work on testing Firefox 4 beta. <br>
+        We’d like to know what you think, we’d like your feedback.
+      </p>
+      <p data-begin="0:23.00" class="twolines">
+        You’re going to notice a feedback button <br>
+        on the upper-right corner of your browser…
+      </p>
+      <p data-begin="0:27.00" class="twolines">
+        …that you can use to tell us <br>
+        what you like and don’t like about Firefox 4.
+      </p>
+      <p data-begin="0:30.04">
+        Let me know what you think.
+      </p>
+      <p data-begin="0:31.00">
+        Im working on the Firefox 4 beta program.
+      </p>
+      <p data-begin="0:33.00">
+        I work on content security policy for Firefox 4.
+      </p>
+      <p data-begin="0:35.63">
+        We work on crash bugs.
+      </p>
+      <p data-begin="0:37.05" class="twolines">
+        I’m David and I work on developer tools for Firefox 4, <br>
+        and I’d really like to know what you think.
+      </p>
+      <p data-begin="0:41.01">
+        We need as much feedback as possible.
+      </p>
+      <p data-begin="0:42.64">
+        I work on the Firefox 4 Sync servers.
+      </p>
+      <p data-begin="0:44.63" class="twolines top">
+        Firefox Sync lets you take your Firefox experience with you <br>
+        wherever you go.
+      </p>
+      <p data-begin="0:48.06">
+        And we’re really looking forward to your feedback.
+      </p>
+      <p data-begin="0:49.85" class="twolines top">
+        I work on JetPack, which is a project <br>
+        to make it easier to build Add-Ons and to make Add-Ons easier to use.
+      </p>
+      <p data-begin="0:55.32">
+        I worked on the new Add-ons manager in Firefox 4.
+      </p>
+      <p data-begin="0:57.57" class="twolines">
+        We’d really like to know your feedback <br>
+        about what you love and hate about Firefox 4, so let us know.
+      </p>
+      <p data-begin="1:01.74" data-end="1:04">
+        Please help us and make Firefox better!
+      </p>
+      <p data-begin="1:05.00">
+        <a href="http://mozilla.com/firefox/beta/feedback/">We need your feedback.</a>
+      </p>
+
+    </div>
+  </div>
+</body>
+</html>

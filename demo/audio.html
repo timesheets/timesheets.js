@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> HTML Timing :: Audio Annotations </title>
+  <link rel="stylesheet" type="text/css" href="style/layout.css">
+  <link rel="stylesheet" type="text/css" href="style/audio.css">
+  <!--[if lt IE 9]>
+    <script type="text/javascript" src="../3rd-part/html5.js"></script>
+    <script type="text/javascript" src="../3rd-part/mediaelement.js"></script>
+    <style type="text/css">
+      p#playerSelector { display: none; }
+    </style>
+  <![endif]-->
+  <script type="text/javascript" src="../timesheets.js"></script>
+  <!-- optional: timeline -->
+  <link rel="stylesheet" type="text/css" href="style/timeline.css">
+  <script type="text/javascript" src="timeline.js"></script>
+</head>
+<body class="timeline">
+  <div id="demo">
+    <div class="highlight">
+
+      <!-- Media Description: one <div> container per segment -->
+      <div id="media"
+           data-timecontainer = "excl"
+           data-mediasync     = "audio"
+           data-dur           = "4:09"
+           data-first         = "first.click"
+           data-prev          = "prev.click"
+           data-next          = "next.click"
+           data-last          = "last.click">
+
+        <div id="section1" data-begin="0:00">
+          <img alt="treble clef" style="float: left;" src="images/music-trebleClef.png">
+          While the three other instruments hold a cluster of high notes, the
+          cellist’s silent gestures interact with them, provoking a windy sonority
+          that becomes noisier as the cellist’s gestures become more energetic.
+        </div>
+
+        <div id="section2" data-begin="0:36">
+          <img alt="funny music note" style="float: right;" src="images/music-funnyNote.png">
+          A short interlude employing conventional playing techniques (bows are
+          applied on the strings in the usual way, though sounds are still high
+          and dissonant).
+        </div>
+
+        <div id="section3" data-begin="0:43">
+          A rich mixture of tremolos and glissandos at various speeds in the highest
+          register. Each part of the quartet descends progressively into the medium
+          register: a  sound colour with greater solidity emerges.
+        </div>
+
+        <div id="section4" data-begin="1:09">
+          The first violin plays high notes once again, this time <em
+          lang="it">“flautando”</em> i.e. with a flute-like tone (by lightly
+          bowing across the end of the fingerboard). The other instruments
+          follow suit until a disparate mix of <em lang="it">“flautando”</em> and
+          <em lang="it">“sul ponticello”</em> is established and enriched by
+          granular synthesis from the electronics.
+        </div>
+
+        <div id="section5" data-begin="2:04">
+          Louder notes and groups of notes irregularly irrupt, often using a
+          <em lang="it">“gettato”</em> bow stroke: the player lets the bow freely
+          rebound against the string-once or several times in a row like a ping
+          pong ball.
+        </div>
+
+        <div id="section6" data-begin="3:10">
+          <img alt="treble clef" style="float: left;" src="images/music-trebleStaff.png">
+          From this point onward all the preceding techniques are increasingly
+          varied and combined. Identifying them becomes more challenging. Good
+          luck!
+        </div>
+      </div>
+
+      <!-- Media Controller: main <audio|video> player + optional timeline -->
+      <div id="mediaController">
+        <div id="timeline">
+          <div id="mediaStart" class="play">
+            <button class="pause">
+              <img src="images/media-pause.png" alt="pause">
+            </button>
+            <button class="play">
+              <img src="images/media-play.png" alt="play">
+            </button>
+          </div>
+          <div id="mediaTimeline">
+            <a href="#section1" style="width: 87px; background-color: #2cb3ec;"><span>0:00 =&gt; 0:36</span></a>
+            <a href="#section2" style="width: 16px; background-color: #958b5f;"><span>0:36 =&gt; 0:43</span></a>
+            <a href="#section3" style="width: 62px; background-color: #efa8a8;"><span>0:43 =&gt; 1:09</span></a>
+            <a href="#section4" style="width:133px; background-color: #ed8484;"><span>1:09 =&gt; 2:04</span></a>
+            <a href="#section5" style="width:159px; background-color: #ed5a5a;"><span>2:04 =&gt; 3:10</span></a>
+            <a href="#section6" style="width:141px; background-color: #ec2c2c;"><span>3:10 =&gt; 4:09</span></a>
+          </div>
+          <div id="timeCursor"><span></span></div>
+          <div id="timeValue">
+            <span>0:00</span>
+          </div>
+          <br style="clear: both; line-height: 1px;">
+        </div>
+
+        <audio id="audioPlayer" controls autoplay preload="auto">
+          <source src="http://wam.inrialpes.fr/timesheets/media/StreicherKreis_BASCHET_extract.ogg" type="audio/ogg" />
+          <source src="http://wam.inrialpes.fr/timesheets/media/StreicherKreis_BASCHET_extract.mp3" type="audio/mp3" />
+          <source src="http://wam.inrialpes.fr/timesheets/media/StreicherKreis_BASCHET_extract.mp3" type="audio/mpeg"/>
+          <!--
+          <source src="http://wam.inrialpes.fr/timesheets/media/StreicherKreis_BASCHET_extract.ogg" type="audio/ogg" />
+          <source src="http://wam.inrialpes.fr/timesheets/media/StreicherKreis_BASCHET_extract.mp3" type="audio/mp3" />
+          -->
+          <br>
+          This page requires <strong>&lt;audio&gt;</strong> support:<br>
+          best viewed with Firefox 3.5+, Safari 4+, Chrome 5+, Opera 10.60+ or IE9.<br>
+          <br>
+          Internet Explorer users, please enable Flash or Silverlight.
+        </audio>
+      </div>
+
+      <!-- navigation menu + UI selecctor -->
+      <p class="menu">
+        <button id="first" title="first section">        «     </button>
+        <button id="prev"  title="previous section"> &lt; prev </button>
+        <button id="next"  title="next section">     next &gt; </button>
+        <button id="last"  title="last section">         »     </button>
+      </p>
+      <p id="playerSelector">
+        <strong>controls</strong>:
+        <button class="timeline"
+          onclick="document.body.className='timeline';">timeline</button> |
+        <button class="audioPlayer"
+          onclick="document.body.className='audioPlayer';">audio player</button> |
+        <button class="bothPlayers"
+          onclick="document.body.className='bothPlayers';">both</button>
+      </p>
+
+    </div>
+  </div>
+</body>
+</html>

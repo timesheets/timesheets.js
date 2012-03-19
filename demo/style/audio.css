@@ -1,0 +1,110 @@
+/* media player and selector */
+div.highlight {
+  width: 700px;
+  padding: 1em;
+}
+#timeline {
+  width: 698px;
+  height: 40px;
+  z-index: 10;
+}
+#audioPlayer {
+  width: 698px;
+  max-height: 65px;
+  z-index: 10;
+}
+/* Opera 10.60 can't hide any audio element with "display: none;"
+   so we’re adding "visibility: hidden;" for this browser */
+#timeline, #audioPlayer {
+  display: none;
+  visibility: hidden;
+}
+.audioPlayer #audioPlayer, .bothPlayers #audioPlayer {
+  display: block;
+  visibility: visible;
+}
+.timeline #timeline, .bothPlayers #timeline {
+  display: block;
+  visibility: visible;
+}
+#playerSelector {
+  text-align: right;
+  font-size: 0.8em;
+  user-select         : none;
+  -o-user-select      : none;
+  -moz-user-select    : none;
+  -webkit-user-select : none;
+}
+#playerSelector button {
+  cursor: pointer;
+  color: navy;
+  border: none;
+  background: none;
+  padding: 0;
+}
+#playerSelector button:hover {
+  text-decoration: underline;
+}
+.timeline    button.timeline,
+.audioPlayer button.audioPlayer,
+.bothPlayers button.bothPlayers {
+  text-decoration: underline;
+  color: brown !important;
+}
+
+
+/* media description -- layout */
+div#media {
+  /*height: 12em;*/
+  padding-top: 12em;
+  overflow: none;
+  position: relative;
+  z-index: 0;
+}
+div#media div {
+  opacity: 0; /* hide items */
+  font-size: 1.2em;
+  position: absolute;
+  top: 1em;
+  width: 80%;
+  margin: 0 10% 0 10%;
+}
+div#media div img {
+  margin: 0 1em;
+  overflow: none !important;
+  border: none;
+}
+
+/* media description -- transitions */
+body > div {
+  overflow-x: hidden;
+}
+div#media div {
+  /* define a 1s transition on all CSS properties */
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+}
+div#media div[smil=idle] {
+  /* position and shape before the transition */
+  opacity: 0;
+  transform         : scale(0.3) translate(+200%);
+  -o-transform      : scale(0.3) translate(+200%);
+  -moz-transform    : scale(0.3) translate(+200%);
+  -webkit-transform : scale(0.3) translate(+200%);
+}
+div#media div[smil=done] {
+  /* position and shape after the transition */
+  opacity: 0;
+  transform         : scale(0.3) translate(-200%);
+  -o-transform      : scale(0.3) translate(-200%);
+  -moz-transform    : scale(0.3) translate(-200%);
+  -webkit-transform : scale(0.3) translate(-200%);
+}
+div#media div[smil=active] {
+  /* position and shape when active */
+  opacity: 1;
+  /* «transform: none;» is implicit */
+}
+
