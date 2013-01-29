@@ -48,7 +48,7 @@
 // EVENTS.[*]: event handler
 // ===========================================================================
 
-(function(){
+(function() {
   /***************************************************************************\
   |                                                                           |
   |  Basic Event Management Abstraction Layer                                 |
@@ -80,9 +80,9 @@
   \***************************************************************************/
 
   var EVENTS = {
-    bind    : function(node, type, callback) {},
-    unbind  : function(node, type, callback) {},
-    trigger : function(node, type) {}
+    bind: function(node, type, callback) {},
+    unbind: function(node, type, callback) {},
+    trigger: function(node, type) {}
   };
 
   // ==========================================================================
@@ -100,12 +100,11 @@
     };
     EVENTS.trigger = function(node, type) {
       if (!node) return;
-      //console.log(node.innerHTML + " : " + type);
       if (!EVENTS.eventList)
         EVENTS.eventList = [];
       var evtObject = EVENTS.eventList[type];
       if (!evtObject) {
-        evtObject = document.createEvent("Event");
+        evtObject = document.createEvent('Event');
         evtObject.initEvent(type, false, false);
         EVENTS.eventList[type] = evtObject;
       }
@@ -116,20 +115,22 @@
     };
   }
   else if (window.attachEvent) { // Internet Explorer 6/7/8
-    // This also fixes the 'this' reference issue in all callbacks
-    // -- both for standard and custom events.
-    // http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
-    // However, this solution isn't perfect. We probably should think of a jQuery
-    // dependency for OLDIE.
+    /**
+     * This also fixes the 'this' reference issue in all callbacks
+     * -- both for standard and custom events.
+     * http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
+     * However, this solution isn't perfect. We probably should think of a
+     * jQuery dependency for OLDIE.
+     */
     EVENTS.bind = function(node, type, callback) {
       if (!node) return;
       var ref = type + callback;
-      type = "on" + type;
+      type = 'on' + type;
       if (type in node) { // standard DOM event
-        if (!node["e"+ref]) {
-          node["e"+ref] = callback;
+        if (!node['e' + ref]) {
+          node['e' + ref] = callback;
           node[ref] = function() { // try {
-            node["e"+ref](window.event);
+            node['e' + ref](window.event);
           };
           node.attachEvent(type, node[ref]);
         }
@@ -145,16 +146,16 @@
     EVENTS.unbind = function(node, type, callback) {
       if (!node) return;
       var ref = type + callback;
-      type = "on" + type;
+      type = 'on' + type;
       if (type in node) { // standard DOM event
-        if (node["e"+ref]) {
+        if (node['e' + ref]) {
           node.detachEvent(type, node[ref]);
           try {
             delete(node[ref]);
-            delete(node["e"+ref]);
-          } catch(e) { // IE6 doesn't support 'delete()' above
-            node[ref]     = null;
-            node["e"+ref] = null;
+            delete(node['e' + ref]);
+          } catch (e) { // IE6 doesn't support 'delete()' above
+            node[ref] = null;
+            node['e' + ref] = null;
           }
         }
       }
@@ -173,11 +174,11 @@
     };
     EVENTS.trigger = function(node, type) {
       if (!node) return;
-      type = "on" + type;
+      type = 'on' + type;
       if (type in node) try { // standard DOM event?
         node.fireEvent(type);
         return;
-      } catch(e) {}
+      } catch (e) {}
       // custom event: pass an event-like structure to the callback
       // + use call() to set the 'this' reference within the callback
       var evtObject = {};
@@ -200,10 +201,10 @@
   // ==========================================================================
   // 'hashchange' works on most recent browsers
   EVENTS.onHashChange = function(callback) {
-    if ("onhashchange" in window) // IE8 and modern browsers
-      EVENTS.bind(window, "hashchange", callback);
+    if ('onhashchange' in window) // IE8 and modern browsers
+      EVENTS.bind(window, 'hashchange', callback);
     else { // use a setInterval loop for older browsers
-      var hash = "";
+      var hash = '';
       window.setInterval(function() {
         if (hash != window.location.hash) {
           hash = window.location.hash;
@@ -213,35 +214,35 @@
     }
   };
   // 'DOMContentLoaded' should work fine everywhere except with IE<9
-  EVENTS.onDOMReady = function(callback) {
+  EVENTS.onDOMReady = function(callback) { // TODO: test readyState
     if (window.addEventListener) // modern browsers
-      // http://perfectionlabstips.wordpress.com/2008/12/01/which-browsers-support-native-domcontentloaded-event/
-      // a few browsers support addEventListener without DOMContentLoaded:
-      // namely, Firefox 1.0, Opera <8 and Safari <2 (according to this link).
-      // As these browsers aren't supported any more, we can safely ignore them.
-      window.addEventListener("DOMContentLoaded", callback, false);
+      /**
+       * http://perfectionlabstips.wordpress.com/2008/12/01/which-browsers-support-native-domcontentloaded-event/
+       * A few browsers support addEventListener without DOMContentLoaded:
+       * namely, Firefox 1.0, Opera <8 and Safari <2 (according to this link).
+       * As these browsers aren't supported any more, we can safely ignore them.
+       */
+      window.addEventListener('DOMContentLoaded', callback, false);
     else { // Internet Explorer 6/7/8
-      // there are plenty other ways to do this without delaying the execution
-      // but we haven't taken the time to test the properly yet (FIXME)
-      // http://javascript.nwbox.com/IEContentLoaded/
-      // http://tanny.ica.com/ICA/TKO/tkoblog.nsf/dx/domcontentloaded-for-browsers-part-v
-      // http://www.javascriptfr.com/codes/DOMCONTENTLOADED-DOCUMENT-READY_49923.aspx
-      // https://github.com/ded/domready
-      // http://www.dustindiaz.com/smallest-domready-ever/
-      //function r(f) {
-        ///in/.test(document.readyState) ? setTimeout('r('+f+')', 40) : f();
-      //}
-      //r(callback);
-      EVENTS.bind(window, "load", callback);
+      /**
+       * There are plenty other ways to do this without delaying the execution
+       * but we haven't taken the time to test the properly yet (FIXME).
+       * http://javascript.nwbox.com/IEContentLoaded/
+       * http://tanny.ica.com/ICA/TKO/tkoblog.nsf/dx/domcontentloaded-for-browsers-part-v
+       * http://www.javascriptfr.com/codes/DOMCONTENTLOADED-DOCUMENT-READY_49923.aspx
+       * https://github.com/ded/domready
+       * http://www.dustindiaz.com/smallest-domready-ever/
+       */
+      EVENTS.bind(window, 'load', callback);
     }
   };
   // 'MediaContentLoaded' is fired when all media elements have been parsed
   EVENTS.onMediaReady = function(callback) {
-    EVENTS.bind(window, "MediaContentLoaded", callback);
+    EVENTS.bind(window, 'MediaContentLoaded', callback);
   };
   // 'SMILContentLoaded' is fired when all time containers have been parsed
   EVENTS.onSMILReady = function(callback) {
-    EVENTS.bind(window, "SMILContentLoaded", callback);
+    EVENTS.bind(window, 'SMILContentLoaded', callback);
   };
 
   // ==========================================================================
@@ -306,34 +307,39 @@
   else if (window.Sizzle) {    // http://sizzlejs.com/
     qwerySelectorAll = Sizzle;
   }
-  /* these libs do not return elements in the right DOM order. Blocker!
+  /**
+   * These two libs do not return elements in the right DOM order. Blocker!
    * That's surprising for Dojo, since Sizzle.js is a Dojo Foundation project.
-  else if (window.cssQuery) {  // http://dean.edwards.name/my/cssQuery/
-    qwerySelectorAll = cssQuery;
-  }
-  else if (window.dojo) {      // http://dojotoolkit.org/
-    qwerySelectorAll = dojo.query;
-  } */
+   *
+   * else if (window.cssQuery) {  // http://dean.edwards.name/my/cssQuery/
+   *   qwerySelectorAll = cssQuery;
+   * }
+   * else if (window.dojo) {      // http://dojotoolkit.org/
+   *   qwerySelectorAll = dojo.query;
+   * }
+   */
   else if (window.jQuery) {    // http://jquery.com/
     qwerySelectorAll = function(cssQuery, context) {
       return $(cssQuery, context);
     };
   }
-  else if (window.YAHOO        // http://developer.yahoo.com/yui/
-        && window.YAHOO.util
-        && window.YAHOO.util.Selector) {
+  else if (window.YAHOO &&     // http://developer.yahoo.com/yui/
+           window.YAHOO.util &&
+           window.YAHOO.util.Selector) {
     qwerySelectorAll = YAHOO.util.Selector.query;
   }
-  /* these frameworks are untested
-   * (read: could't get them to work on my development box :-/)
-  else if (window.Ext) {       // http://www.sencha.com/products/js/
-    qwerySelectorAll = Ext.select;
-  }
-  else if (window.$$) {        // http://prototypejs.org/ http://mootools.net/
-    qwerySelectorAll = function(cssQuery, context) {
-      return $$(cssQuery, context);
-    };
-  } */
+  /**
+   * these frameworks are untested
+   *
+   * else if (window.Ext) {       // http://www.sencha.com/products/js/
+   *   qwerySelectorAll = Ext.select;
+   * }
+   * else if (window.$$) {        // http://prototypejs.org/ http://mootools.net/
+   *   qwerySelectorAll = function(cssQuery, context) {
+   *     return $$(cssQuery, context);
+   *   };
+   * }
+   */
   else if (document.querySelectorAll) { // IE8 and modern browsers
     gNative = true;
     qwerySelectorAll = function(cssQuery, context) {
@@ -490,23 +496,16 @@ if (!Date.now) Date.now = function() {
 |                                                                             |
 \*****************************************************************************/
 
-/* Paul's tip, FTR:
-(function(foobar, container) {
-  container[foobar] = function() {
-    // code to expose
-  }
-}) ("API name", window)
-*/
 (function(){
 
 // note: all lines containing "consoleLog" will be deleted by the minifier
 var DEBUG = true;                             // consoleLog
 function consoleLog(message) {                // consoleLog
-  if (DEBUG && (typeof(console) == "object")) // consoleLog
+  if (DEBUG && (typeof(console) == 'object')) // consoleLog
     console.log(message);                     // consoleLog
 }                                             // consoleLog
 function consoleWarn(message) {
-  if (typeof(console) == "object")
+  if (typeof(console) == 'object')
     console.warn(message);
 }
 
