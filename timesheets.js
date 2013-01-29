@@ -255,7 +255,7 @@
 // QWERY.[*]: CSS selector (requires qwery|sizzle|jQuery|YUI)
 // ============================================================================
 
-(function(){
+(function() {
   /***************************************************************************\
   |                                                                           |
   |  CSS Query Selector Abstraction Layer                                     |
@@ -293,9 +293,9 @@
   \***************************************************************************/
 
   var gSupported = true;  // 'false' when no CSS selector can be used
-  var gNative    = false; // 'true' when using native *.querySelector[All]
-  function qwerySelector    (cssQuery, context) {}
-  function qwerySelectorAll (cssQuery, context) {}
+  var gNative = false;    // 'true' when using native *.querySelector[All]
+  function qwerySelector(cssQuery, context) {}
+  function qwerySelectorAll(cssQuery, context) {}
 
   // ==========================================================================
   // querySelectorAll() is required by 'select' attributes in timesheets
@@ -329,12 +329,12 @@
     qwerySelectorAll = YAHOO.util.Selector.query;
   }
   /**
-   * these frameworks are untested
+   * These frameworks are untested:
    *
-   * else if (window.Ext) {       // http://www.sencha.com/products/js/
+   * else if (window.Ext) {    // http://www.sencha.com/products/js/
    *   qwerySelectorAll = Ext.select;
    * }
-   * else if (window.$$) {        // http://prototypejs.org/ http://mootools.net/
+   * else if (window.$$) {     // http://prototypejs.org/ http://mootools.net/
    *   qwerySelectorAll = function(cssQuery, context) {
    *     return $$(cssQuery, context);
    *   };
@@ -364,7 +364,7 @@
       }
       return results;
     }
-  };
+  }
 
   // ==========================================================================
   // querySelector() is required to support the 'mediaSync' attribute
@@ -393,28 +393,28 @@
 
   function qweryTimeContainers() { // inline time containers
     if (gSupported) return qwerySelectorAll(
-      "*[data-timecontainer], *[smil-timecontainer], *[timeContainer]");
+      '*[data-timecontainer], *[smil-timecontainer], *[timeContainer]');
     // OLDIE (IE6, IE7) and no CSS Selector library
     var results = [];
-    var tmp = document.getElementsByTagName("*");
+    var tmp = document.getElementsByTagName('*');
     var re = /^(par|seq|excl)$/i;
     for (var i = 0; i < tmp.length; i++) {
-      if (re.test(tmp[i].nodeName)
-          || tmp[i].getAttribute("data-timecontainer")
-          || tmp[i].getAttribute("smil-timecontainer")
-          || tmp[i].getAttribute("timeContainer")) {
+      if (re.test(tmp[i].nodeName) ||
+          tmp[i].getAttribute('data-timecontainer') ||
+          tmp[i].getAttribute('smil-timecontainer') ||
+          tmp[i].getAttribute('timeContainer')) {
         results.push(tmp[i]);
       }
     }
     return results;
   }
   function qweryExtTimesheets() { // external timesheets
-    if (gSupported) return qwerySelectorAll("link[rel=timesheet]");
+    if (gSupported) return qwerySelectorAll('link[rel=timesheet]');
     // OLDIE (IE6, IE7) and no CSS Selector library
     var results = [];
-    var links = document.getElementsByTagName("link");
+    var links = document.getElementsByTagName('link');
     for (var i = 0; i < links.length; i++) {
-      if (links[i].rel.toLowerCase() == "timesheet") {
+      if (links[i].rel.toLowerCase() == 'timesheet') {
         results.push(links[i]);
       }
     }
@@ -426,12 +426,12 @@
   // ==========================================================================
 
   window.QWERY = {
-    select               : qwerySelector,
-    selectAll            : qwerySelectorAll,
-    selectTimeContainers : qweryTimeContainers,
-    selectExtTimesheets  : qweryExtTimesheets,
-    supported            : gSupported,
-    nativeSelector       : gNative
+    select: qwerySelector,
+    selectAll: qwerySelectorAll,
+    selectTimeContainers: qweryTimeContainers,
+    selectExtTimesheets: qweryExtTimesheets,
+    supported: gSupported,
+    nativeSelector: gNative
   };
 })();
 
