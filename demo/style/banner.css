@@ -1,0 +1,140 @@
+﻿#demo {
+	clear: both;
+	overflow: hidden;
+}
+
+/* rotating banner + transitions */
+#banner {
+  position: relative;
+  width: 720px;
+  height: 300px;
+  margin: 2em auto;
+  padding: 0.5em;
+  z-index: 0;
+}
+
+#banner img {
+  position: absolute;
+  top: 0.5em;
+  transition         : all 1s;
+  -o-transition      : all 1s;
+  -moz-transition    : all 1s;
+  -webkit-transition : all 1s;
+}
+
+/* cross-fade effect */
+.crossfade #banner img {
+  opacity: 0;
+}
+.crossfade #banner img[smil=active] {
+  opacity: 1;
+}
+
+/* fade-through effect */
+body.fadethrough > div {
+  overflow: hidden;
+}
+.fadethrough #banner img {
+  opacity: 0;
+}
+.fadethrough #banner img[smil=done] {
+  transform         : scale(1.5) translate(0, -10%);
+  -o-transform      : scale(1.5) translate(0, -10%);
+  -moz-transform    : scale(1.5) translate(0, -10%);
+  -webkit-transform : scale(1.5) translate(0, -10%);
+}
+.fadethrough #banner img[smil=active] {
+  opacity: 1;
+}
+
+/* slide-in effect */
+.slide #banner {
+  overflow: hidden;
+}
+.slide #banner img[smil=idle] {
+  transform         : translate(0, +310px);
+  -o-transform      : translate(0, +310px);
+  -moz-transform    : translate(0, +310px);
+  -webkit-transform : translate(0, +310px);
+}
+.slide #banner img[smil=done] {
+  transform         : translate(0, -310px);
+  -o-transform      : translate(0, -310px);
+  -moz-transform    : translate(0, -310px);
+  -webkit-transform : translate(0, -310px);
+}
+
+/* toss effect */
+body.toss > div {
+  overflow: hidden;
+}
+.toss #banner img {
+  opacity: 0;
+}
+.toss #banner img[smil=idle] {
+  transform         : rotate(-30deg) translate(-80px, -240px);
+  -o-transform      : rotate(-30deg) translate(-80px, -240px);
+  -moz-transform    : rotate(-30deg) translate(-80px, -240px);
+  -webkit-transform : rotate(-30deg) translate(-80px, -240px);
+}
+.toss #banner img[smil=active] {
+  opacity: 1;
+}
+
+/* flip effect */
+.clip #banner img {
+  opacity: 0;
+}
+.clip #banner img[smil=idle] {
+  /* clip: rect(150px, 360px, 150px, 360px); */
+  clip: rect(130px, 310px, 170px, 410px);
+}
+.clip #banner img[smil=active] {
+  opacity: 1;
+  clip: rect(0, 720px, 300px, 0);
+}
+
+/* disable all transitions */
+.none #banner img {
+  visibility: hidden;
+  transition         : none;
+  -o-transition      : none;
+  -moz-transition    : none;
+  -webkit-transition : none;
+}
+.none #banner img[smil=active] {
+  visibility: visible;
+}
+
+/* transition selector */
+#transitionSelector {
+  margin-top: -1em;
+  margin-bottom: 0;
+  padding-right: 2em;
+  text-align: right;
+  font-size: 0.8em;
+  z-index: 10;
+  user-select         : none;
+  -o-user-select      : none;
+  -moz-user-select    : none;
+  -webkit-user-select : none;
+}
+#transitionSelector button {
+  cursor: pointer;
+  color: navy;
+  border: none;
+  background: none;
+  padding: 0;
+}
+#transitionSelector button:hover {
+  text-decoration: underline;
+}
+.none        button.none,
+.crossfade   button.crossfade,
+.fadethrough button.fadethrough,
+.slide       button.slide,
+.toss        button.toss,
+.clip        button.clip {
+  text-decoration: underline;
+  color: brown !important;
+}

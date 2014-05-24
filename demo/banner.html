@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title> timesheets.js :: Basic Markup </title>
+  <link rel="stylesheet" type="text/css" href="style/banner.css">
+  <script type="text/javascript" src="../timesheets.js"></script>
+</head>
+
+<body class="crossfade">
+  <div id="demo">
+    <div id="banner" class="highlight" data-timecontainer="seq" data-repeatcount="indefinite">
+      <img data-dur="3s" src="images/dosbox.png"       alt="relive the good old days">
+      <img data-dur="3s" src="images/gnote.png"        alt="100% free software, 0% hassle">
+      <img data-dur="3s" src="images/gpodder.png"      alt="simple, usable podcast consumption">
+      <img data-dur="3s" src="images/transmission.png" alt="a fast, easy and free BitTorrent client">
+    </div>
+    <p id="transitionSelector">
+      <strong>CSS transition</strong>:
+      <button class="crossfade"
+      onclick="document.body.className='crossfade';">cross-fade</button> |
+      <button class="fadethrough"
+      onclick="document.body.className='fadethrough';">fade-through</button> |
+      <button class="slide"
+      onclick="document.body.className='slide';">slide-in</button> |
+      <button class="toss"
+      onclick="document.body.className='toss';">toss</button> |
+      <button class="clip"
+      onclick="document.body.className='clip';">clip</button> |
+      <button class="none"
+      onclick="document.body.className='none';">none</button>
+    </p>
+  </div>
+
+</body>
+</html>
