@@ -24,7 +24,7 @@
  * contact     : fabien@cazenave.cc
  * license     : MIT
  * version     : 0.6.0
- * last change : 2013-01-29
+ * last change : 2014-12-05
  *
  * TODO:
  *  - factorize the onbegin/onend code
@@ -88,8 +88,8 @@
   // ==========================================================================
   // Generic Events
   // ==========================================================================
-  // addEventListener should work fine everywhere except with IE<9
-  if (window.addEventListener) { // modern browsers
+  // addEventListener and createEvent should work fine everywhere except IE<9
+  if (window.addEventListener && document.createEvent) { // modern browsers
     EVENTS.bind = function(node, type, callback) {
       if (!node) return;
       node.addEventListener(type, callback, false);

@@ -24,7 +24,7 @@
  * contact     : fabien.cazenave@inria.fr, kaze@kompozer.net
  * license     : MIT
  * version     : 0.5.1pre
- * last change : 2011-05-25
+ * last change : 2014-12-05
  *
  * TODO:
  *  - factorize the onbegin/onend code
@@ -88,8 +88,8 @@
   // ==========================================================================
   // Generic Events
   // ==========================================================================
-  // addEventListener should work fine everywhere except with IE<9
-  if (window.addEventListener) { // modern browsers
+  // addEventListener and createEvent should work fine everywhere except IE<9
+  if (window.addEventListener && document.createEvent) { // modern browsers
     EVENTS.bind = function(node, type, callback) {
       if (!node) return;
       node.addEventListener(type, callback, false);
@@ -798,7 +798,7 @@ function parseAllTimeContainers() {
   if (!OLDIE) {
     var docElt = document.documentElement;
     var ns = {
-      "xhtml" : "http://www.w3.org/1999/xhtml", 
+      "xhtml" : "http://www.w3.org/1999/xhtml",
       "svg"   : "http://www.w3.org/2000/svg",
       "smil"  : docElt.getAttribute("xmlns:smil") || "http://www.w3.org/ns/SMIL"
     };
